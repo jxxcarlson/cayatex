@@ -3,21 +3,13 @@ module Parser.Expression exposing (..)
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
 import Parser.Tool as Tool
+import Parser.SourceMap exposing (SourceMap)
 
 
 type InlineExpression
     = Text String (Maybe SourceMap)
     | Inline String (List String) String (Maybe SourceMap)
     | List InlineExpression
-
-
-type alias SourceMap =
-    { blockOffset : Int
-    , length : Int
-    , offset : Int
-    , content : String
-    , generation : Int
-    }
 
 
 
@@ -32,6 +24,9 @@ expression : Int -> Int -> Parser InlineExpression
 expression generation lineNumber =
     Parser.oneOf [ inline generation lineNumber, text_ generation lineNumber [] ]
 
+
+-- UTILITY
+
 {-| Set the SourceMap to Nothing
 -}
 strip : InlineExpression -> InlineExpression
@@ -41,8 +36,14 @@ strip expr =
      Inline name args body_ _ -> Inline name args body_ Nothing
      List expr_ -> List expr_
 
+getSource : InlineExpression -> Maybe SourceMap 
+getSource expr =
+  case expr of 
+    Text _ sm -> sm
+    Inline _ _ _ sm -> sm
+    List expr_ -> Nothing
 
--- TEXT
+-- TEXT AND STRINGS
 
 
 text_ : Int -> Int -> List Char -> Parser InlineExpression
@@ -72,7 +73,8 @@ string_ stopChars =
 
 string stopChars = Tool.first (string_ stopChars) Parser.spaces
 
--- INLINE ELEMENT
+
+-- INLINE VARIANT
 
 
 {-|
@@ -119,6 +121,7 @@ body =
     Parser.succeed (\body_ -> ( [], body_ ))
         |= string_ [ ']' ]
 
+-- HELPERS
 
 {-|
 
