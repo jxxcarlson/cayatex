@@ -8,7 +8,7 @@ There are two constructs in the language: _inline expressions_ and _blocks_.
 The former are like LaTeX macros and the latter are like LaTeX environments. 
 
 One of the design goals is to have a clean, simple, and uniform syntax with as few 
-constructs as possible.
+constructs as possible.  We aim to show that simple can be powerful.
 
 ## Inline Expressions
 
