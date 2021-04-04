@@ -40,6 +40,11 @@ suite =
               \_ -> Expect.equal 
                 (run (text_ 0 0 []) "this is a test")
                 (Ok (Text ("this is a test") (Just { blockOffset = 0, content = "this is a test", generation = 0, length = 14, offset = 0 })))
+              , test "Image" <| 
+                \_ -> Expect.equal
+                (run (expression 1 2) "[image [height:40,width:100] stuff]" |> Result.map strip)
+                (Ok (Inline "image" ["height:40" ,"width:100"] ("stuff") Nothing))
+
             ]
         ]   
 

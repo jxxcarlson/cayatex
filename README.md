@@ -52,14 +52,14 @@ Args = [width:400, height:250] and Body = https://yada.io/xy.jpg.
        (Just { blockOffset = 2, content = "This is a test.", generation = 1, length = 15, offset = 0 }))
 
 > run (expression 1 2) "[strong  stuff]"
-  Ok (Inline "strong" [] (" stuff") 
+  Ok (Inline "strong" [] ("stuff") 
        (Just { blockOffset = 2, content = "[strong  stuff]", generation = 1, length = 15, offset = 0 }))
 
 > run (expression 1 2) "[image [height:40,width:100] stuff]"
-  Ok (Inline "image" ["height:40,width:100"] (" stuff") ... 
+  Ok (Inline "image" ["height:40,width:100"] ("stuff") ... 
 
-> run (expression 1 2) "[image [height:40,width:100] stuff]"
-  Ok (Inline "image" ["height:40,width:100"] (" lots of stuff") ... 
+> run (expression 1 2) "[image [height:40, width:100] stuff]"
+  Ok (Inline "image" ["height:40","width:100"] ("lots of stuff") ... 
 ```  
     
 ## Blocks

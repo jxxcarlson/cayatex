@@ -8,7 +8,7 @@ import Parser.Tool as Tool
 type InlineExpression
     = Text String (Maybe SourceMap)
     | Inline String (List String) String (Maybe SourceMap)
-    | List InlineExpression (Maybe SourceMap)
+    | List InlineExpression
 
 
 type alias SourceMap =
@@ -32,6 +32,14 @@ expression : Int -> Int -> Parser InlineExpression
 expression generation lineNumber =
     Parser.oneOf [ inline generation lineNumber, text_ generation lineNumber [] ]
 
+{-| Set the SourceMap to Nothing
+-}
+strip : InlineExpression -> InlineExpression
+strip expr = 
+   case expr of 
+     Text str _ -> Text str Nothing
+     Inline name args body_ _ -> Inline name args body_ Nothing
+     List expr_ -> List expr_
 
 
 -- TEXT
@@ -58,11 +66,11 @@ rawText_ stopChars =
         |= Parser.getSource
 
 
-string : List Char -> Parser String
-string stopChars =
+string_ : List Char -> Parser String
+string_ stopChars =
     rawText_ stopChars |> Parser.map .content
 
-
+string stopChars = Tool.first (string_ stopChars) Parser.spaces
 
 -- INLINE ELEMENT
 
@@ -82,7 +90,7 @@ inline generation blockOffset =
         -- Parser.succeed (\start name end source -> Inline name [] "body" (Just {generation = generation, blockOffset = blockOffset, offset = start, length = end - start, content = source}))
         |= Parser.getOffset
         |. Parser.symbol (Parser.Token "[" (ExpectingToken "["))
-        |= string [ ' ' ]
+        |= string_ [ ' ' ]
         |. Parser.symbol (Parser.Token " " (ExpectingToken "space"))
         |= argsAndBody
         |. Parser.symbol (Parser.Token "]" (ExpectingToken "]"))
@@ -97,14 +105,19 @@ argsAndBody =
 argsAndBody_ =
     Parser.succeed (\args body_ -> ( args, body_ ))
         |. Parser.symbol (Parser.Token "[" (ExpectingToken "[ (args)"))
-        |= Tool.manySeparatedBy (Parser.symbol (Parser.Token "," (ExpectingToken ","))) (string [ ' ', ']' ])
+        |= Tool.manySeparatedBy comma (string [ ',', ']' ])
         |. Parser.symbol (Parser.Token "]" (ExpectingToken "] (args)"))
-        |= string [ ']' ]
+        |. Parser.spaces
+        |= string_ [ ']' ]
 
+
+comma_ = Parser.symbol (Parser.Token "," (ExpectingToken ","))
+
+comma = Tool.first comma_ Parser.spaces
 
 body =
     Parser.succeed (\body_ -> ( [], body_ ))
-        |= string [ ']' ]
+        |= string_ [ ']' ]
 
 
 {-|
