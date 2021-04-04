@@ -96,9 +96,9 @@ argsAndBody =
 
 argsAndBody_ =
     Parser.succeed (\args body_ -> ( args, body_ ))
-        |. Parser.symbol (Parser.Token "|" (ExpectingToken "| (1)"))
-        |= Tool.manySeparatedBy (Parser.symbol (Parser.Token " " (ExpectingToken "space"))) (string [ ' ', '|' ])
-        |. Parser.symbol (Parser.Token "|" (ExpectingToken "| (2)"))
+        |. Parser.symbol (Parser.Token "[" (ExpectingToken "[ (args)"))
+        |= Tool.manySeparatedBy (Parser.symbol (Parser.Token "," (ExpectingToken ","))) (string [ ' ', ']' ])
+        |. Parser.symbol (Parser.Token "]" (ExpectingToken "] (args)"))
         |= string [ ']' ]
 
 

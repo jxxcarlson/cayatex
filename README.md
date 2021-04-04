@@ -6,7 +6,7 @@ by James Carlson and Nicholas Yang
 Mark2 is an experimental markup language that compiles to LaTeX and to Html.  
 There are two constructs in the language: _inline expressions_ and _blocks_.  
 
-One of the design goals is to have a clean, simple syntax with as few 
+One of the design goals is to have a clean, simple, and uniform syntax with as few 
 constructs as possible.
 
 ## Inline Expressions
@@ -37,6 +37,25 @@ Args is empty and Body = "icky stuff".  In
     [image width:400, height:250| https://yada.io/xy.jpg],
 
 Args = |width:400, height:250| and Body = https://yada.io/xy.jpg.
+
+
+### Examples
+
+```
+> run (expression 1 2) "This is a test."
+  Ok (Text ("This is a test.") 
+       (Just { blockOffset = 2, content = "This is a test.", generation = 1, length = 15, offset = 0 }))
+
+> run (expression 1 2) "[strong  stuff]"
+  Ok (Inline "strong" [] (" stuff") 
+       (Just { blockOffset = 2, content = "[strong  stuff]", generation = 1, length = 15, offset = 0 }))
+
+> run (expression 1 2) "[image [height:40,width:100] stuff]"
+  Ok (Inline "image" ["height:40,width:100"] (" stuff") ... 
+
+> run (expression 1 2) "[image [height:40,width:100] stuff]"
+  Ok (Inline "image" ["height:40,width:100"] (" lots of stuff") ... 
+```  
     
 ## Blocks
 
@@ -49,7 +68,7 @@ Here is a piece of text that parses to a block:
 The body of the block, the line "There are ..." is an inline expression.
 The body can also be a block, as in the case of the nested blocks below:
 
-    |indent | theorem 
+    |indent | theorem [title: Pythagoras]
     There are infinitely many primes [math p \equiv 1 \modulo 4].
     |endall
 
@@ -66,4 +85,14 @@ Here is how one writes a list:
     |end
 
 The above illustrates the core language.  There is also a shorthand feature
-for 
+to make composition of text easier.  Thus, one can also say
+
+    |numbered-list
+
+    - eggs
+
+    - milk
+
+    - bread
+
+    |end
