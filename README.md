@@ -82,7 +82,9 @@ The body can also be a block, as in the case of the nested blocks below:
 
 The grammar for blocks is as follows.  
 
-    Block -> "|" Name Args "|end" | "|" Name Args InlineExpression "|end"
+    Block -> "|" Name Args "|end" 
+              | "|" Name InlineExpression "|end"
+              | "|" Name Args InlineExpression "|end"
     Name -> String
     Args: as above
 
@@ -142,7 +144,17 @@ For sections, etc., one can say
 
 In shorthand, this becomes
 
-# Introduction
-## Exmaples
+    # Introduction
+    ## Exmaples
 
 We intend the use of shorthand to be quite limited, perhaps just to the above examples.
+
+## Type of the Syntax Tree
+
+```elm
+type Expression
+    = Text String (Maybe SourceMap)
+    | Inline String (List String) String (Maybe SourceMap)
+    | Block String (List String) (Maybe Expression) (Maybe SourceMap)
+    | List Expression
+```
