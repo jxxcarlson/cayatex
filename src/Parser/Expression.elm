@@ -1,6 +1,5 @@
 module Parser.Expression exposing (..)
 
-
 {- (Expression(..), parser, strip, getSource, incrementOffset) -}
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
@@ -35,35 +34,48 @@ parser generation lineNumber =
 
 block : Int -> Int -> Parser Expression
 block generation lineNumber =
-    Parser.succeed (\start name ( args_, body_ ) end source -> Block name args_ body_ (Just { generation = generation, blockOffset = lineNumber, offset = start, length = end - start }))
+    Parser.succeed (\start (name,  args_, body_ ) end source -> Block name args_ body_ (Just { generation = generation, blockOffset = lineNumber, offset = start, length = end - start }))
         |= Parser.getOffset
         |. Parser.symbol (Parser.Token "|" (ExpectingToken "|"))
-        |= blockName
-        |= blockArgsAndBody generation lineNumber
+        |= Parser.oneOf [Parser.backtrackable (blockPath3 generation lineNumber), blockPath1 generation lineNumber, blockPath2 generation lineNumber]
         |= Parser.getOffset
         |= Parser.getSource
 
 
-blockName = Parser.oneOf [Parser.backtrackable blockName2, blockName1]
 
-blockName1 : Parser String
-blockName1 = Parser.succeed identity
-  |= string_ [ ' ' ]
-  |. symbolSpace
 
-blockName2 : Parser String
-blockName2 = Parser.succeed identity
-  |= (string_ [ '|' ] |> Parser.map String.trim)
-   
 
-blockArgsAndBody : Int -> Int -> Parser ( List Expression, Maybe Expression )
-blockArgsAndBody generation lineNumber =
-    Parser.succeed (\args_ body_ -> ( args_, body_ ))
-        |= Tool.optionalList blockArgs
-        |. symbol_ "|"
-        |= Tool.first (Tool.maybe (inlineExpression ['|'] generation lineNumber)) endOfBlock
+{-|
+  "|theorem| Many primes!"
+-}
+blockPath1 generation lineNumber =
+    Parser.succeed (\name body_ -> (name, [], body_))
+        |= (string_ [ '|' ] |> Parser.map String.trim)
+        |. symbol_ "|" "blockPath1"
+        |= Tool.first (Tool.maybe (inlineExpression [ '|' ] generation lineNumber)) endOfBlock
         |. Parser.spaces
 
+{-|
+  "|theorem | Many primes!"
+-}
+blockPath2 generation lineNumber =
+    Parser.succeed (\name body_ -> (name, [], body_))
+        |= (string_ [ ' ' ] |> Parser.map String.trim)
+        |. symbol_ " |" "blockPath2"
+        |= Tool.first (Tool.maybe (inlineExpression [ '|' ] generation lineNumber)) endOfBlock
+        |. Parser.spaces
+
+{-|
+  "|theorem title:Pythagoras| Many primes!"
+-}
+blockPath3 generation lineNumber =
+    Parser.succeed (\name args_ body_ -> (name, args_, body_))
+        |= (string_ [ ' ' ] |> Parser.map String.trim)
+        |. symbol_ " " "blockPath3, 1"
+        |= Tool.optionalList blockArgs
+        |. symbol_ "|" "blockPath3, 2"
+        |= Tool.first (Tool.maybe (inlineExpression [ '|' ] generation lineNumber)) endOfBlock
+        |. Parser.spaces       
 
 endOfBlock =
     Parser.symbol (Parser.Token "|end" (ExpectingToken "|end"))
@@ -71,11 +83,14 @@ endOfBlock =
 
 blockArgs =
     Parser.succeed identity
-        |= Tool.manySeparatedBy comma (inlineExpression ['|', '[', ','] 0 0 )
+        |= Tool.manySeparatedBy comma (inlineExpression [ '|', '[', ',' ] 0 0)
         |. Parser.spaces
 
-symbol_ c = Parser.symbol (Parser.Token c (ExpectingToken c))
-symbolSpace = Parser.symbol (Parser.Token " " (ExpectingToken "space"))
+
+symbol_ c e =
+    Parser.symbol (Parser.Token c (ExpectingToken <| c ++ ": " ++ e))
+
+
 
 -- INLINE
 
@@ -85,7 +100,11 @@ inlineExpression stopChars generation lineNumber =
     -- TODO: think about the stop characters
     Parser.oneOf [ inline generation lineNumber, text_ generation lineNumber stopChars ]
 
-standardInlineStopChars = [ '|', '[' ] 
+
+standardInlineStopChars =
+    [ '|', '[' ]
+
+
 {-|
 
 > run (inline 0 0) "[strong |0| stuff]"
@@ -207,19 +226,26 @@ incrementOffset delta expr =
     case expr of
         Text s sm ->
             Text s (incrementSourceMapOffset delta sm)
+
         Inline name args body_ sm ->
             Inline name args body_ (incrementSourceMapOffset delta sm)
 
         Block name args body_ sm ->
             Block name args body_ (incrementSourceMapOffset delta sm)
 
-        List e sm -> List e (incrementSourceMapOffset delta sm)
+        List e sm ->
+            List e (incrementSourceMapOffset delta sm)
+
 
 incrementSourceMapOffset : Int -> Maybe SourceMap -> Maybe SourceMap
-incrementSourceMapOffset delta sourceMap = 
-   case sourceMap of 
-     Just sm -> Just { sm | offset = sm.offset + delta }
-     Nothing -> Nothing
+incrementSourceMapOffset delta sourceMap =
+    case sourceMap of
+        Just sm ->
+            Just { sm | offset = sm.offset + delta }
+
+        Nothing ->
+            Nothing
+
 
 {-| Set the SourceMap to Nothing
 -}
@@ -255,7 +281,10 @@ getSource expr =
             sm
 
 
+
 -- getArgs : Expression -> Maybe Expression
+
+
 getArgs_ expr =
     case expr of
         Text _ _ ->
@@ -265,19 +294,20 @@ getArgs_ expr =
             Nothing
 
         Block _ args_ _ _ ->
-           Just args_
+            Just args_
 
         List expr_ _ ->
             Nothing
 
-getArgs expr = expr |> List.map  getArgs_ |> List.map (Maybe.map (List.map strip))
 
+getArgs expr =
+    expr |> List.map getArgs_ |> List.map (Maybe.map (List.map strip))
 
 
 getBody_ expr =
     case expr of
         Text str _ ->
-           Nothing
+            Nothing
 
         Inline _ _ body_ _ ->
             Nothing
@@ -288,5 +318,6 @@ getBody_ expr =
         List _ _ ->
             Nothing
 
-getBody = List.map  (getBody_ >> Maybe.map strip)
 
+getBody =
+    List.map (getBody_ >> Maybe.map strip)
