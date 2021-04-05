@@ -19,8 +19,8 @@ suite =
                 (Ok (Inline "image" ["height:40" ,"width:100"] ("stuff") Nothing))
               , test "Block" <|
                  \_ -> Expect.equal
-                 (run (parser 1 2) "|yada [7, 5] foo bar |end mmm" |> Result.map strip)
-                 (Ok (Block "yada" ["7","5"] (Just (Text ("foo bar ") (Just { blockOffset = 2, generation = 1, length = 21, offset = 0 }))) Nothing))
+                 (run (parser 1 2) "|yada 7, 5| foo bar |end mmm" |> Result.map strip)
+                 (Ok (Block "yada" [Text "7" Nothing,Text "5" Nothing] (Just (Text " foo bar " Nothing)) Nothing))
             ]
         ]   
 

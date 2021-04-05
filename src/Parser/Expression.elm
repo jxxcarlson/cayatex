@@ -26,7 +26,7 @@ type alias Parser a =
 
 parser : Int -> Int -> Parser Expression
 parser generation lineNumber =
-    Parser.oneOf [ inlineExpression generation lineNumber, block generation lineNumber ]
+    Parser.oneOf [ inlineExpression standardInlineStopChars generation lineNumber, block generation lineNumber ]
 
 
 
@@ -50,7 +50,7 @@ blockArgsAndBody generation lineNumber =
     Parser.succeed (\args_ body_ -> ( args_, body_ ))
         |= Tool.optionalList blockArgs
         |. pipeSymbol
-        |= Tool.first (Tool.maybe (inlineExpression generation lineNumber)) endOfBlock
+        |= Tool.first (Tool.maybe (inlineExpression ['|'] generation lineNumber)) endOfBlock
         |. Parser.spaces
 
 
@@ -60,10 +60,7 @@ endOfBlock =
 
 blockArgs =
     Parser.succeed identity
-        --|. leftParen
-        -- |= Tool.manySeparatedBy comma (string [ ',', ']' ])
-        |= Tool.manySeparatedBy comma (inlineExpression 0 0)
-        --|. rightParen
+        |= Tool.manySeparatedBy comma (inlineExpression ['|', '[', ','] 0 0 )
         |. Parser.spaces
 
 pipeSymbol = Parser.symbol (Parser.Token "|" (ExpectingToken "|"))
@@ -75,12 +72,12 @@ rightBracket = Parser.symbol (Parser.Token "]" (ExpectingToken "] (args)"))
 -- INLINE
 
 
-inlineExpression : Int -> Int -> Parser Expression
-inlineExpression generation lineNumber =
+inlineExpression : List Char -> Int -> Int -> Parser Expression
+inlineExpression stopChars generation lineNumber =
     -- TODO: think about the stop characters
-    Parser.oneOf [ inline generation lineNumber, text_ generation lineNumber [ '|', '[' ] ]
+    Parser.oneOf [ inline generation lineNumber, text_ generation lineNumber stopChars ]
 
-
+standardInlineStopChars = [ '|', '[' ] 
 {-|
 
 > run (inline 0 0) "[strong |0| stuff]"
@@ -228,7 +225,7 @@ strip expr =
             Inline name args body_ Nothing
 
         Block name args body_ _ ->
-            Block name args body_ Nothing
+            Block name (List.map strip args) (Maybe.map strip body_) Nothing
 
         List expr_ _ ->
             List expr_ Nothing
@@ -248,3 +245,37 @@ getSource expr =
 
         List expr_ sm ->
             sm
+
+
+-- getArgs : Expression -> Maybe Expression
+getArgs expr =
+    case expr of
+        Text _ _ ->
+            Nothing
+
+        Inline _ args_ _ _ ->
+            Nothing
+
+        Block _ args_ _ _ ->
+           Just args_
+
+        List expr_ _ ->
+            Nothing
+
+getArgList expr = expr |> List.map  getArgs |> List.map (Maybe.map (List.map strip))
+
+
+
+getBody expr =
+    case expr of
+        Text str _ ->
+           Nothing
+
+        Inline _ _ body_ _ ->
+            Nothing
+
+        Block _ _ body_ _ ->
+            body_
+
+        List _ _ ->
+            Nothing
