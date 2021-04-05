@@ -6,13 +6,14 @@ import Parser.Tool as Tool
 import Parser.SourceMap exposing (SourceMap)
 
 
+-- type Expression = InlineExpression | List Expression
 
-type Block = Block String (List String) (Maybe InlineExpression) (Maybe SourceMap)
 
-type InlineExpression
+type Expression
     = Text String (Maybe SourceMap)
     | Inline String (List String) String (Maybe SourceMap)
-    | List InlineExpression
+    | Block String (List String) (Maybe Expression) (Maybe SourceMap)
+    | List Expression
 
 
 
@@ -25,7 +26,7 @@ type alias Parser a =
 --     Block -> "|" Name Args "|end" | "|" Name Args InlineExpression "|end"
 
 
-block : Int -> Int -> Parser Block
+block : Int -> Int -> Parser Expression
 block generation lineNumber =
      Parser.succeed (\start name (args_, body_)  end source -> Block name args_ body_ (Just { generation = generation, blockOffset = lineNumber, offset = start, length = end - start, content = source }))
         |= Parser.getOffset
@@ -39,7 +40,7 @@ block generation lineNumber =
 
 
 
-blockArgsAndBody : Int -> Int -> Parser (List String, Maybe InlineExpression)
+blockArgsAndBody : Int -> Int -> Parser (List String, Maybe Expression)
 blockArgsAndBody generation lineNumber = 
    Parser.succeed (\args_ body_ -> (args_, body_))
      |= Tool.optionalList blockArgs
@@ -56,7 +57,7 @@ blockArgs =
         |. Parser.symbol (Parser.Token "]" (ExpectingToken "] (args)"))
         |. Parser.spaces
 
-inlineExpression : Int -> Int -> Parser InlineExpression
+inlineExpression : Int -> Int -> Parser Expression
 inlineExpression generation lineNumber =
     -- TODO: think about the stop characters
    Parser.oneOf [ inline generation lineNumber, text_ generation lineNumber ['|'] ]
@@ -65,24 +66,27 @@ inlineExpression generation lineNumber =
 
 {-| Set the SourceMap to Nothing
 -}
-strip : InlineExpression -> InlineExpression
+strip : Expression -> Expression
 strip expr = 
    case expr of 
      Text str _ -> Text str Nothing
      Inline name args body_ _ -> Inline name args body_ Nothing
+     Block name args body_ _ -> Block name args body_ Nothing
      List expr_ -> List expr_
 
-getSource : InlineExpression -> Maybe SourceMap 
+
+getSource : Expression -> Maybe SourceMap 
 getSource expr =
   case expr of 
     Text _ sm -> sm
     Inline _ _ _ sm -> sm
+    Block _ _ _ sm -> sm
     List expr_ -> Nothing
 
 -- TEXT AND STRINGS
 
 
-text_ : Int -> Int -> List Char -> Parser InlineExpression
+text_ : Int -> Int -> List Char -> Parser Expression
 text_ generation lineNumber stopChars =
     Parser.map (\( t, s ) -> Text t s) (rawText generation lineNumber (\c -> c /= '|') stopChars)
 
@@ -123,7 +127,7 @@ string stopChars = Tool.first (string_ stopChars) Parser.spaces
 > Ok (Inline "strong" [] "stuff" (Just { blockOffset = 0, content = "[strong stuff]", generation = 0, length = 14, offset = 0 }))
 
 -}
-inline : Int -> Int -> Parser InlineExpression
+inline : Int -> Int -> Parser Expression
 inline generation blockOffset =
     Parser.succeed (\start name ( args, body_ ) end source -> Inline name args body_ (Just { generation = generation, blockOffset = blockOffset, offset = start, length = end - start, content = source }))
         -- Parser.succeed (\start name end source -> Inline name [] "body" (Just {generation = generation, blockOffset = blockOffset, offset = start, length = end - start, content = source}))
