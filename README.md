@@ -241,3 +241,5 @@ type Expression
     | Block String (List Expression) (Maybe Expression) (Maybe SourceMap)
     | List Expression
 ```
+
+ as in the case of the AST for MiniLaTeX
