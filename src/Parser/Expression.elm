@@ -31,7 +31,7 @@ parser generation lineNumber = Parser.oneOf [inlineExpression generation lineNum
 
 block : Int -> Int -> Parser Expression
 block generation lineNumber =
-     Parser.succeed (\start name (args_, body_)  end source -> Block name args_ body_ (Just { generation = generation, blockOffset = lineNumber, offset = start, length = end - start, content = source }))
+     Parser.succeed (\start name (args_, body_)  end source -> Block name args_ body_ (Just { generation = generation, blockOffset = lineNumber, offset = start, length = end - start}))
         |= Parser.getOffset
         |. Parser.symbol (Parser.Token "|" (ExpectingToken "|"))
         |= string_ [ ' ' ]
@@ -132,7 +132,7 @@ string stopChars = Tool.first (string_ stopChars) Parser.spaces
 -}
 inline : Int -> Int -> Parser Expression
 inline generation blockOffset =
-    Parser.succeed (\start name ( args, body_ ) end source -> Inline name args body_ (Just { generation = generation, blockOffset = blockOffset, offset = start, length = end - start, content = source }))
+    Parser.succeed (\start name ( args, body_ ) end source -> Inline name args body_ (Just { generation = generation, blockOffset = blockOffset, offset = start, length = end - start }))
         -- Parser.succeed (\start name end source -> Inline name [] "body" (Just {generation = generation, blockOffset = blockOffset, offset = start, length = end - start, content = source}))
         |= Parser.getOffset
         |. Parser.symbol (Parser.Token "[" (ExpectingToken "["))
@@ -180,7 +180,7 @@ getChompedString generation lineNumber parser_ =
                 src =
                     String.slice first_ last_ source_
             in
-            ( src, Just { content = src, blockOffset = lineNumber, length = last_, offset = 0, generation = generation } )
+            ( src, Just { blockOffset = lineNumber, length = last_, offset = 0, generation = generation } )
     in
     Parser.succeed sm
         |= Parser.getOffset
