@@ -149,7 +149,11 @@ In shorthand, this becomes
 
 We intend the use of shorthand to be quite limited, perhaps just to the above examples.
 
-## Type of the Syntax Tree
+## Parser Architecture
+
+### Types
+
+The type of the AST is as below.
 
 ```elm
 type Expression
@@ -158,3 +162,58 @@ type Expression
     | Block String (List String) (Maybe Expression) (Maybe SourceMap)
     | List Expression
 ```
+
+The SourceMap locates the parsed expression in the source text.
+We assume that the text is a list of strings that defines
+a list of text blocks (not Blocks!).  A text block is either
+an ordinary paragraph (non-blank lines bordered by blank lines)
+or an outer Block.  Here is an example:
+
+    0 This is a test.
+    1 Ho ho ho!
+    2
+    3 |theorem 
+    4 There are [strong many] primes!
+    5 |end
+    6 
+    7 One, two, [italic three!]
+
+In this example there are three blocks, with blockOffsets
+0, 3, and 7.  The source map for [strong many] is
+
+    blockOffset = 3
+    offset = 18
+    length = 13
+
+To arrive at this conclusion, convert the list of 
+lines 3, 4, 5 to the string
+
+    foo = "theorem\nThere are [strong many] primes!\n|end"
+
+and find the offset of the substring "[strong many]".
+Consequently we have
+
+    String.slice 18 (18 + 13) foo == "[strong many]"
+
+The generation is supplied to parseLoop as an argument
+with the assumption that it is incremented for each
+edit.
+
+
+```elm
+type alias SourceMap =
+    { blockOffset : Int
+    , offset : Int
+    , length : Int
+    , generation : Int
+    }
+```
+
+### Functions
+
+((To be expanded))
+
+Top level function: Parser.Driver.parseLoop.  This function repeatedly
+calls Parser.Expression.parser until input is exhausted and a final
+TextCursor is computed.  The role of the TextCursor will be explained
+later.
