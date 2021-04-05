@@ -1,4 +1,7 @@
-module Parser.Expression exposing (Expression(..), parser, strip, getSource, incrementOffset)
+module Parser.Expression exposing (..)
+
+
+{- (Expression(..), parser, strip, getSource, incrementOffset) -}
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
@@ -9,7 +12,7 @@ import Parser.Tool as Tool
 type Expression
     = Text String (Maybe SourceMap)
     | Inline String (List String) String (Maybe SourceMap)
-    | Block String (List String) (Maybe Expression) (Maybe SourceMap)
+    | Block String (List Expression) (Maybe Expression) (Maybe SourceMap)
     | List Expression (Maybe SourceMap)
 
 
@@ -42,10 +45,11 @@ block generation lineNumber =
         |= Parser.getSource
 
 
-blockArgsAndBody : Int -> Int -> Parser ( List String, Maybe Expression )
+blockArgsAndBody : Int -> Int -> Parser ( List Expression, Maybe Expression )
 blockArgsAndBody generation lineNumber =
     Parser.succeed (\args_ body_ -> ( args_, body_ ))
         |= Tool.optionalList blockArgs
+        |. pipeSymbol
         |= Tool.first (Tool.maybe (inlineExpression generation lineNumber)) endOfBlock
         |. Parser.spaces
 
@@ -56,12 +60,17 @@ endOfBlock =
 
 blockArgs =
     Parser.succeed identity
-        |. Parser.symbol (Parser.Token "[" (ExpectingToken "[ (args)"))
-        |= Tool.manySeparatedBy comma (string [ ',', ']' ])
-        |. Parser.symbol (Parser.Token "]" (ExpectingToken "] (args)"))
+        --|. leftParen
+        -- |= Tool.manySeparatedBy comma (string [ ',', ']' ])
+        |= Tool.manySeparatedBy comma (inlineExpression 0 0)
+        --|. rightParen
         |. Parser.spaces
 
-
+pipeSymbol = Parser.symbol (Parser.Token "|" (ExpectingToken "|"))
+leftParen = Parser.symbol (Parser.Token "(" (ExpectingToken "( (args)"))
+rightParen = Parser.symbol (Parser.Token ")" (ExpectingToken ") (args)"))
+leftBracket = Parser.symbol (Parser.Token "[" (ExpectingToken "[ (args)"))
+rightBracket = Parser.symbol (Parser.Token "]" (ExpectingToken "] (args)"))
 
 -- INLINE
 
