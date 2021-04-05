@@ -23,10 +23,10 @@ suite =
                         , Block "theorem" [] (Just (Text " many primes " Nothing)) Nothing
                         , Text "ho ho ho" Nothing
                         ]
-            , test "Block arguments" <|
+            , Test.only <| test "Block arguments" <|
                 \_ ->
                     Expect.equal
-                        (pl "|theorem [strong c], [italic d], foo| many primes |end" |> getArgList)
+                        (pl "|theorem [strong c], [italic d], foo| many primes |end" |> getArgs)
                         [ Just
                             [ Inline "strong" [] "c" Nothing
                             , Inline "italic" [] "d" Nothing
@@ -36,12 +36,12 @@ suite =
             , test "Block body" <|
                 \_ ->
                     Expect.equal
-                        (pl "|theorem [strong c], [italic d], foo| many primes |end" |> List.map  (getBody >> Maybe.map strip))
+                        (pl "|theorem [strong c], [italic d], foo| many primes |end" |> getBody)
                         [Just (Text (" many primes ") Nothing)]
 
             , test "Complex block body" <|
                 \_ ->
                     Expect.equal
-                        (pl "|theorem [strong c], [italic d], foo| [strong many] primes |end" |> List.map  (getBody >> Maybe.map strip))
+                        (pl "|theorem [strong c], [italic d], foo| [strong many] primes |end" |> getBody)
                         [Just (Text " [strong many] primes " Nothing)]            ]
         ]

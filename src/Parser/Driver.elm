@@ -17,3 +17,5 @@ packet = {
 parseLoop : Int -> Int -> String -> TextCursor Expression
 parseLoop generation initialLineNumber str = 
    Loop.parseLoop packet generation initialLineNumber str
+
+pl str = parseLoop 0 0 str |> .parsed   

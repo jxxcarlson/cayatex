@@ -38,18 +38,31 @@ block generation lineNumber =
     Parser.succeed (\start name ( args_, body_ ) end source -> Block name args_ body_ (Just { generation = generation, blockOffset = lineNumber, offset = start, length = end - start }))
         |= Parser.getOffset
         |. Parser.symbol (Parser.Token "|" (ExpectingToken "|"))
-        |= string_ [ ' ' ]
-        |. Parser.symbol (Parser.Token " " (ExpectingToken "space"))
+        -- |= string_ [ ' ' ]
+        -- |. Parser.symbol (Parser.Token " " (ExpectingToken "space"))
+        |= blockName
         |= blockArgsAndBody generation lineNumber
         |= Parser.getOffset
         |= Parser.getSource
 
 
+blockName = Parser.oneOf [Parser.backtrackable blockName2, blockName1]
+
+blockName1 : Parser String
+blockName1 = Parser.succeed identity
+  |= string_ [ ' ' ]
+  |. symbolSpace
+
+blockName2 : Parser String
+blockName2 = Parser.succeed identity
+  |= (string_ [ '|' ] |> Parser.map String.trim)
+   
+
 blockArgsAndBody : Int -> Int -> Parser ( List Expression, Maybe Expression )
 blockArgsAndBody generation lineNumber =
     Parser.succeed (\args_ body_ -> ( args_, body_ ))
         |= Tool.optionalList blockArgs
-        |. pipeSymbol
+        |. symbol_ "|"
         |= Tool.first (Tool.maybe (inlineExpression ['|'] generation lineNumber)) endOfBlock
         |. Parser.spaces
 
@@ -63,11 +76,8 @@ blockArgs =
         |= Tool.manySeparatedBy comma (inlineExpression ['|', '[', ','] 0 0 )
         |. Parser.spaces
 
-pipeSymbol = Parser.symbol (Parser.Token "|" (ExpectingToken "|"))
-leftParen = Parser.symbol (Parser.Token "(" (ExpectingToken "( (args)"))
-rightParen = Parser.symbol (Parser.Token ")" (ExpectingToken ") (args)"))
-leftBracket = Parser.symbol (Parser.Token "[" (ExpectingToken "[ (args)"))
-rightBracket = Parser.symbol (Parser.Token "]" (ExpectingToken "] (args)"))
+symbol_ c = Parser.symbol (Parser.Token c (ExpectingToken c))
+symbolSpace = Parser.symbol (Parser.Token " " (ExpectingToken "space"))
 
 -- INLINE
 
@@ -248,7 +258,7 @@ getSource expr =
 
 
 -- getArgs : Expression -> Maybe Expression
-getArgs expr =
+getArgs_ expr =
     case expr of
         Text _ _ ->
             Nothing
@@ -262,11 +272,11 @@ getArgs expr =
         List expr_ _ ->
             Nothing
 
-getArgList expr = expr |> List.map  getArgs |> List.map (Maybe.map (List.map strip))
+getArgs expr = expr |> List.map  getArgs_ |> List.map (Maybe.map (List.map strip))
 
 
 
-getBody expr =
+getBody_ expr =
     case expr of
         Text str _ ->
            Nothing
@@ -279,3 +289,6 @@ getBody expr =
 
         List _ _ ->
             Nothing
+
+getBody = List.map  (getBody_ >> Maybe.map strip)
+
