@@ -1,4 +1,4 @@
-module Parser.Expression exposing (..)
+module Parser.Expression exposing (Expression(..), parser, strip)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
@@ -24,6 +24,9 @@ type alias Parser a =
     Parser.Parser Context Problem a
 
 --     Block -> "|" Name Args "|end" | "|" Name Args InlineExpression "|end"
+
+parser : Int -> Int -> Parser Expression
+parser generation lineNumber = Parser.oneOf [inlineExpression generation lineNumber, block generation lineNumber  ]
 
 
 block : Int -> Int -> Parser Expression
@@ -170,7 +173,7 @@ body =
 
 -}
 getChompedString : Int -> Int -> Parser a -> Parser ( String, Maybe SourceMap )
-getChompedString generation lineNumber parser =
+getChompedString generation lineNumber parser_ =
     let
         sm first_ last_ source_ =
             let
@@ -181,6 +184,6 @@ getChompedString generation lineNumber parser =
     in
     Parser.succeed sm
         |= Parser.getOffset
-        |. parser
+        |. parser_
         |= Parser.getOffset
         |= Parser.getSource
