@@ -14,8 +14,8 @@ type alias Packet a = {
         parser : (Int -> Int -> Parser a)
       , getSource : (a -> Maybe SourceMap)
       , incrementOffset : (Int -> a -> a)
-      , highlighter : (a -> Maybe SourceMap -> a)
-      , handleError : (TextCursor a -> List (Parser.DeadEnd Context Problem) -> TextCursor a)
+      , highlighter : Maybe (a -> Maybe SourceMap -> a)
+      , handleError : Maybe (TextCursor a -> List (Parser.DeadEnd Context Problem) -> TextCursor a)
       }
 
 
@@ -74,13 +74,18 @@ nextCursor packet tc =
                     }
 
             Err e ->
-                ParserTool.Loop (packet.handleError tc e)
+                case packet.handleError of 
+                  Nothing -> ParserTool.Loop tc
+                  Just he -> ParserTool.Loop (he tc e)
 
 
 newExpr packet tc_ expr =
     case List.head tc_.stack of
         Just "highlight" ->
-            packet.incrementOffset tc_.offset (packet.highlighter expr (packet.getSource expr))
+            case packet.highlighter of 
+              Nothing -> packet.incrementOffset tc_.offset expr
+              Just hl ->
+                 packet.incrementOffset tc_.offset (hl expr (packet.getSource expr))
 
         _ ->
             packet.incrementOffset tc_.offset expr

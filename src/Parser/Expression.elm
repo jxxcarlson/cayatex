@@ -1,4 +1,4 @@
-module Parser.Expression exposing (Expression(..), parser, strip)
+module Parser.Expression exposing (Expression(..), parser, strip, getSource, incrementOffset)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
@@ -25,7 +25,10 @@ parser : Int -> Int -> Parser Expression
 parser generation lineNumber =
     Parser.oneOf [ inlineExpression generation lineNumber, block generation lineNumber ]
 
+
+
 -- BLOCK
+
 
 block : Int -> Int -> Parser Expression
 block generation lineNumber =
@@ -58,12 +61,15 @@ blockArgs =
         |. Parser.symbol (Parser.Token "]" (ExpectingToken "] (args)"))
         |. Parser.spaces
 
+
+
 -- INLINE
+
 
 inlineExpression : Int -> Int -> Parser Expression
 inlineExpression generation lineNumber =
     -- TODO: think about the stop characters
-    Parser.oneOf [ inline generation lineNumber, text_ generation lineNumber [ '|' ] ]
+    Parser.oneOf [ inline generation lineNumber, text_ generation lineNumber [ '|', '[' ] ]
 
 
 {-|
@@ -113,7 +119,6 @@ comma =
 body =
     Parser.succeed (\body_ -> ( [], body_ ))
         |= string_ [ ']' ]
-
 
 
 
@@ -177,8 +182,30 @@ getChompedString generation lineNumber parser_ =
         |= Parser.getSource
 
 
+
 -- UTILITY
 
+
+{-| increment the offset field of the SourceMap component of an Expression
+-}
+incrementOffset : Int -> Expression -> Expression
+incrementOffset delta expr =
+    case expr of
+        Text s sm ->
+            Text s (incrementSourceMapOffset delta sm)
+        Inline name args body_ sm ->
+            Inline name args body_ (incrementSourceMapOffset delta sm)
+
+        Block name args body_ sm ->
+            Block name args body_ (incrementSourceMapOffset delta sm)
+
+        List e sm -> List e (incrementSourceMapOffset delta sm)
+
+incrementSourceMapOffset : Int -> Maybe SourceMap -> Maybe SourceMap
+incrementSourceMapOffset delta sourceMap = 
+   case sourceMap of 
+     Just sm -> Just { sm | offset = sm.offset + delta }
+     Nothing -> Nothing
 
 {-| Set the SourceMap to Nothing
 -}
@@ -212,4 +239,3 @@ getSource expr =
 
         List expr_ sm ->
             sm
-
