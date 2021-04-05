@@ -217,3 +217,27 @@ Top level function: Parser.Driver.parseLoop.  This function repeatedly
 calls Parser.Expression.parser until input is exhausted and a final
 TextCursor is computed.  The role of the TextCursor will be explained
 later.
+
+## Questions and Issues
+
+The AST should probably be as follows:
+
+
+```elm
+type Expression
+    = Text String (Maybe SourceMap)
+    | Inline String (List String) Expression (Maybe SourceMap)
+    | Block String (List String) (Maybe Expression) (Maybe SourceMap)
+    | List Expression
+```
+
+or even
+
+
+```elm
+type Expression
+    = Text String (Maybe SourceMap)
+    | Inline String (List Expression) Expression (Maybe SourceMap)
+    | Block String (List Expression) (Maybe Expression) (Maybe SourceMap)
+    | List Expression
+```
