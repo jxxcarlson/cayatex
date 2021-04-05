@@ -6,6 +6,9 @@ import Parser.Tool as Tool
 import Parser.SourceMap exposing (SourceMap)
 
 
+
+type Block = Block String (List String) (Maybe InlineExpression) (Maybe SourceMap)
+
 type InlineExpression
     = Text String (Maybe SourceMap)
     | Inline String (List String) String (Maybe SourceMap)
@@ -19,11 +22,44 @@ type InlineExpression
 type alias Parser a =
     Parser.Parser Context Problem a
 
+--     Block -> "|" Name Args "|end" | "|" Name Args InlineExpression "|end"
 
-expression : Int -> Int -> Parser InlineExpression
-expression generation lineNumber =
-    Parser.oneOf [ inline generation lineNumber, text_ generation lineNumber [] ]
 
+block : Int -> Int -> Parser Block
+block generation lineNumber =
+     Parser.succeed (\start name (args_, body_)  end source -> Block name args_ body_ (Just { generation = generation, blockOffset = lineNumber, offset = start, length = end - start, content = source }))
+        |= Parser.getOffset
+        |. Parser.symbol (Parser.Token "|" (ExpectingToken "|"))
+        |= string_ [ ' ' ]
+        |. Parser.symbol (Parser.Token " " (ExpectingToken "space"))
+        |= blockArgsAndBody generation lineNumber
+        --|. Parser.symbol (Parser.Token "|end" (ExpectingToken "|end"))
+        |= Parser.getOffset
+        |= Parser.getSource 
+
+
+
+blockArgsAndBody : Int -> Int -> Parser (List String, Maybe InlineExpression)
+blockArgsAndBody generation lineNumber = 
+   Parser.succeed (\args_ body_ -> (args_, body_))
+     |= Tool.optionalList blockArgs
+     |= (Tool.first (Tool.maybe (inlineExpression generation lineNumber)) endOfBlock)
+     -- |. Parser.symbol (Parser.Token "|end" (ExpectingToken "|end"))
+     |. Parser.spaces
+
+
+endOfBlock = Parser.symbol (Parser.Token "|end" (ExpectingToken "|end"))
+blockArgs = 
+    Parser.succeed identity
+        |. Parser.symbol (Parser.Token "[" (ExpectingToken "[ (args)"))
+        |= Tool.manySeparatedBy comma (string [ ',', ']' ])
+        |. Parser.symbol (Parser.Token "]" (ExpectingToken "] (args)"))
+        |. Parser.spaces
+
+inlineExpression : Int -> Int -> Parser InlineExpression
+inlineExpression generation lineNumber =
+    -- TODO: think about the stop characters
+   Parser.oneOf [ inline generation lineNumber, text_ generation lineNumber ['|'] ]
 
 -- UTILITY
 
@@ -48,13 +84,14 @@ getSource expr =
 
 text_ : Int -> Int -> List Char -> Parser InlineExpression
 text_ generation lineNumber stopChars =
-    Parser.map (\( t, s ) -> Text t s) (rawText generation lineNumber stopChars)
+    Parser.map (\( t, s ) -> Text t s) (rawText generation lineNumber (\c -> c /= '|') stopChars)
 
 
-rawText : Int -> Int -> List Char -> Parser ( String, Maybe SourceMap )
-rawText generation lineNumber stopChars =
+rawText : Int -> Int -> (Char -> Bool) ->  List Char -> Parser ( String, Maybe SourceMap )
+rawText generation lineNumber prefixTest stopChars =
     getChompedString generation lineNumber <|
         Parser.succeed ()
+            |. Parser.chompIf (\c -> prefixTest c) UnHandledError
             |. Parser.chompWhile (\c -> not (List.member c stopChars))
 
 

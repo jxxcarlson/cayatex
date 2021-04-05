@@ -1,12 +1,10 @@
-module Parser.Tool exposing (Step(..), first, loop, many, manyNonEmpty, manySeparatedBy, optional, maybe, optionalList, second, textPS)
+module Parser.ToolSimple exposing (Step(..), first, loop, many, manyNonEmpty, manySeparatedBy, optional, maybe, optionalList, second, textPS)
 
 
-import Parser.Advanced as Parser exposing ((|.), (|=))
+
+import Parser exposing ((|.), (|=), Parser)
 import Parser.Error exposing (Context(..), Problem(..))
 
-
-type alias Parser a =
-    Parser.Parser Context Problem a
 
 
 {-| Apply a parser zero or more times and return a list of the results.
@@ -24,7 +22,7 @@ manySeparatedBy sep p =
 manyHelp : Parser a -> List a -> Parser (Parser.Step (List a) (List a))
 manyHelp p vs =
     Parser.oneOf
-        [ Parser.end EndOfInput |> Parser.map (\_ -> Parser.Done (List.reverse vs))
+        [ Parser.end |> Parser.map (\_ -> Parser.Done (List.reverse vs))
         , Parser.succeed (\v -> Parser.Loop (v :: vs))
             |= p
         , Parser.succeed ()
@@ -55,14 +53,13 @@ optional : Parser () -> Parser ()
 optional p =
     Parser.oneOf [ p, Parser.succeed () ]
 
-
-
 {-| Running `optional p` means run p.  If the parser succeeds with value _result_,
 return _Just result_ .  If the parser failes, return Nothing.
 -}
 maybe : Parser a -> Parser (Maybe a)
 maybe p =
     Parser.oneOf [ p |> Parser.map (\x -> Just x), Parser.succeed () |> Parser.map (\_ -> Nothing) ]
+
 
 
 {-| Running `optionalList p` means run p, but if it fails, succeed anyway, 
@@ -102,7 +99,7 @@ textPS : (Char -> Bool) -> List Char -> Parser { start : Int, finish : Int, cont
 textPS prefixTest stopChars =
     Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
         |= Parser.getOffset
-        |. Parser.chompIf (\c -> prefixTest c) UnHandledError
+        |. Parser.chompIf (\c -> prefixTest c)
         |. Parser.chompWhile (\c -> not (List.member c stopChars))
         |= Parser.getOffset
         |= Parser.getSource
