@@ -23,7 +23,7 @@ suite =
                         , Block "theorem" [] (Just (Text " many primes " Nothing)) Nothing
                         , Text "ho ho ho" Nothing
                         ]
-            , Test.only <| test "Block arguments" <|
+            , test "Block arguments" <|
                 \_ ->
                     Expect.equal
                         (pl "|theorem [strong c], [italic d], foo| many primes |end" |> getArgs)

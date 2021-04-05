@@ -38,8 +38,6 @@ block generation lineNumber =
     Parser.succeed (\start name ( args_, body_ ) end source -> Block name args_ body_ (Just { generation = generation, blockOffset = lineNumber, offset = start, length = end - start }))
         |= Parser.getOffset
         |. Parser.symbol (Parser.Token "|" (ExpectingToken "|"))
-        -- |= string_ [ ' ' ]
-        -- |. Parser.symbol (Parser.Token " " (ExpectingToken "space"))
         |= blockName
         |= blockArgsAndBody generation lineNumber
         |= Parser.getOffset
