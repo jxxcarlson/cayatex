@@ -222,35 +222,3 @@ getChompedString generation lineNumber parser_ =
         |= Parser.getOffset
         |= Parser.getSource
 
-
-
--- UTILITY
-
-
-{-| increment the offset field of the SourceMap component of an Expression
--}
-incrementOffset : Int -> Expression -> Expression
-incrementOffset delta expr =
-    case expr of
-        Text s sm ->
-            Text s (incrementSourceMapOffset delta sm)
-
-        Inline name args body_ sm ->
-            Inline name args body_ (incrementSourceMapOffset delta sm)
-
-        Block name args body_ sm ->
-            Block name args body_ (incrementSourceMapOffset delta sm)
-
-        List e sm ->
-            List e (incrementSourceMapOffset delta sm)
-
-
-incrementSourceMapOffset : Int -> Maybe SourceMap -> Maybe SourceMap
-incrementSourceMapOffset delta sourceMap =
-    case sourceMap of
-        Just sm ->
-            Just { sm | offset = sm.offset + delta }
-
-        Nothing ->
-            Nothing
-
