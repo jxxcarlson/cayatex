@@ -117,7 +117,6 @@ standardInlineStopChars =
 inline : Int -> Int -> Parser Expression
 inline generation blockOffset =
     Parser.succeed (\start name ( args, body_ ) end source -> Inline name args body_ (Just { generation = generation, blockOffset = blockOffset, offset = start, length = end - start }))
-        -- Parser.succeed (\start name end source -> Inline name [] "body" (Just {generation = generation, blockOffset = blockOffset, offset = start, length = end - start, content = source}))
         |= Parser.getOffset
         |. leftBracket
         |= inlineName
@@ -138,19 +137,17 @@ innerInlineArgs = Tool.manySeparatedBy comma (string [ ',', ']' ])
 
 inlineArgs = Tool.between leftBracket innerInlineArgs rightBracket
 
-
-
+body = string_ [ ']']
 
 argsAndBody =
-    Parser.oneOf [ argsAndBody_, body ]
+    Parser.oneOf [ argsAndBody_, bodyOnly ]
 
 
 argsAndBody_ =
     Parser.succeed (\args body_ -> ( args, body_ ))
         |= inlineArgs
         |. Parser.spaces
-        |= string_ [ ']' ]
-
+        |= body
 
 comma_ =
     Parser.symbol (Parser.Token "," (ExpectingToken ","))
@@ -160,9 +157,9 @@ comma =
     Tool.first comma_ Parser.spaces
 
 
-body =
+bodyOnly =
     Parser.succeed (\body_ -> ( [], body_ ))
-        |= string_ [ ']' ]
+        |= body
 
 
 
