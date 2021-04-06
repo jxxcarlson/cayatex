@@ -10,13 +10,14 @@ import Parser.Tool as ParserTool
 type alias Parser a =
     Parser.Parser Context Problem a
 
-type alias Packet a = {
-        parser : (Int -> Int -> Parser a)
-      , getSource : (a -> Maybe SourceMap)
-      , incrementOffset : (Int -> a -> a)
-      , highlighter : Maybe (a -> Maybe SourceMap -> a)
-      , handleError : Maybe (TextCursor a -> List (Parser.DeadEnd Context Problem) -> TextCursor a)
-      }
+
+type alias Packet a =
+    { parser : Int -> Int -> Parser a
+    , getSource : a -> Maybe SourceMap
+    , incrementOffset : Int -> a -> a
+    , highlighter : Maybe (a -> Maybe SourceMap -> a)
+    , handleError : Maybe (TextCursor a -> List (Parser.DeadEnd Context Problem) -> TextCursor a)
+    }
 
 
 {-| parseLoop takes as input an integer representing a "chunkOffset" and
@@ -51,7 +52,7 @@ operated by parseLoop is updated:
     - `expr` is prepended to `tc.parsed`
 
 -}
-nextCursor : Packet a ->  TextCursor a -> ParserTool.Step (TextCursor a) (TextCursor a)
+nextCursor : Packet a -> TextCursor a -> ParserTool.Step (TextCursor a) (TextCursor a)
 nextCursor packet tc =
     if tc.text == "" || tc.count > 10 then
         -- TODO: that usage of count needs to be removed after bug is fixed
@@ -74,18 +75,23 @@ nextCursor packet tc =
                     }
 
             Err e ->
-                case packet.handleError of 
-                  Nothing -> ParserTool.Loop tc
-                  Just he -> ParserTool.Loop (he tc e)
+                case packet.handleError of
+                    Nothing ->
+                        ParserTool.Loop tc
+
+                    Just he ->
+                        ParserTool.Loop (he tc e)
 
 
 newExpr packet tc_ expr =
     case List.head tc_.stack of
         Just "highlight" ->
-            case packet.highlighter of 
-              Nothing -> packet.incrementOffset tc_.offset expr
-              Just hl ->
-                 packet.incrementOffset tc_.offset (hl expr (packet.getSource expr))
+            case packet.highlighter of
+                Nothing ->
+                    packet.incrementOffset tc_.offset expr
+
+                Just hl ->
+                    packet.incrementOffset tc_.offset (hl expr (packet.getSource expr))
 
         _ ->
             packet.incrementOffset tc_.offset expr

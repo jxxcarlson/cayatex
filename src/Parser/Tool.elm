@@ -1,5 +1,4 @@
-module Parser.Tool exposing (Step(..), first, between, loop, many, manyNonEmpty, manySeparatedBy, optional, maybe, optionalList, second, textPS)
-
+module Parser.Tool exposing (Step(..), between, first, loop, many, manyNonEmpty, manySeparatedBy, maybe, optional, optionalList, second, textPS)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
@@ -56,21 +55,21 @@ optional p =
     Parser.oneOf [ p, Parser.succeed () ]
 
 
-
-{-| Running `optional p` means run p.  If the parser succeeds with value _result_,
-return _Just result_ .  If the parser failes, return Nothing.
+{-| Running `optional p` means run p. If the parser succeeds with value _result_,
+return _Just result_ . If the parser failes, return Nothing.
 -}
 maybe : Parser a -> Parser (Maybe a)
 maybe p =
     Parser.oneOf [ p |> Parser.map (\x -> Just x), Parser.succeed () |> Parser.map (\_ -> Nothing) ]
 
 
-{-| Running `optionalList p` means run p, but if it fails, succeed anyway, 
-   returning the empty list
+{-| Running `optionalList p` means run p, but if it fails, succeed anyway,
+returning the empty list
 -}
 optionalList : Parser (List a) -> Parser (List a)
 optionalList p =
-    Parser.oneOf [ p, Parser.succeed () |> Parser.map (\_ -> [])]
+    Parser.oneOf [ p, Parser.succeed () |> Parser.map (\_ -> []) ]
+
 
 {-| running `first p q` means run p, then run q
 and return the result of running p.
@@ -90,12 +89,14 @@ second p q =
 
 {-| Running between p q r runs p, then q, then r, returning the result of p:
 
-   > run (between (Parser.symbol "[") Parser.int (Parser.symbol "]")) "[12]"
-   Ok 12
+> run (between (Parser.symbol "[") Parser.int (Parser.symbol "]")) "[12]"
+> Ok 12
+
 -}
 between : Parser a -> Parser b -> Parser c -> Parser b
 between p q r =
     p |> Parser.andThen (\_ -> q) |> Parser.andThen (\x -> r |> Parser.map (\_ -> x))
+
 
 {-| textPS = "text prefixText stopCharacters": Get the longest string
 whose first character satisfies the prefixTest and whose remaining

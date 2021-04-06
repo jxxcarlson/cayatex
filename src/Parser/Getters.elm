@@ -1,7 +1,7 @@
 module Parser.Getters exposing (..)
 
-import Parser.Expression exposing(Expression(..))
-import Parser.SourceMap exposing(SourceMap)
+import Parser.Expression exposing (Expression(..))
+import Parser.SourceMap exposing (SourceMap)
 
 
 {-| Set the SourceMap to Nothing

@@ -34,48 +34,45 @@ parser generation lineNumber =
 
 block : Int -> Int -> Parser Expression
 block generation lineNumber =
-    Parser.succeed (\start (name,  args_, body_ ) end source -> Block name args_ body_ (Just { generation = generation, blockOffset = lineNumber, offset = start, length = end - start }))
+    Parser.succeed (\start ( name, args_, body_ ) end source -> Block name args_ body_ (Just { generation = generation, blockOffset = lineNumber, offset = start, length = end - start }))
         |= Parser.getOffset
         |. Parser.symbol (Parser.Token "|" (ExpectingToken "|"))
-        |= Parser.oneOf [Parser.backtrackable (blockPath3 generation lineNumber), blockPath1 generation lineNumber, blockPath2 generation lineNumber]
+        |= Parser.oneOf [ Parser.backtrackable (blockPath3 generation lineNumber), blockPath1 generation lineNumber, blockPath2 generation lineNumber ]
         |= Parser.getOffset
         |= Parser.getSource
 
 
-
-
-
-{-|
-  "|theorem| Many primes!"
+{-| "|theorem| Many primes!"
 -}
 blockPath1 generation lineNumber =
-    Parser.succeed (\name body_ -> (name, [], body_))
+    Parser.succeed (\name body_ -> ( name, [], body_ ))
         |= (string_ [ '|' ] |> Parser.map String.trim)
         |. symbol_ "|" "blockPath1"
         |= Tool.first (Tool.maybe (inlineExpression [ '|' ] generation lineNumber)) endOfBlock
         |. Parser.spaces
 
-{-|
-  "|theorem | Many primes!"
+
+{-| "|theorem | Many primes!"
 -}
 blockPath2 generation lineNumber =
-    Parser.succeed (\name body_ -> (name, [], body_))
+    Parser.succeed (\name body_ -> ( name, [], body_ ))
         |= (string_ [ ' ' ] |> Parser.map String.trim)
         |. symbol_ " |" "blockPath2"
         |= Tool.first (Tool.maybe (inlineExpression [ '|' ] generation lineNumber)) endOfBlock
         |. Parser.spaces
 
-{-|
-  "|theorem title:Pythagoras| Many primes!"
+
+{-| "|theorem title:Pythagoras| Many primes!"
 -}
 blockPath3 generation lineNumber =
-    Parser.succeed (\name args_ body_ -> (name, args_, body_))
+    Parser.succeed (\name args_ body_ -> ( name, args_, body_ ))
         |= (string_ [ ' ' ] |> Parser.map String.trim)
         |. symbol_ " " "blockPath3, 1"
         |= Tool.optionalList blockArgs
         |. symbol_ "|" "blockPath3, 2"
         |= Tool.first (Tool.maybe (inlineExpression [ '|' ] generation lineNumber)) endOfBlock
-        |. Parser.spaces       
+        |. Parser.spaces
+
 
 endOfBlock =
     Parser.symbol (Parser.Token "|end" (ExpectingToken "|end"))
@@ -85,10 +82,6 @@ blockArgs =
     Parser.succeed identity
         |= Tool.manySeparatedBy comma (inlineExpression [ '|', '[', ',' ] 0 0)
         |. Parser.spaces
-
-
-symbol_ c e =
-    Parser.symbol (Parser.Token c (ExpectingToken <| c ++ ": " ++ e))
 
 
 
@@ -126,21 +119,24 @@ inline generation blockOffset =
         |= Parser.getSource
 
 
+inlineName =
+    Tool.first (string_ [ ' ' ]) oneSpace
 
-leftBracket = symbol_ "[" ""
-rightBracket = symbol_ "]" ""
-oneSpace = symbol_ " " " "
 
-inlineName = Tool.first (string_ [ ' ' ]) oneSpace
+innerInlineArgs =
+    Tool.manySeparatedBy comma (string [ ',', ']' ])
 
-innerInlineArgs = Tool.manySeparatedBy comma (string [ ',', ']' ])
-
-inlineArgs = Tool.between leftBracket innerInlineArgs rightBracket
-
-body = string_ [ ']']
 
 argsAndBody =
     Parser.oneOf [ argsAndBody_, bodyOnly ]
+
+
+inlineArgs =
+    Tool.between leftBracket innerInlineArgs rightBracket
+
+
+body =
+    string_ [ ']' ]
 
 
 argsAndBody_ =
@@ -148,13 +144,6 @@ argsAndBody_ =
         |= inlineArgs
         |. Parser.spaces
         |= body
-
-comma_ =
-    Parser.symbol (Parser.Token "," (ExpectingToken ","))
-
-
-comma =
-    Tool.first comma_ Parser.spaces
 
 
 bodyOnly =
@@ -198,6 +187,34 @@ string stopChars =
 
 
 
+-- SYMBOLS
+
+
+comma_ =
+    Parser.symbol (Parser.Token "," (ExpectingToken ","))
+
+
+comma =
+    Tool.first comma_ Parser.spaces
+
+
+symbol_ c e =
+    Parser.symbol (Parser.Token c (ExpectingToken <| c ++ ": " ++ e))
+
+
+leftBracket =
+    symbol_ "[" ""
+
+
+rightBracket =
+    symbol_ "]" ""
+
+
+oneSpace =
+    symbol_ " " " "
+
+
+
 -- HELPERS
 
 
@@ -221,4 +238,3 @@ getChompedString generation lineNumber parser_ =
         |. parser_
         |= Parser.getOffset
         |= Parser.getSource
-

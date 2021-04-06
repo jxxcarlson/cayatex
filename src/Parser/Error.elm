@@ -1,4 +1,4 @@
-module Parser.Error exposing (Problem(..), Context(..))
+module Parser.Error exposing (Context(..), Problem(..))
 
 
 type Problem
