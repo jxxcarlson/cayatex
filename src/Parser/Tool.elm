@@ -1,4 +1,4 @@
-module Parser.Tool exposing (Step(..), first, loop, many, manyNonEmpty, manySeparatedBy, optional, maybe, optionalList, second, textPS)
+module Parser.Tool exposing (Step(..), first, between, loop, many, manyNonEmpty, manySeparatedBy, optional, maybe, optionalList, second, textPS)
 
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
@@ -87,6 +87,15 @@ second : Parser a -> Parser b -> Parser b
 second p q =
     p |> Parser.andThen (\_ -> q)
 
+
+{-| Running between p q r runs p, then q, then r, returning the result of p:
+
+   > run (between (Parser.symbol "[") Parser.int (Parser.symbol "]")) "[12]"
+   Ok 12
+-}
+between : Parser a -> Parser b -> Parser c -> Parser b
+between p q r =
+    p |> Parser.andThen (\_ -> q) |> Parser.andThen (\x -> r |> Parser.map (\_ -> x))
 
 {-| textPS = "text prefixText stopCharacters": Get the longest string
 whose first character satisfies the prefixTest and whose remaining

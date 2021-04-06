@@ -119,13 +119,26 @@ inline generation blockOffset =
     Parser.succeed (\start name ( args, body_ ) end source -> Inline name args body_ (Just { generation = generation, blockOffset = blockOffset, offset = start, length = end - start }))
         -- Parser.succeed (\start name end source -> Inline name [] "body" (Just {generation = generation, blockOffset = blockOffset, offset = start, length = end - start, content = source}))
         |= Parser.getOffset
-        |. Parser.symbol (Parser.Token "[" (ExpectingToken "["))
-        |= string_ [ ' ' ]
-        |. Parser.symbol (Parser.Token " " (ExpectingToken "space"))
+        |. leftBracket
+        |= inlineName
         |= argsAndBody
-        |. Parser.symbol (Parser.Token "]" (ExpectingToken "]"))
+        |. rightBracket
         |= Parser.getOffset
         |= Parser.getSource
+
+
+
+leftBracket = symbol_ "[" ""
+rightBracket = symbol_ "]" ""
+oneSpace = symbol_ " " " "
+
+inlineName = Tool.first (string_ [ ' ' ]) oneSpace
+
+innerInlineArgs = Tool.manySeparatedBy comma (string [ ',', ']' ])
+
+inlineArgs = Tool.between leftBracket innerInlineArgs rightBracket
+
+
 
 
 argsAndBody =
@@ -134,9 +147,7 @@ argsAndBody =
 
 argsAndBody_ =
     Parser.succeed (\args body_ -> ( args, body_ ))
-        |. Parser.symbol (Parser.Token "[" (ExpectingToken "[ (args)"))
-        |= Tool.manySeparatedBy comma (string [ ',', ']' ])
-        |. Parser.symbol (Parser.Token "]" (ExpectingToken "] (args)"))
+        |= inlineArgs
         |. Parser.spaces
         |= string_ [ ']' ]
 
