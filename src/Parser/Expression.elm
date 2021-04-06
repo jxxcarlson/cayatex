@@ -12,7 +12,7 @@ type Expression
     = Text String (Maybe SourceMap)
     | Inline String (List String) Expression (Maybe SourceMap)
     | Block String (List Expression) (Maybe Expression) (Maybe SourceMap)
-    | List Expression (Maybe SourceMap)
+    | LX (List Expression) (Maybe SourceMap)
 
 
 

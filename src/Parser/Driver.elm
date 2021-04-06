@@ -40,8 +40,8 @@ incrementOffset delta expr =
         Block name args body_ sm ->
             Block name args body_ (incrementSourceMapOffset delta sm)
 
-        List e sm ->
-            List e (incrementSourceMapOffset delta sm)
+        LX e sm ->
+            LX e (incrementSourceMapOffset delta sm)
 
 
 incrementSourceMapOffset : Int -> Maybe SourceMap -> Maybe SourceMap

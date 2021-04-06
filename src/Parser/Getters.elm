@@ -18,8 +18,8 @@ strip expr =
         Block name args body_ _ ->
             Block name (List.map strip args) (Maybe.map strip body_) Nothing
 
-        List expr_ _ ->
-            List expr_ Nothing
+        LX expr_ _ ->
+            LX expr_ Nothing
 
 
 getSource : Expression -> Maybe SourceMap
@@ -34,7 +34,7 @@ getSource expr =
         Block _ _ _ sm ->
             sm
 
-        List expr_ sm ->
+        LX expr_ sm ->
             sm
 
 
@@ -53,7 +53,7 @@ getArgs_ expr =
         Block _ args_ _ _ ->
             Just args_
 
-        List expr_ _ ->
+        LX expr_ _ ->
             Nothing
 
 
@@ -72,7 +72,7 @@ getBody_ expr =
         Block _ _ body_ _ ->
             body_
 
-        List _ _ ->
+        LX _ _ ->
             Nothing
 
 
