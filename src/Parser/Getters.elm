@@ -13,7 +13,7 @@ strip expr =
             Text str Nothing
 
         Inline name args body_ _ ->
-            Inline name args body_ Nothing
+            Inline name args (strip body_) Nothing
 
         Block name args body_ _ ->
             Block name (List.map strip args) (Maybe.map strip body_) Nothing

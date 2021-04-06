@@ -16,17 +16,21 @@ Here is a piece of text that parses to an inline expression:
     Pythagoras, a [italic [bold really, really] good] mathematician, showed
     that the sides of a right triangle satisfy the relation 
     [math a^2 + b^2 = c^2].  For more information, see
-    [link [Wikipedia] https://en.wikipedia.org/wiki/Pythagorean_theorem].
+    [link |Wikipedia| https://en.wikipedia.org/wiki/Pythagorean_theorem].
+    For the idea of the proof, see 
+    [image |width:500, height:300, align:center| https://pythogoras.io/proof.png]
 
 
 ### Grammar
 
 The grammar of inline expressions is as follows.  
 
-    InlineExpression -> Text String | Inline "[" Name Args Body "]" | List InlineExpression
-    Args -> Empty | "[" NonemptyString ("," NonemptyString)* "]" 
-    Body -> String
-    Word -> String with no spaces
+    InlineExpression ->   Text String 
+                        | Inline "[" Name Args Body "]" 
+                        | List InlineExpression
+    Args -> Empty | "|" NonemptyString ("," NonemptyString)* "|" 
+    Body -> InlineExpression
+
 
 ### The idea
 
@@ -47,33 +51,29 @@ Args = [width:400, height:250] and Body = https://yada.io/xy.jpg.
 ### Examples
 
 ```
-> run (expression 1 2) "This is a test."
-  Ok (Text ("This is a test.") 
-       (Just { blockOffset = 2, content = "This is a test.", generation = 1, length = 15, offset = 0 }))
+> run (parser 1 2) "This is a test." |> Result.map strip
+  Ok (Text ("This is a test.") Nothing)
 
-> run (expression 1 2) "[strong  stuff]"
-  Ok (Inline "strong" [] ("stuff") 
-       (Just { blockOffset = 2, content = "[strong  stuff]", generation = 1, length = 15, offset = 0 }))
+> run (parser 1 2) "[strong  stuff]" |> Result.map strip
+  Ok (Inline "strong" [] (Text (" stuff") Nothing) Nothing)
 
-> run (expression 1 2) "[image [height:40,width:100] stuff]"
-  Ok (Inline "image" ["height:40","width:100"] ("stuff") ... 
-
-> run (expression 1 2) "[image [height:40, width:100] stuff]"
-  Ok (Inline "image" ["height:40","width:100"] ("lots of stuff") ... 
+> run (parser 1 2) "[image |height:40,width:100| stuff]" |> Result.map strip
+  Ok (Inline "image" ["height:40","width:100"] (Text "stuff" Nothing) Nothing)
 ```  
     
 ## Blocks
 
 Here is a piece of text that parses to a block:
 
-    |theorem 
+    |theorem| 
     There are infinitely many primes [math p \equiv 1 \modulo 4].
     |end
 
 The body of the block, the line "There are ..." is an inline expression.
-The body can also be a block, as in the case of the nested blocks below:
+The body can also be a block, as in the case of the nested blocks below.
+The inner block has argument.
 
-    |indent | theorem [title: Pythagoras]
+    |indent|theorem [Pythagoras]|
     There are infinitely many primes [math p \equiv 1 \modulo 4].
     |endall
 
@@ -83,16 +83,16 @@ The body can also be a block, as in the case of the nested blocks below:
 The grammar for blocks is as follows.  
 
     Block -> "|" Name Args "|end" 
-              | "|" Name InlineExpression "|end"
-              | "|" Name Args InlineExpression "|end"
+              | "|" Name Expression "|end"
+              | "|" Name Args Expression "|end"
     Name -> String
-    Args: as above
+    Args: as above, except bounded by brackets, not pipes
 
 ### Examples    
 
 Here is how one writes a list:
 
-    |numbered-list
+    |numbered-list|
 
     [item eggs]
 
@@ -104,19 +104,18 @@ Here is how one writes a list:
 
 A table is written like this:
 
-|table
-  |row [Hydrogen, H, 1, 1] |
-  |row [Helium, He, 2, 4]  |
-  [row |Lithium, Li, 3, 5] |
+|table|
+  |row| [Hydrogen, H, 1, 1] |end
+  |row| [Helium, He, 2, 4]  |end
+  |row |Lithium, Li, 3, 5]  |end
 |end
 
 Or like this:
 
-|table
-  |format [l, c, r, r]
-  |row [Hydrogen, H, 1, 1] |
-  |row [Helium, He, 2, 4]  |
-  |row |Lithium, Li, 3, 5] |
+|table [l, c, r, r]|
+  |row| [Hydrogen, H, 1, 1] |end
+  |row| [Helium, He, 2, 4]  |end
+  |row |Lithium, Li, 3, 5]  |end
 |end
 
 
@@ -126,7 +125,7 @@ For common constructs, there are also shorthand features
 a la markdown. The idea is to make the composition of text easier.  
 Thus, one can also say
 
-    |numbered-list
+    |numbered-list|
 
     - eggs
 
@@ -158,9 +157,9 @@ The type of the AST is as below.
 ```elm
 type Expression
     = Text String (Maybe SourceMap)
-    | Inline String (List String) String (Maybe SourceMap)
+    | Inline String (List String) Expression (Maybe SourceMap)
     | Block String (List String) (Maybe Expression) (Maybe SourceMap)
-    | List Expression
+    | List Expression (Maybe SourceMap)
 ```
 
 The SourceMap locates the parsed expression in the source text.
@@ -219,27 +218,3 @@ TextCursor is computed.  The role of the TextCursor will be explained
 later.
 
 ## Questions and Issues
-
-The AST should probably be as follows:
-
-
-```elm
-type Expression
-    = Text String (Maybe SourceMap)
-    | Inline String (List String) Expression (Maybe SourceMap)
-    | Block String (List String) (Maybe Expression) (Maybe SourceMap)
-    | List Expression
-```
-
-or even
-
-
-```elm
-type Expression
-    = Text String (Maybe SourceMap)
-    | Inline String (List Expression) Expression (Maybe SourceMap)
-    | Block String (List Expression) (Maybe Expression) (Maybe SourceMap)
-    | List Expression
-```
-
- as in the case of the AST for MiniLaTeX

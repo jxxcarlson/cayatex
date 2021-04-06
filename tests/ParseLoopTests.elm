@@ -19,7 +19,7 @@ suite =
                     Expect.equal
                         (pl "this [strong is] a test |theorem | many primes |end ho ho ho" |> List.map strip)
                         [ Text "this " Nothing
-                        , Inline "strong" [] (Text "is" (Just { blockOffset = 0, generation = 0, length = 10, offset = 0 })) Nothing
+                        , Inline "strong" [] (Text "is" Nothing) Nothing
                         , Text " a test " Nothing
                         , Block "theorem" [] (Just (Text " many primes " Nothing)) Nothing
                         , Text "ho ho ho" Nothing
@@ -28,7 +28,7 @@ suite =
                 \_ ->
                     Expect.equal
                         (pl "|theorem [strong c], [italic d], foo| many primes |end" |> getArgs)
-                        [ Just [ Inline "strong" [] (Text "c" (Just { blockOffset = 0, generation = 0, length = 18, offset = 0 })) Nothing, Inline "italic" [] (Text "d" (Just { blockOffset = 0, generation = 0, length = 30, offset = 0 })) Nothing, Text "foo" Nothing ] ]
+                        [ Just [ Inline "strong" [] (Text "c" Nothing) Nothing, Inline "italic" [] (Text "d" Nothing) Nothing, Text "foo" Nothing ] ]
             , test "Block body" <|
                 \_ ->
                     Expect.equal
