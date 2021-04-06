@@ -10,7 +10,7 @@ import Parser.Tool as Tool
 
 type Expression
     = Text String (Maybe SourceMap)
-    | Inline String (List String) String (Maybe SourceMap)
+    | Inline String (List String) Expression (Maybe SourceMap)
     | Block String (List Expression) (Maybe Expression) (Maybe SourceMap)
     | List Expression (Maybe SourceMap)
 
@@ -123,20 +123,20 @@ inlineName =
     Tool.first (string_ [ ' ' ]) oneSpace
 
 
-innerInlineArgs =
-    Tool.manySeparatedBy comma (string [ ',', ']' ])
-
-
 argsAndBody =
     Parser.oneOf [ argsAndBody_, bodyOnly ]
 
 
 inlineArgs =
-    Tool.between leftBracket innerInlineArgs rightBracket
+    Tool.between pipeSymbol innerInlineArgs pipeSymbol
+
+
+innerInlineArgs =
+    Tool.manySeparatedBy comma (string [ ',', '|' ])
 
 
 body =
-    string_ [ ']' ]
+    Parser.lazy (\_ -> inlineExpression [ ']' ] 0 0)
 
 
 argsAndBody_ =
@@ -200,6 +200,10 @@ comma =
 
 symbol_ c e =
     Parser.symbol (Parser.Token c (ExpectingToken <| c ++ ": " ++ e))
+
+
+pipeSymbol =
+    symbol_ "|" ""
 
 
 leftBracket =

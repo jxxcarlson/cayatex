@@ -3,8 +3,8 @@ module ExpressionTests exposing (..)
 import Expect
 import Parser.Advanced exposing (run)
 import Parser.Expression exposing (..)
+import Parser.Getters exposing (getArgs, getBody, strip)
 import Test exposing (describe, fuzz, test)
-import Parser.Getters exposing(strip, getArgs, getBody)
 
 
 suite =
@@ -18,8 +18,8 @@ suite =
             , test "Inline" <|
                 \_ ->
                     Expect.equal
-                        (run (parser 1 2) "[image [height:40,width:100] stuff]" |> Result.map strip)
-                        (Ok (Inline "image" [ "height:40", "width:100" ] "stuff" Nothing))
+                        (run (parser 1 2) "[image |height:40,width:100| stuff]" |> Result.map strip)
+                        (Ok (Inline "image" [ "height:40", "width:100" ] (Text "stuff" (Just { blockOffset = 0, generation = 0, length = 34, offset = 0 })) Nothing))
             , test "Block" <|
                 \_ ->
                     Expect.equal
@@ -29,6 +29,6 @@ suite =
                 \_ ->
                     Expect.equal
                         (run (parser 1 2) "|yada [strong stuff]| foo bar |end mmm" |> Result.map strip)
-                        (Ok (Block "yada" [Inline "strong" [] "stuff" Nothing] (Just (Text " foo bar " Nothing)) Nothing))
+                        (Ok (Block "yada" [ Inline "strong" [] (Text "stuff" (Just { blockOffset = 0, generation = 0, length = 19, offset = 0 })) Nothing ] (Just (Text " foo bar " Nothing)) Nothing))
             ]
         ]
