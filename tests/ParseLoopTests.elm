@@ -3,6 +3,7 @@ module ParseLoopTests exposing (..)
 import Expect
 import Parser.Driver exposing (parseLoop)
 import Parser.Expression exposing (..)
+import Parser.Getters exposing(strip, getArgs, getBody)
 import Test exposing (describe, fuzz, test)
 
 

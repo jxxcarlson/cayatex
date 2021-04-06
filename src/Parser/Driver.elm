@@ -3,11 +3,12 @@ module Parser.Driver exposing (..)
 import Parser.Loop as Loop
 import Parser.Expression as Expression exposing(Expression(..))
 import Parser.TextCursor exposing(TextCursor)
+import Parser.Getters as Getters
 
 packet : Loop.Packet Expression
 packet = {
        parser = Expression.parser
-     , getSource = Expression.getSource
+     , getSource = Getters.getSource
      , incrementOffset = Expression.incrementOffset
      , highlighter = Nothing
      , handleError = Nothing

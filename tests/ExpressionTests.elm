@@ -4,6 +4,7 @@ import Expect
 import Parser.Advanced exposing (run)
 import Parser.Expression exposing (..)
 import Test exposing (describe, fuzz, test)
+import Parser.Getters exposing(strip, getArgs, getBody)
 
 
 suite =
