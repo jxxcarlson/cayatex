@@ -6,18 +6,25 @@ import Parser.ToolSimple exposing (..)
 import Test exposing (describe, fuzz, test)
 
 
-int_ : Parser Int
-int_ =
+bracketedInt : Parser Int
+bracketedInt =
     first (between (symbol "[") int (symbol "]")) Parser.spaces
 
 
+bracketed : Parser b -> Parser b
+bracketed p =
+    between (symbol "[") p (symbol "]")
+
+
 suite =
-    describe "Parser.Driver"
-        [ describe "parseLoop"
-            [ test "Various" <|
+    describe "Parser.ToolSimple"
+        [ describe "functions"
+            [ test "many" <|
                 \_ ->
                     Expect.equal
-                        (run (many int_) "[1] [2]")
+                        (run (many bracketedInt) "[1] [2]")
                         (Ok [ 1, 2 ])
+            , test "bracketed" <|
+                \_ -> Expect.equal (run (bracketed (many bracketedInt)) "[[1] [2]]") (Ok [ 1, 2 ])
             ]
         ]
