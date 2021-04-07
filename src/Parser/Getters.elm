@@ -19,7 +19,7 @@ strip expr =
             Block name (List.map strip args) (Maybe.map strip body_) Nothing
 
         LX expr_ _ ->
-            LX expr_ Nothing
+            LX (List.map strip expr_) Nothing
 
 
 getSource : Expression -> Maybe SourceMap

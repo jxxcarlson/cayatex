@@ -1,4 +1,4 @@
-module ToolTests exposing (..)
+module ToolTests exposing (suite)
 
 import Expect
 import Parser exposing (Parser, int, run, symbol)

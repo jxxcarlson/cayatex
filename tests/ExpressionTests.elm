@@ -36,5 +36,10 @@ suite =
                     Expect.equal
                         (run (T.many (inlineExpression [ '[', ']' ] 0 0)) "foo bar [strong stuff] ho ho ho" |> Result.map (List.map strip))
                         (Ok [ Text "foo bar " Nothing, Inline "strong" [] (Text "stuff" Nothing) Nothing, Text " ho ho ho" Nothing ])
+            , test "fubar" <|
+                \_ ->
+                    Expect.equal
+                        (run fubar "[strong [italic stuff]] ho ho ho!" |> Result.map Parser.Getters.strip)
+                        (Ok (LX [ Inline "strong" [] (Inline "italic" [] (Text "stuff" Nothing) Nothing) Nothing, Text " ho ho ho!" Nothing ] Nothing))
             ]
         ]
