@@ -147,7 +147,8 @@ body =
     -- Parser.lazy (\_ -> Tool.many (inlineExpression [ '[', ']' ] 0 0))
     -- Parser.lazy (\_ -> Tool.many (inlineExpression [ '[', ']' ] 0 0)) |> Parser.map (\le -> LX le Nothing)
     -- Parser.lazy (\_ -> inlineExpression_ (\c -> c /= '[') [ ']' ] 0 0)
-    Parser.lazy (\_ -> Tool.many (inlineExpression_ (\c -> c /= '[') [ ']' ] 0 0)) |> Parser.map (\le -> LX le Nothing)
+    -- Parser.lazy (\_ -> Tool.many (inlineExpression_ (\c -> c /= '[') [ ']' ] 0 0)) |> Parser.map (\le -> LX le Nothing)
+    Parser.lazy (\_ -> inlineExpression [ ']' ] 0 0)
 
 
 argsAndBody_ =
