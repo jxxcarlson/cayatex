@@ -14,7 +14,6 @@ module Parser.ToolSimple exposing
     )
 
 import Parser exposing ((|.), (|=), Parser)
-import Parser.Error exposing (Context(..), Problem(..))
 
 
 {-| Apply a parser zero or more times and return a list of the results.

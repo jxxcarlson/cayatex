@@ -94,6 +94,12 @@ inlineExpression stopChars generation lineNumber =
     Parser.oneOf [ inline generation lineNumber, text_ generation lineNumber stopChars ]
 
 
+inlineExpression_ : (Char -> Bool) -> List Char -> Int -> Int -> Parser Expression
+inlineExpression_ prefixTest stopChars generation lineNumber =
+    -- TODO: think about the stop characters
+    Parser.oneOf [ inline generation lineNumber, textPS prefixTest stopChars generation lineNumber ]
+
+
 standardInlineStopChars =
     [ '|', '[' ]
 
@@ -135,7 +141,13 @@ innerInlineArgs =
     Tool.manySeparatedBy comma (string [ ',', '|' ])
 
 
+body : Parser.Parser Context Problem Expression
 body =
+    -- Parser.lazy (\_ -> inlineExpression [ ']' ] 0 0)
+    -- Parser.lazy (\_ -> Tool.many (inlineExpression [ '[', ']' ] 0 0))
+    -- Parser.lazy (\_ -> Tool.many (inlineExpression [ '[', ']' ] 0 0)) |> Parser.map (\le -> LX le Nothing)
+    -- Parser.lazy (\_ -> inlineExpression_ (\c -> c /= '[') [ ']' ] 0 0)
+    -- Parser.lazy (\_ -> Tool.many (inlineExpression_ (\c -> c /= '[') [ ']' ] 0 0)) |> Parser.map (\le -> LX le Nothing)
     Parser.lazy (\_ -> inlineExpression [ ']' ] 0 0)
 
 
@@ -158,6 +170,11 @@ bodyOnly =
 text_ : Int -> Int -> List Char -> Parser Expression
 text_ generation lineNumber stopChars =
     Parser.map (\( t, s ) -> Text t s) (rawText generation lineNumber (\c -> c /= '|') stopChars)
+
+
+textPS : (Char -> Bool) -> List Char -> Int -> Int -> Parser Expression
+textPS prefixTest stopChars generation lineNumber =
+    Parser.map (\( t, s ) -> Text t s) (rawText generation lineNumber prefixTest stopChars)
 
 
 rawText : Int -> Int -> (Char -> Bool) -> List Char -> Parser ( String, Maybe SourceMap )
