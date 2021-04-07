@@ -53,5 +53,9 @@ suite =
                 \_ ->
                     Expect.equal (run (inlineExpression [ '[', ']' ] 0 0) "[strong |font-size 36, la-di-dah: 79| [italic stuff]] ho ho ho!" |> Result.map Parser.Getters.strip)
                         (Ok (Inline "strong" [ "font-size 36", "la-di-dah: 79" ] (Inline "italic" [] (Text "stuff" Nothing) Nothing) Nothing))
+            , test "many inlineExpression" <|
+                \_ ->
+                    Expect.equal (run (T.many (inlineExpression [ '[', ']' ] 0 0)) "[strong |font-size 36, la-di-dah: 79| [italic stuff]] ho ho [large ho]!" |> Result.map (List.map Parser.Getters.strip))
+                        (Ok [ Inline "strong" [ "font-size 36", "la-di-dah: 79" ] (Inline "italic" [] (Text "stuff" Nothing) Nothing) Nothing, Text " ho ho " Nothing, Inline "large" [] (Text "ho" Nothing) Nothing, Text "!" Nothing ])
             ]
         ]
