@@ -1,4 +1,5 @@
-module Parser.Tool exposing (Step(..), between, first, loop, many, manyNonEmpty, manySeparatedBy, maybe, optional, optionalList, second, textPS)
+module Parser.Tool exposing (Step(..), between, first, loop, many
+    , manyNonEmpty, manySeparatedBy, maybe, optional, optionalList, second, textPS)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))

@@ -1,6 +1,7 @@
 module Parser.ToolSimple exposing
     ( Step(..)
     , between
+    , char
     , first
     , loop
     , many
@@ -10,7 +11,7 @@ module Parser.ToolSimple exposing
     , optional
     , optionalList
     , second
-    , textPS
+    , text
     )
 
 import Parser exposing ((|.), (|=), Parser)
@@ -116,12 +117,21 @@ characters are not in the list of stop characters. Example:
 recognizes lines that start with an alphabetic character.
 
 -}
-textPS : (Char -> Bool) -> List Char -> Parser { start : Int, finish : Int, content : String }
-textPS prefixTest stopChars =
+text : (Char -> Bool) -> (Char -> Bool) -> Parser { start : Int, finish : Int, content : String }
+text prefixTest suffixTest =
     Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
         |= Parser.getOffset
         |. Parser.chompIf (\c -> prefixTest c)
-        |. Parser.chompWhile (\c -> not (List.member c stopChars))
+        |. Parser.chompWhile (\c -> suffixTest c)
+        |= Parser.getOffset
+        |= Parser.getSource
+
+
+char : (Char -> Bool) -> Parser { start : Int, finish : Int, content : String }
+char prefixTest =
+    Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
+        |= Parser.getOffset
+        |. Parser.chompIf (\c -> prefixTest c)
         |= Parser.getOffset
         |= Parser.getSource
 
