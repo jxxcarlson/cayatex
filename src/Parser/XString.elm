@@ -6,6 +6,11 @@ module Parser.XString exposing (text)
     GoodChar -> any unicode character other than '|', ''[', ']'
     Text -> (GoodChar | EscapeChar)+
 
+    NOT YET IMPLEMENTED:
+
+    RawString -> as in Rust?
+    String -> (Text|RawString)+
+
 -}
 
 import Parser exposing ((|.), (|=), Parser)
