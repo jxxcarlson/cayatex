@@ -1,4 +1,4 @@
-module XStringTest exposing (..)
+module XStringTest exposing (suite)
 
 import Expect
 import Parser exposing (run)
@@ -8,14 +8,6 @@ import Test exposing (describe, fuzz, test)
 
 text =
     X.text |> Parser.map .content
-
-
-goodTextWithoutEscape =
-    X.goodTextWithoutEscape |> Parser.map .content
-
-
-escapedChar =
-    X.escapedChar |> Parser.map .content
 
 
 suite =
