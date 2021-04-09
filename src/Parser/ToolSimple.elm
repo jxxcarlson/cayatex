@@ -18,12 +18,26 @@ import Parser exposing ((|.), (|=), Parser)
 
 
 {-| Apply a parser zero or more times and return a list of the results.
+
+Example:
+
+    > bracketedInt = first (between (Parser.symbol "[") Parser.int (Parser.symbol "]")) Parser.spaces
+
+    > run (many bracketedInt) ""
+    Ok []
+
+    > run (many bracketedInt) "[1] [2] [3]"
+    Ok [1,2,3]rn
+
 -}
 many : Parser a -> Parser (List a)
 many p =
     Parser.loop [] (manyHelp p)
 
 
+{-| Return a list of things recognized by parser p
+that are separated by things recognized by parser sep.
+-}
 manySeparatedBy : Parser () -> Parser a -> Parser (List a)
 manySeparatedBy sep p =
     manyNonEmpty_ p (second sep p)
@@ -40,6 +54,16 @@ manyHelp p vs =
         ]
 
 
+{-| Return a nonempty list of things recognized by parser p. Fail
+if p does not recognize anything.
+
+    > run (manyNonEmpty bracketedInt) ""
+    Err [{ col = 1, problem = ExpectingSymbol "[", row = 1 }]
+
+    > run (manyNonEmpty bracketedInt) "[1]"
+    Ok [1]
+
+-}
 manyNonEmpty : Parser a -> Parser (List a)
 manyNonEmpty p =
     p
@@ -58,6 +82,13 @@ manyWithInitialList initialList p =
 
 
 {-| Running `optional p` means run p, but if it fails, succeed anyway
+
+    > run (optional (Parser.symbol "@")) "@"
+    Ok ()
+
+    > run (optional (Parser.symbol "@")) "!"
+    Ok ()
+
 -}
 optional : Parser () -> Parser ()
 optional p =
@@ -66,6 +97,13 @@ optional p =
 
 {-| Running `optional p` means run p. If the parser succeeds with value _result_,
 return _Just result_ . If the parser failes, return Nothing.
+
+    > run (maybe Parser.int) "3"
+    Ok (Just 3)
+
+    > run (maybe Parser.int) "three"
+    Ok Nothing
+
 -}
 maybe : Parser a -> Parser (Maybe a)
 maybe p =
@@ -74,6 +112,13 @@ maybe p =
 
 {-| Running `optionalList p` means run p, but if it fails, succeed anyway,
 returning the empty list
+
+    > run (optionalList (many bracketedInt)) "three"
+    > Ok []
+
+    > run (optionalList (many bracketedInt)) "[3] [4]"
+    Ok [3,4]
+
 -}
 optionalList : Parser (List a) -> Parser (List a)
 optionalList p =
@@ -107,22 +152,22 @@ between p q r =
     first (second p q) r
 
 
-{-| textPS = "text prefixText stopCharacters": Get the longest string
+{-| text prefixText suffixText": Get the longest string
 whose first character satisfies the prefixTest and whose remaining
-characters are not in the list of stop characters. Example:
+characters satisfy the bodyTest. Example:
 
     line =
-        textPS (\c -> Char.isAlpha) [ '\n' ]
+        text (\c -> Char.isAlpha) (\c -> c /= '\n')
 
 recognizes lines that start with an alphabetic character.
 
 -}
 text : (Char -> Bool) -> (Char -> Bool) -> Parser { start : Int, finish : Int, content : String }
-text prefixTest suffixTest =
+text prefixTest bodyTest =
     Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
         |= Parser.getOffset
         |. Parser.chompIf (\c -> prefixTest c)
-        |. Parser.chompWhile (\c -> suffixTest c)
+        |. Parser.chompWhile (\c -> bodyTest c)
         |= Parser.getOffset
         |= Parser.getSource
 
