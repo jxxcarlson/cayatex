@@ -1,4 +1,18 @@
-module Parser.Tool exposing (Step(..), between, first, loop, many, manyNonEmpty, manySeparatedBy, maybe, optional, optionalList, second, textPS)
+module Parser.Tool exposing
+    ( Step(..)
+    , between
+    , char
+    , first
+    , loop
+    , many
+    , manyNonEmpty
+    , manySeparatedBy
+    , maybe
+    , optional
+    , optionalList
+    , second
+    , text
+    )
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
@@ -114,6 +128,35 @@ textPS prefixTest stopChars =
         |= Parser.getOffset
         |. Parser.chompIf (\c -> prefixTest c) UnHandledError
         |. Parser.chompWhile (\c -> not (List.member c stopChars))
+        |= Parser.getOffset
+        |= Parser.getSource
+
+
+{-| textPS = "text prefixText stopCharacters": Get the longest string
+whose first character satisfies the prefixTest and whose remaining
+characters are not in the list of stop characters. Example:
+
+    line =
+        textPS (\c -> Char.isAlpha) [ '\n' ]
+
+recognizes lines that start with an alphabetic character.
+
+-}
+text : (Char -> Bool) -> (Char -> Bool) -> Parser { start : Int, finish : Int, content : String }
+text prefixTest suffixTest =
+    Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
+        |= Parser.getOffset
+        |. Parser.chompIf (\c -> prefixTest c) UnHandledError
+        |. Parser.chompWhile (\c -> suffixTest c)
+        |= Parser.getOffset
+        |= Parser.getSource
+
+
+char : (Char -> Bool) -> Parser { start : Int, finish : Int, content : String }
+char prefixTest =
+    Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
+        |= Parser.getOffset
+        |. Parser.chompIf (\c -> prefixTest c) UnHandledError
         |= Parser.getOffset
         |= Parser.getSource
 

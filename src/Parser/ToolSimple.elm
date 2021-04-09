@@ -1,6 +1,7 @@
 module Parser.ToolSimple exposing
     ( Step(..)
     , between
+    , char
     , first
     , loop
     , many
@@ -10,19 +11,67 @@ module Parser.ToolSimple exposing
     , optional
     , optionalList
     , second
-    , textPS
+    , text
     )
+
+{-| A small set of utilities for elm/parser.
+-}
 
 import Parser exposing ((|.), (|=), Parser)
 
 
+{-| running `first p q` means run p, then run q
+and return the result of running p.
+
+    > comma = first (symbol ",") Parser.spaces
+
+    > run comma ", etc."
+    Ok ()
+
+    > run comma "etc."
+    Err [{ col = 1, problem = ExpectingSymbol ",", row = 1 }]
+
+-}
+first : Parser a -> Parser b -> Parser a
+first p q =
+    p |> Parser.andThen (\x -> q |> Parser.map (\_ -> x))
+
+
+{-| running `second p q` means run p, then run q
+and return the result of running q.
+-}
+second : Parser a -> Parser b -> Parser b
+second p q =
+    p |> Parser.andThen (\_ -> q)
+
+
 {-| Apply a parser zero or more times and return a list of the results.
+
+Example:
+
+    > bracketedInt = first (between (Parser.symbol "[") Parser.int (Parser.symbol "]")) Parser.spaces
+
+    > run (many bracketedInt) ""
+    Ok []
+
+    > run (many bracketedInt) "[1] [2] [3]"
+    Ok [1,2,3]rn
+
 -}
 many : Parser a -> Parser (List a)
 many p =
     Parser.loop [] (manyHelp p)
 
 
+{-| Return a list of things recognized by parser p
+that are separated by things recognized by parser sep.
+
+    > comma = first (symbol ",") Parser.spaces
+
+    > run (manySeparatedBy comma Parser.int) "1, 2, 3"
+    Ok [1,2,3]
+
+-}
 manySeparatedBy : Parser () -> Parser a -> Parser (List a)
 manySeparatedBy sep p =
     manyNonEmpty_ p (second sep p)
@@ -39,6 +88,16 @@ manyHelp p vs =
         ]
 
 
+{-| Return a nonempty list of things recognized by parser p. Fail
+if p does not recognize anything.
+
+    > run (manyNonEmpty bracketedInt) ""
+    Err [{ col = 1, problem = ExpectingSymbol "[", row = 1 }]
+
+    > run (manyNonEmpty bracketedInt) "[1]"
+    Ok [1]
+
+-}
 manyNonEmpty : Parser a -> Parser (List a)
 manyNonEmpty p =
     p
@@ -57,6 +116,13 @@ manyWithInitialList initialList p =
 
 
 {-| Running `optional p` means run p, but if it fails, succeed anyway
+
+    > run (optional (Parser.symbol "@")) "@"
+    Ok ()
+
+    > run (optional (Parser.symbol "@")) "!"
+    Ok ()
+
 -}
 optional : Parser () -> Parser ()
 optional p =
@@ -65,6 +131,13 @@ optional p =
 
 {-| Running `optional p` means run p. If the parser succeeds with value _result_,
 return _Just result_ . If the parser failes, return Nothing.
+
+    > run (maybe Parser.int) "3"
+    Ok (Just 3)
+
+    > run (maybe Parser.int) "three"
+    Ok Nothing
+
 -}
 maybe : Parser a -> Parser (Maybe a)
 maybe p =
@@ -73,26 +146,17 @@ maybe p =
 
 {-| Running `optionalList p` means run p, but if it fails, succeed anyway,
 returning the empty list
+
+    > run (optionalList (many bracketedInt)) "three"
+    > Ok []
+
+    > run (optionalList (many bracketedInt)) "[3] [4]"
+    Ok [3,4]
+
 -}
 optionalList : Parser (List a) -> Parser (List a)
 optionalList p =
     Parser.oneOf [ p, Parser.succeed () |> Parser.map (\_ -> []) ]
-
-
-{-| running `first p q` means run p, then run q
-and return the result of running p.
--}
-first : Parser a -> Parser b -> Parser a
-first p q =
-    p |> Parser.andThen (\x -> q |> Parser.map (\_ -> x))
-
-
-{-| running `second p q` means run p, then run q
-and return the result of running q.
--}
-second : Parser a -> Parser b -> Parser b
-second p q =
-    p |> Parser.andThen (\_ -> q)
 
 
 {-| Running between p q r runs p, then q, then r, returning the result of p:
@@ -106,22 +170,40 @@ between p q r =
     first (second p q) r
 
 
-{-| textPS = "text prefixText stopCharacters": Get the longest string
+{-| text prefixText suffixText": Get the longest string
 whose first character satisfies the prefixTest and whose remaining
-characters are not in the list of stop characters. Example:
+characters satisfy the predicate. Example:
 
     line =
-        textPS (\c -> Char.isAlpha) [ '\n' ]
+        text (\c -> Char.isAlpha) (\c -> c /= '\n')
 
 recognizes lines that start with an alphabetic character.
 
 -}
-textPS : (Char -> Bool) -> List Char -> Parser { start : Int, finish : Int, content : String }
-textPS prefixTest stopChars =
+text : (Char -> Bool) -> (Char -> Bool) -> Parser { start : Int, finish : Int, content : String }
+text prefixTest predicate =
     Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
         |= Parser.getOffset
         |. Parser.chompIf (\c -> prefixTest c)
-        |. Parser.chompWhile (\c -> not (List.member c stopChars))
+        |. Parser.chompWhile (\c -> predicate c)
+        |= Parser.getOffset
+        |= Parser.getSource
+
+
+{-| Parse a single character satisfying the predicate or fail.
+
+    > run (char (\c -> c == '!')) "!yikes"
+    Ok { content = "!", finish = 1, start = 0 }
+
+    > run (char (\c -> c == '!')) "yikes"
+    Err [{ col = 1, problem = UnexpectedChar, row = 1 }]
+
+-}
+char : (Char -> Bool) -> Parser { start : Int, finish : Int, content : String }
+char predicate =
+    Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
+        |= Parser.getOffset
+        |. Parser.chompIf (\c -> predicate c)
         |= Parser.getOffset
         |= Parser.getSource
 
