@@ -28,6 +28,11 @@ suite =
                     Expect.equal
                         (run text "\\|")
                         (Ok "\\|")
+            , test "text_" <|
+                \_ ->
+                    Expect.equal
+                        (run X.text_ "this is a test \\| and so is this!| ho ho ho!!")
+                        (Ok [ { content = "this is a test ", finish = 15, start = 0 }, { content = "\\|", finish = 17, start = 15 }, { content = " and so is this!", finish = 33, start = 17 } ])
             , test "text" <|
                 \_ ->
                     Expect.equal

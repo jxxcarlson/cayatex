@@ -1,4 +1,4 @@
-module Parser.XString exposing (text)
+module Parser.XString exposing (reduce, text, text_)
 
 {-| Grammar:
 
@@ -44,25 +44,29 @@ reduce list =
 
 text_ : Parser (List StringData)
 text_ =
-    T.many (Parser.oneOf [ goodTextWithoutEscape, escapedChar ])
+    T.many (Parser.oneOf [ textWithoutEscape, escapedChar ])
 
 
 
--- HELPERS and SUBPARSERS
-
-
-isNonLanguageChar : Char -> Bool
-isNonLanguageChar c =
-    c /= '|' && c /= '[' && c /= ']' && c /= '\\'
+-- PREDICATES
 
 
 isLanguageChar : Char -> Bool
 isLanguageChar c =
-    c /= '|' || c /= '[' || c /= ']' || c /= '\\'
+    c == '|' || c == '[' || c == ']' || c == '\\'
 
 
-goodTextWithoutEscape : Parser StringData
-goodTextWithoutEscape =
+isNonLanguageChar : Char -> Bool
+isNonLanguageChar c =
+    not (isLanguageChar c)
+
+
+
+-- SUBPARSERS
+
+
+textWithoutEscape : Parser StringData
+textWithoutEscape =
     T.text isNonLanguageChar isNonLanguageChar
 
 
@@ -74,4 +78,4 @@ languageChar =
 escapedChar : Parser StringData
 escapedChar =
     T.second (Parser.symbol "\\") languageChar
-        |> Parser.map (\result -> { content = "\\" ++ result.content, start = result.start, finish = result.finish + 1 })
+        |> Parser.map (\result -> { content = "\\" ++ result.content, start = result.start - 1, finish = result.finish })
