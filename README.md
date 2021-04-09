@@ -25,10 +25,13 @@ Here is a piece of text that parses to an inline expression:
 
 The grammar of inline expressions is as follows.
 
-	InlineExpression ->   Text String
-						| Inline "[" Name Args Body "]"
-						| List InlineExpression
-	Args -> Empty | "|" NonemptyString ("," NonemptyString)* "|"
+	InlineExpression ->   
+         Text String
+         | Inline "[" Name Args Body "]"
+         | List InlineExpression
+	Args -> 
+         Empty 
+         | "|" NonemptyString ("," NonemptyString)* "|"
 	Body -> InlineExpression
 
 
@@ -43,9 +46,9 @@ above example, _bold_ is a function whose argument is the string "really, really
 The arguments to a function take form Args Body.  In [bold icky stuff],
 Args is empty and Body = "icky stuff".  In
 
-	[image width:400, height:250| https://yada.io/xy.jpg],
+	[image |width:400, height:250| https://yada.io/xy.jpg],
 
-Args = [width:400, height:250] and Body = https://yada.io/xy.jpg.
+Args = |width:400, height:250| and Body = https://yada.io/xy.jpg.
 
 
 ### Examples
@@ -122,7 +125,7 @@ Or like this:
 ## Shorthand
 
 For common constructs, there are also shorthand features
-a la markdown. The idea is to make the composition of text easier.
+a la markdown. The idea is to make the composition of text more ergonomic.
 Thus, one can also say
 
 	|numbered-list|
@@ -136,10 +139,19 @@ Thus, one can also say
 	|end
 
 For italic text, one can say _italic text_, and for bold text, one can say *bold text*.
-For sections, etc., one can say
+For sections, etc., one says
 
 |section Introduction
 |subsection Examples
+
+NOTE: What about saying
+
+|section [1] Introduction
+|section [2] Examples
+
+where the first argument gives the _level_ of the section.
+Pro: this makes it easier to shift levels programmatically.
+Con: noiser syntax.
 
 In shorthand, this becomes
 

@@ -52,13 +52,13 @@ text_ =
 
 
 isNonLanguageChar : Char -> Bool
-isNonLanguageChar =
-    \c -> c /= '|' && c /= '[' && c /= ']' && c /= '\\'
+isNonLanguageChar c =
+    c /= '|' && c /= '[' && c /= ']' && c /= '\\'
 
 
 isLanguageChar : Char -> Bool
-isLanguageChar =
-    \c -> c /= '|' || c /= '[' || c /= ']' || c /= '\\'
+isLanguageChar c =
+    c /= '|' || c /= '[' || c /= ']' || c /= '\\'
 
 
 goodTextWithoutEscape : Parser StringData
