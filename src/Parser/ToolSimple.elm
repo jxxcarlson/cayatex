@@ -14,7 +14,35 @@ module Parser.ToolSimple exposing
     , text
     )
 
+{-| A small set of utilities for elm/parser.
+-}
+
 import Parser exposing ((|.), (|=), Parser)
+
+
+{-| running `first p q` means run p, then run q
+and return the result of running p.
+
+    > comma = first (symbol ",") Parser.spaces
+
+    > run comma ", etc."
+    Ok ()
+
+    > run comma "etc."
+    Err [{ col = 1, problem = ExpectingSymbol ",", row = 1 }]
+
+-}
+first : Parser a -> Parser b -> Parser a
+first p q =
+    p |> Parser.andThen (\x -> q |> Parser.map (\_ -> x))
+
+
+{-| running `second p q` means run p, then run q
+and return the result of running q.
+-}
+second : Parser a -> Parser b -> Parser b
+second p q =
+    p |> Parser.andThen (\_ -> q)
 
 
 {-| Apply a parser zero or more times and return a list of the results.
@@ -37,6 +65,12 @@ many p =
 
 {-| Return a list of things recognized by parser p
 that are separated by things recognized by parser sep.
+
+    > comma = first (symbol ",") Parser.spaces
+
+    > run (manySeparatedBy comma Parser.int) "1, 2, 3"
+    Ok [1,2,3]
+
 -}
 manySeparatedBy : Parser () -> Parser a -> Parser (List a)
 manySeparatedBy sep p =
@@ -125,22 +159,6 @@ optionalList p =
     Parser.oneOf [ p, Parser.succeed () |> Parser.map (\_ -> []) ]
 
 
-{-| running `first p q` means run p, then run q
-and return the result of running p.
--}
-first : Parser a -> Parser b -> Parser a
-first p q =
-    p |> Parser.andThen (\x -> q |> Parser.map (\_ -> x))
-
-
-{-| running `second p q` means run p, then run q
-and return the result of running q.
--}
-second : Parser a -> Parser b -> Parser b
-second p q =
-    p |> Parser.andThen (\_ -> q)
-
-
 {-| Running between p q r runs p, then q, then r, returning the result of p:
 
 > run (between (Parser.symbol "[") Parser.int (Parser.symbol "]")) "[12]"
@@ -154,7 +172,7 @@ between p q r =
 
 {-| text prefixText suffixText": Get the longest string
 whose first character satisfies the prefixTest and whose remaining
-characters satisfy the bodyTest. Example:
+characters satisfy the predicate. Example:
 
     line =
         text (\c -> Char.isAlpha) (\c -> c /= '\n')
@@ -163,20 +181,29 @@ recognizes lines that start with an alphabetic character.
 
 -}
 text : (Char -> Bool) -> (Char -> Bool) -> Parser { start : Int, finish : Int, content : String }
-text prefixTest bodyTest =
+text prefixTest predicate =
     Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
         |= Parser.getOffset
         |. Parser.chompIf (\c -> prefixTest c)
-        |. Parser.chompWhile (\c -> bodyTest c)
+        |. Parser.chompWhile (\c -> predicate c)
         |= Parser.getOffset
         |= Parser.getSource
 
 
+{-| Parse a single character satisfying the predicate or fail.
+
+    > run (char (\c -> c == '!')) "!yikes"
+    Ok { content = "!", finish = 1, start = 0 }
+
+    > run (char (\c -> c == '!')) "yikes"
+    Err [{ col = 1, problem = UnexpectedChar, row = 1 }]
+
+-}
 char : (Char -> Bool) -> Parser { start : Int, finish : Int, content : String }
-char prefixTest =
+char predicate =
     Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
         |= Parser.getOffset
-        |. Parser.chompIf (\c -> prefixTest c)
+        |. Parser.chompIf (\c -> predicate c)
         |= Parser.getOffset
         |= Parser.getSource
 

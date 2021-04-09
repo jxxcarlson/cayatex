@@ -16,6 +16,11 @@ bracketed p =
     between (symbol "[") p (symbol "]")
 
 
+comma : Parser ()
+comma =
+    first (symbol ",") Parser.spaces
+
+
 {-| The parser line1 looks like it will (1) parse a line
 (2) parse many lines using (many line1). However, line1
 does not consume the trailing '\\n', and so (many line1)
@@ -56,5 +61,10 @@ suite =
                         (Ok [ 1, 2 ])
             , test "bracketed" <|
                 \_ -> Expect.equal (run (bracketed (many bracketedInt)) "[[1] [2]]") (Ok [ 1, 2 ])
+            , test "separatedBy" <|
+                \_ ->
+                    Expect.equal
+                        (run (manySeparatedBy comma Parser.int) "1, 2, 3")
+                        (Ok [ 1, 2, 3 ])
             ]
         ]
