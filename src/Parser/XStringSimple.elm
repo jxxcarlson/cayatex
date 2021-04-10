@@ -1,4 +1,4 @@
-module Parser.XString exposing (..)
+module Parser.XStringSimple exposing (reduce, text, text_)
 
 {-| Grammar:
 
@@ -13,15 +13,8 @@ module Parser.XString exposing (..)
 
 -}
 
-{- (text, text_) -}
-
-import Parser.Advanced exposing ((|.), (|=))
-import Parser.Error exposing (Context(..), Problem(..))
-import Parser.Tool as T
-
-
-type alias Parser a =
-    Parser.Advanced.Parser Context Problem a
+import Parser exposing ((|.), (|=), Parser)
+import Parser.ToolSimple as T
 
 
 type alias StringData =
@@ -31,7 +24,7 @@ type alias StringData =
 text : Parser StringData
 text =
     text_
-        |> Parser.Advanced.map reduce
+        |> Parser.map reduce
 
 
 reduce : List StringData -> StringData
@@ -51,7 +44,7 @@ reduce list =
 
 text_ : Parser (List StringData)
 text_ =
-    T.manyNonEmpty (Parser.Advanced.oneOf [ textWithoutEscape, escapedChar ])
+    T.many (Parser.oneOf [ textWithoutEscape, escapedChar ])
 
 
 
@@ -84,5 +77,5 @@ languageChar =
 
 escapedChar : Parser StringData
 escapedChar =
-    T.second (Parser.Advanced.symbol (Parser.Advanced.Token "\\" ExpectingEscape)) languageChar
-        |> Parser.Advanced.map (\result -> { content = "\\" ++ result.content, start = result.start - 1, finish = result.finish })
+    T.second (Parser.symbol "\\") languageChar
+        |> Parser.map (\result -> { content = "\\" ++ result.content, start = result.start - 1, finish = result.finish })

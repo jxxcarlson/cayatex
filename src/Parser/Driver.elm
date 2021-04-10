@@ -17,6 +17,21 @@ packet =
     }
 
 
+iePacket : Loop.Packet Expression
+iePacket =
+    { parser = Expression.ie
+    , getSource = Getters.getSource
+    , incrementOffset = incrementOffset
+    , highlighter = Nothing
+    , handleError = Nothing
+    }
+
+
+ieParseLoop : Int -> Int -> String -> TextCursor Expression
+ieParseLoop generation initialLineNumber str =
+    Loop.parseLoop iePacket generation initialLineNumber str
+
+
 parseLoop : Int -> Int -> String -> TextCursor Expression
 parseLoop generation initialLineNumber str =
     Loop.parseLoop packet generation initialLineNumber str

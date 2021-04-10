@@ -5,7 +5,8 @@ module Parser.Expression exposing (..)
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
 import Parser.SourceMap exposing (SourceMap)
-import Parser.Tool as Tool
+import Parser.Tool as T
+import Parser.XString as XString
 
 
 type Expression
@@ -48,7 +49,7 @@ blockPath1 generation lineNumber =
     Parser.succeed (\name body_ -> ( name, [], body_ ))
         |= (string_ [ '|' ] |> Parser.map String.trim)
         |. symbol_ "|" "blockPath1"
-        |= Tool.first (Tool.maybe (inlineExpression [ '|' ] generation lineNumber)) endOfBlock
+        |= T.first (T.maybe (inlineExpression [ '|' ] generation lineNumber)) endOfBlock
         |. Parser.spaces
 
 
@@ -58,7 +59,7 @@ blockPath2 generation lineNumber =
     Parser.succeed (\name body_ -> ( name, [], body_ ))
         |= (string_ [ ' ' ] |> Parser.map String.trim)
         |. symbol_ " |" "blockPath2"
-        |= Tool.first (Tool.maybe (inlineExpression [ '|' ] generation lineNumber)) endOfBlock
+        |= T.first (T.maybe (inlineExpression [ '|' ] generation lineNumber)) endOfBlock
         |. Parser.spaces
 
 
@@ -68,9 +69,9 @@ blockPath3 generation lineNumber =
     Parser.succeed (\name args_ body_ -> ( name, args_, body_ ))
         |= (string_ [ ' ' ] |> Parser.map String.trim)
         |. symbol_ " " "blockPath3, 1"
-        |= Tool.optionalList blockArgs
+        |= T.optionalList blockArgs
         |. symbol_ "|" "blockPath3, 2"
-        |= Tool.first (Tool.maybe (inlineExpression [ '|' ] generation lineNumber)) endOfBlock
+        |= T.first (T.maybe (inlineExpression [ '|' ] generation lineNumber)) endOfBlock
         |. Parser.spaces
 
 
@@ -80,7 +81,7 @@ endOfBlock =
 
 blockArgs =
     Parser.succeed identity
-        |= Tool.manySeparatedBy comma (inlineExpression [ '|', '[', ',' ] 0 0)
+        |= T.manySeparatedBy comma (inlineExpression [ '|', '[', ',' ] 0 0)
         |. Parser.spaces
 
 
@@ -91,7 +92,13 @@ blockArgs =
 inlineExpression : List Char -> Int -> Int -> Parser Expression
 inlineExpression stopChars generation lineNumber =
     -- TODO: think about the stop characters
-    Parser.oneOf [ inline generation lineNumber, text_ generation lineNumber stopChars ]
+    Parser.oneOf [ inline generation lineNumber, text generation lineNumber stopChars ]
+
+
+ie : Int -> Int -> Parser Expression
+ie generation lineNumber =
+    -- TODO: think about the stop characters
+    Parser.oneOf [ text2 generation lineNumber, inline generation lineNumber ]
 
 
 inlineExpression_ : (Char -> Bool) -> List Char -> Int -> Int -> Parser Expression
@@ -126,7 +133,7 @@ inline generation blockOffset =
 
 
 inlineName =
-    Tool.first (string_ [ ' ' ]) oneSpace
+    T.first (string_ [ ' ' ]) oneSpace
 
 
 argsAndBody =
@@ -134,16 +141,16 @@ argsAndBody =
 
 
 inlineArgs =
-    Tool.between pipeSymbol innerInlineArgs pipeSymbol
+    T.between pipeSymbol innerInlineArgs pipeSymbol
 
 
 innerInlineArgs =
-    Tool.manySeparatedBy comma (string [ ',', '|' ])
+    T.manySeparatedBy comma (string [ ',', '|' ])
 
 
 body : Parser.Parser Context Problem Expression
 body =
-    -- (1)Parser.lazy (\_ -> inlineExpression [ ']' ] 0 0)
+    -- (1) Parser.lazy (\_ -> inlineExpression [ ']' ] 0 0)
     -- (2) Parser.lazy (\_ -> Tool.many (inlineExpression [ '[', ']' ] 0 0) |> Parser.map (\list -> LX list Nothing))
     Parser.lazy (\_ -> inlineExpression [ ']' ] 0 0)
 
@@ -161,7 +168,7 @@ bodyOnly =
 
 
 fubar =
-    Parser.lazy (\_ -> Tool.many (Parser.lazy (\_ -> inlineExpression [ '[', ']' ] 0 0)))
+    Parser.lazy (\_ -> T.many (Parser.lazy (\_ -> inlineExpression [ '[', ']' ] 0 0)))
         |> Parser.map (\le -> LX le Nothing)
 
 
@@ -169,9 +176,34 @@ fubar =
 -- TEXT AND STRINGS
 
 
-text_ : Int -> Int -> List Char -> Parser Expression
-text_ generation lineNumber stopChars =
+text : Int -> Int -> List Char -> Parser Expression
+text generation lineNumber stopChars =
     Parser.map (\( t, s ) -> Text t s) (rawText generation lineNumber (\c -> c /= '|') stopChars)
+
+
+
+-- text2 : Int -> Int -> Parser Expression
+-- text2 : Int -> Int -> Parser.Parser Never Problem Expression
+
+
+text2 : Int -> Int -> Parser Expression
+text2 generation lineNumber =
+    Parser.inContext TextExpression <|
+        (XString.text
+            |> Parser.map (\data -> Text data.content (Just { blockOffset = lineNumber, offset = data.start, length = data.finish - data.start, generation = generation }))
+        )
+
+
+type alias StringData =
+    { content : String, start : Int, finish : Int }
+
+
+type alias SourceMap =
+    { blockOffset : Int
+    , offset : Int
+    , length : Int
+    , generation : Int
+    }
 
 
 textPS : (Char -> Bool) -> List Char -> Int -> Int -> Parser Expression
@@ -202,7 +234,7 @@ string_ stopChars =
 
 
 string stopChars =
-    Tool.first (string_ stopChars) Parser.spaces
+    T.first (string_ stopChars) Parser.spaces
 
 
 
@@ -214,7 +246,7 @@ comma_ =
 
 
 comma =
-    Tool.first comma_ Parser.spaces
+    T.first comma_ Parser.spaces
 
 
 symbol_ c e =

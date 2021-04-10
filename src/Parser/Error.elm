@@ -3,7 +3,8 @@ module Parser.Error exposing (Context(..), Problem(..))
 
 type Problem
     = ExpectingToken String
-    | ExpectingLeadingDoubleDollarSign
+    | ExpectingEscape
+    | ExpectingLanguageChar
     | EndOfInput
     | UnHandledError
 
@@ -11,3 +12,4 @@ type Problem
 type Context
     = InlineFunction
     | DisplayMathContext
+    | TextExpression

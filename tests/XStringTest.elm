@@ -2,7 +2,7 @@ module XStringTest exposing (suite)
 
 import Expect
 import Parser exposing (run)
-import Parser.XString as X
+import Parser.XStringSimple as X
 import Test exposing (describe, fuzz, test)
 
 
