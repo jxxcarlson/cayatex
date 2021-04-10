@@ -12,8 +12,7 @@ pl str =
 
 
 numberedList =
-    """
-|numbered-list|
+    """|numbered-list|
 
 [item Raspberry jam]
 
@@ -24,8 +23,7 @@ numberedList =
 
 
 table =
-    """
-|table|
+    """|table|
   |row| [Hydrogen, H, 1, 1] |end
   |row| [Helium, He, 2, 4]  |end
   |row |Lithium, Li, 3, 5]  |end
@@ -40,12 +38,7 @@ suite =
                 \_ ->
                     Expect.equal
                         (pl "this [strong is] a test |theorem | many primes |end ho ho ho" |> List.map strip)
-                        [ Text "this " Nothing
-                        , Inline "strong" [] (LX [ Text "is" Nothing ] Nothing) Nothing
-                        , Text " a test " Nothing
-                        , Block "theorem" [] (Just (Text " many primes " Nothing)) Nothing
-                        , Text "ho ho ho" Nothing
-                        ]
+                        [ Text "this " Nothing, Inline "strong" [] (LX [ Text "is" Nothing ] Nothing) Nothing, Text " a test " Nothing, Block "theorem" [] (Just (LX [ Text " many primes " Nothing ] Nothing)) Nothing, Text "ho ho ho" Nothing ]
             , test "Block arguments" <|
                 \_ ->
                     Expect.equal
@@ -55,18 +48,30 @@ suite =
                 \_ ->
                     Expect.equal
                         (pl "|theorem [strong c], [italic d], foo| many primes |end" |> getBody)
-                        [ Just (Text " many primes " Nothing) ]
-            , Test.skip <|
-                test "Complex block body" <|
-                    \_ ->
-                        Expect.equal
-                            (pl "|theorem [strong c], [italic d], foo| [strong many] primes |end" |> getBody)
-                            [ Just (Text " [strong many] primes " Nothing) ]
-            , Test.skip <|
-                test "List" <|
-                    \_ ->
-                        Expect.equal
-                            (pl "|theorem [strong c], [italic d], foo| many primes |end" |> getBody)
-                            [ Just (Text " many primes " Nothing) ]
+                        [ Just (LX [ Text " many primes " Nothing ] Nothing) ]
+            , test "Complex block body" <|
+                \_ ->
+                    Expect.equal
+                        (pl "|theorem [strong c], [italic d], foo| [strong many] primes |end" |> getBody)
+                        [ Just (LX [ Text " " Nothing, Inline "strong" [] (LX [ Text "many" Nothing ] Nothing) Nothing, Text " primes " Nothing ] Nothing) ]
+            , test "List" <|
+                \_ ->
+                    Expect.equal
+                        (pl numberedList |> List.map strip)
+                        [ Block "numbered-list"
+                            []
+                            (Just
+                                (LX
+                                    [ Text "\n\n" Nothing
+                                    , Inline "item" [] (LX [ Text "Raspberry jam" Nothing ] Nothing) Nothing
+                                    , Text "\n\n" Nothing
+                                    , Inline "item" [] (LX [ Text "Sourdough bread" Nothing ] Nothing) Nothing
+                                    , Text "\n\n" Nothing
+                                    ]
+                                    Nothing
+                                )
+                            )
+                            Nothing
+                        ]
             ]
         ]

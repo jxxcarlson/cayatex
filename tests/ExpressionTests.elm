@@ -48,11 +48,11 @@ suite =
                 \_ ->
                     Expect.equal
                         (run (parser 1 2) "|yada| foo bar |end mmm" |> Result.map strip)
-                        (Ok (Block "yada" [] (Just (Text " foo bar " Nothing)) Nothing))
+                        (Ok (Block "yada" [] (Just (LX [ Text " foo bar " Nothing ] Nothing)) Nothing))
             , test "Block with argument" <|
                 \_ ->
                     Expect.equal
                         (run (parser 1 2) "|yada [strong stuff]| foo bar |end mmm" |> Result.map strip)
-                        (Ok (Block "yada" [ Inline "strong" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing ] (Just (Text " foo bar " Nothing)) Nothing))
+                        (Ok (Block "yada" [ Inline "strong" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing ] (Just (LX [ Text " foo bar " Nothing ] Nothing)) Nothing))
             ]
         ]
