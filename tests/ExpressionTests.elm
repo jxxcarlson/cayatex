@@ -10,7 +10,7 @@ import Test exposing (describe, fuzz, test)
 
 suite =
     describe "Parser.Expression"
-        [ Test.only <|describe "inline"
+        [ describe "inline"
 
             [ test "Text" <|
                 \_ ->
@@ -42,10 +42,9 @@ suite =
             , test "many inlineExpression" <|
                 \_ ->
                     Expect.equal (run (T.many (inlineExpression 0 0)) "[strong |font-size 36, la-di-dah: 79| [italic stuff]] ho ho [large ho]!" |> Result.map (List.map Parser.Getters.strip))
-                        (Ok [Inline "strong" ["font-size 36","la-di-dah: 79"] (LX [Inline "italic" [] (LX [Text "stuff" Nothing] Nothing) Nothing] Nothing) Nothing,Text (" ho ho ") Nothing,Inline "large" [] (LX [Text "ho" Nothing] Nothing) Nothing,Text "!" Nothing]
-)
+                        (Ok [Inline "strong" ["font-size 36","la-di-dah: 79"] (LX [Inline "italic" [] (LX [Text "stuff" Nothing] Nothing) Nothing] Nothing) Nothing,Text (" ho ho ") Nothing,Inline "large" [] (LX [Text "ho" Nothing] Nothing) Nothing,Text "!" Nothing])
             ]
-        , describe "block" <|
+        ,  describe "block" <|
             [ test "Block" <|
                 \_ ->
                     Expect.equal

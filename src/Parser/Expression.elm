@@ -148,8 +148,6 @@ innerInlineArgs =
 body : Parser.Parser Context Problem Expression
 body =
   Parser.inContext (CInline_ "body") <|
-    -- (1) Parser.lazy (\_ -> inlineExpression  0 0)
-    -- (2) Parser.lazy (\_ -> T.many (inlineExpression  0 0) |> Parser.map (\list -> LX list Nothing))
     Parser.lazy (\_ -> T.many (inlineExpression  0 0) |> Parser.map (\list -> LX list Nothing))
 
 
