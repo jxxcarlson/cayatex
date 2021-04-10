@@ -4,7 +4,6 @@ module Parser.Expression exposing (..)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
-import Parser.SourceMap exposing (SourceMap)
 import Parser.Tool as T
 import Parser.XString as XString
 
@@ -37,13 +36,13 @@ block : Int -> Int -> Parser Expression
 block generation lineNumber =
     Parser.succeed (\start ( name, args_, body_ ) end source -> Block name args_ body_ (Just { generation = generation, blockOffset = lineNumber, offset = start, length = end - start }))
         |= Parser.getOffset
-        |. Parser.symbol (Parser.Token "|" (ExpectingToken "|"))
+        |. pipeSymbol
         |= Parser.oneOf [ Parser.backtrackable (blockPath3 generation lineNumber), blockPath1 generation lineNumber, blockPath2 generation lineNumber ]
         |= Parser.getOffset
         |= Parser.getSource
 
 
-{-| "|theorem| Many primes!"
+{-| "|theorem|Many primes!|end"
 -}
 blockPath1 generation lineNumber =
     Parser.succeed (\name body_ -> ( name, [], body_ ))
@@ -53,7 +52,7 @@ blockPath1 generation lineNumber =
         |. Parser.spaces
 
 
-{-| "|theorem | Many primes!"
+{-| "|theorem | Many primes!|end"
 -}
 blockPath2 generation lineNumber =
     Parser.succeed (\name body_ -> ( name, [], body_ ))
@@ -81,7 +80,7 @@ endOfBlock =
 
 blockArgs =
     Parser.succeed identity
-        |= T.manySeparatedBy comma (inlineExpression 0 0)
+        |= T.manySeparatedBy comma_ (inlineExpression 0 0)
         |. Parser.spaces
 
 
@@ -195,19 +194,6 @@ type alias SourceMap =
     , length : Int
     , generation : Int
     }
-
-
-textPS : (Char -> Bool) -> List Char -> Int -> Int -> Parser Expression
-textPS prefixTest stopChars generation lineNumber =
-    Parser.map (\( t, s ) -> Text t s) (rawText generation lineNumber prefixTest stopChars)
-
-
-rawText : Int -> Int -> (Char -> Bool) -> List Char -> Parser ( String, Maybe SourceMap )
-rawText generation lineNumber prefixTest stopChars =
-    getChompedString generation lineNumber <|
-        Parser.succeed ()
-            |. Parser.chompIf (\c -> prefixTest c) UnHandledError
-            |. Parser.chompWhile (\c -> not (List.member c stopChars))
 
 
 rawText_ : List Char -> Parser { start : Int, length : Int, content : String }

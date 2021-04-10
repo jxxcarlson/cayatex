@@ -54,5 +54,10 @@ suite =
                     Expect.equal
                         (run (parser 1 2) "|yada [strong stuff]| foo bar |end mmm" |> Result.map strip)
                         (Ok (Block "yada" [ Inline "strong" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing ] (Just (LX [ Text " foo bar " Nothing ] Nothing)) Nothing))
+            , test "Nested blocks" <|
+                \_ ->
+                    Expect.equal
+                        (run (parser 1 2) "|indent\n|theorem|Many primes!|end|end mmm" |> Result.map strip)
+                        (Ok (Block "yada" [ Inline "strong" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing ] (Just (LX [ Text " foo bar " Nothing ] Nothing)) Nothing))
             ]
         ]
