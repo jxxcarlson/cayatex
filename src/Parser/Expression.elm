@@ -26,7 +26,7 @@ type alias Parser a =
 
 parser : Int -> Int -> Parser Expression
 parser generation lineNumber =
-    Parser.oneOf [ inlineExpression standardInlineStopChars generation lineNumber, block generation lineNumber ]
+    Parser.oneOf [ inlineExpression generation lineNumber, block generation lineNumber ]
 
 
 
@@ -49,7 +49,7 @@ blockPath1 generation lineNumber =
     Parser.succeed (\name body_ -> ( name, [], body_ ))
         |= (string_ [ '|' ] |> Parser.map String.trim)
         |. symbol_ "|" "blockPath1"
-        |= T.first (T.maybe (inlineExpression [ '|' ] generation lineNumber)) endOfBlock
+        |= T.first (T.maybe (inlineExpression  generation lineNumber)) endOfBlock
         |. Parser.spaces
 
 
@@ -59,7 +59,7 @@ blockPath2 generation lineNumber =
     Parser.succeed (\name body_ -> ( name, [], body_ ))
         |= (string_ [ ' ' ] |> Parser.map String.trim)
         |. symbol_ " |" "blockPath2"
-        |= T.first (T.maybe (inlineExpression [ '|' ] generation lineNumber)) endOfBlock
+        |= T.first (T.maybe (inlineExpression  generation lineNumber)) endOfBlock
         |. Parser.spaces
 
 
@@ -71,7 +71,7 @@ blockPath3 generation lineNumber =
         |. symbol_ " " "blockPath3, 1"
         |= T.optionalList blockArgs
         |. symbol_ "|" "blockPath3, 2"
-        |= T.first (T.maybe (inlineExpression [ '|' ] generation lineNumber)) endOfBlock
+        |= T.first (T.maybe (inlineExpression  generation lineNumber)) endOfBlock
         |. Parser.spaces
 
 
@@ -81,7 +81,7 @@ endOfBlock =
 
 blockArgs =
     Parser.succeed identity
-        |= T.manySeparatedBy comma (inlineExpression [ '|', '[', ',' ] 0 0)
+        |= T.manySeparatedBy comma (inlineExpression 0 0)
         |. Parser.spaces
 
 
@@ -89,8 +89,8 @@ blockArgs =
 -- INLINE
 
 
-inlineExpression : List Char -> Int -> Int -> Parser Expression
-inlineExpression stopChars generation lineNumber =
+inlineExpression : Int -> Int -> Parser Expression
+inlineExpression generation lineNumber =
     -- TODO: think about the stop characters
     Parser.oneOf [ inline generation lineNumber, text generation lineNumber ]
 
@@ -144,9 +144,9 @@ innerInlineArgs =
 
 body : Parser.Parser Context Problem Expression
 body =
-    -- (1) Parser.lazy (\_ -> inlineExpression [ ']' ] 0 0)
-    -- (2) Parser.lazy (\_ -> Tool.many (inlineExpression [ '[', ']' ] 0 0) |> Parser.map (\list -> LX list Nothing))
-    Parser.lazy (\_ -> inlineExpression [ ']' ] 0 0)
+    -- (1) Parser.lazy (\_ -> inlineExpression  0 0)
+    -- (2) Parser.lazy (\_ -> Tool.many (inlineExpression  0 0) |> Parser.map (\list -> LX list Nothing))
+    Parser.lazy (\_ -> inlineExpression  0 0)
 
 
 argsAndBody_ =
@@ -162,7 +162,7 @@ bodyOnly =
 
 
 fubar =
-    Parser.lazy (\_ -> T.many (Parser.lazy (\_ -> inlineExpression [ '[', ']' ] 0 0)))
+    Parser.lazy (\_ -> T.many (Parser.lazy (\_ -> inlineExpression 0 0)))
         |> Parser.map (\le -> LX le Nothing)
 
 
