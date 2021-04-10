@@ -92,19 +92,13 @@ blockArgs =
 inlineExpression : List Char -> Int -> Int -> Parser Expression
 inlineExpression stopChars generation lineNumber =
     -- TODO: think about the stop characters
-    Parser.oneOf [ inline generation lineNumber, text generation lineNumber stopChars ]
+    Parser.oneOf [ inline generation lineNumber, text generation lineNumber ]
 
 
 ie : Int -> Int -> Parser Expression
 ie generation lineNumber =
     -- TODO: think about the stop characters
-    Parser.oneOf [ text2 generation lineNumber, inline generation lineNumber ]
-
-
-inlineExpression_ : (Char -> Bool) -> List Char -> Int -> Int -> Parser Expression
-inlineExpression_ prefixTest stopChars generation lineNumber =
-    -- TODO: think about the stop characters
-    Parser.oneOf [ inline generation lineNumber, textPS prefixTest stopChars generation lineNumber ]
+    Parser.oneOf [ text generation lineNumber, inline generation lineNumber ]
 
 
 standardInlineStopChars =
@@ -176,18 +170,8 @@ fubar =
 -- TEXT AND STRINGS
 
 
-text : Int -> Int -> List Char -> Parser Expression
-text generation lineNumber stopChars =
-    Parser.map (\( t, s ) -> Text t s) (rawText generation lineNumber (\c -> c /= '|') stopChars)
-
-
-
--- text2 : Int -> Int -> Parser Expression
--- text2 : Int -> Int -> Parser.Parser Never Problem Expression
-
-
-text2 : Int -> Int -> Parser Expression
-text2 generation lineNumber =
+text : Int -> Int -> Parser Expression
+text generation lineNumber =
     Parser.inContext TextExpression <|
         (XString.text
             |> Parser.map (\data -> Text data.content (Just { blockOffset = lineNumber, offset = data.start, length = data.finish - data.start, generation = generation }))
