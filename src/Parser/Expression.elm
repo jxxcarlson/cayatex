@@ -234,23 +234,23 @@ comma =
 
 
 symbol_ c e =
-    Parser.symbol (Parser.Token c (ExpectingToken <| c ++ ": " ++ e))
+    Parser.symbol (Parser.Token c (ExpectingToken e))
 
 
 pipeSymbol =
-    symbol_ "|" ""
+    symbol_ "|" "Pipe"
 
 
 leftBracket =
-    symbol_ "[" ""
+    symbol_ "[" "Left bracket"
 
 
 rightBracket =
-    symbol_ "]" ""
+    symbol_ "]" "Right bracket"
 
 
 oneSpace =
-    symbol_ " " " "
+    symbol_ " " "One space"
 
 
 
