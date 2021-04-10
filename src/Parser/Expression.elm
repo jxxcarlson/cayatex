@@ -49,7 +49,7 @@ blockPath1 generation lineNumber =
     Parser.succeed (\name body_ -> ( name, [], body_ ))
         |= (string_ [ '|' ] |> Parser.map String.trim)
         |. symbol_ "|" "blockPath1"
-        |= T.first (T.maybe (inlineExpression  generation lineNumber)) endOfBlock
+        |= T.first (T.maybe (inlineExpression generation lineNumber)) endOfBlock
         |. Parser.spaces
 
 
@@ -59,7 +59,7 @@ blockPath2 generation lineNumber =
     Parser.succeed (\name body_ -> ( name, [], body_ ))
         |= (string_ [ ' ' ] |> Parser.map String.trim)
         |. symbol_ " |" "blockPath2"
-        |= T.first (T.maybe (inlineExpression  generation lineNumber)) endOfBlock
+        |= T.first (T.maybe (inlineExpression generation lineNumber)) endOfBlock
         |. Parser.spaces
 
 
@@ -71,7 +71,7 @@ blockPath3 generation lineNumber =
         |. symbol_ " " "blockPath3, 1"
         |= T.optionalList blockArgs
         |. symbol_ "|" "blockPath3, 2"
-        |= T.first (T.maybe (inlineExpression  generation lineNumber)) endOfBlock
+        |= T.first (T.maybe (inlineExpression generation lineNumber)) endOfBlock
         |. Parser.spaces
 
 
@@ -89,20 +89,25 @@ blockArgs =
 -- INLINE
 
 
+body2 : Parser.Parser Context Problem Expression
+body2 =
+    Parser.inContext (CInline_ "body") <|
+        Parser.lazy (\_ -> T.many (inlineExpression 0 0) |> Parser.map (\list -> LX list Nothing))
+
+
+inlineExpressionList : Int -> Int -> Parser Expression
+inlineExpressionList generation lineNumber =
+    Parser.inContext (CInline_ "inlineExpressionList") <|
+        Parser.lazy (\_ -> T.many (inlineExpression generation lineNumber) |> Parser.map (\list -> LX list Nothing))
+
+
+
+--  Parser.oneOf [ inline generation lineNumber, text generation lineNumber ]
+
+
 inlineExpression : Int -> Int -> Parser Expression
 inlineExpression generation lineNumber =
-    -- TODO: think about the stop characters
     Parser.oneOf [ inline generation lineNumber, text generation lineNumber ]
-
-
-ie : Int -> Int -> Parser Expression
-ie generation lineNumber =
-    -- TODO: think about the stop characters
-    Parser.oneOf [ text generation lineNumber, inline generation lineNumber ]
-
-
-standardInlineStopChars =
-    [ '|', '[' ]
 
 
 {-|
@@ -116,15 +121,15 @@ standardInlineStopChars =
 -}
 inline : Int -> Int -> Parser Expression
 inline generation blockOffset =
-  Parser.inContext CInline <|
-    Parser.succeed (\start name ( args, body_ ) end source -> Inline name args body_ (Just { generation = generation, blockOffset = blockOffset, offset = start, length = end - start }))
-        |= Parser.getOffset
-        |. leftBracket
-        |= inlineName
-        |= argsAndBody
-        |. rightBracket
-        |= Parser.getOffset
-        |= Parser.getSource
+    Parser.inContext CInline <|
+        Parser.succeed (\start name ( args, body_ ) end source -> Inline name args body_ (Just { generation = generation, blockOffset = blockOffset, offset = start, length = end - start }))
+            |= Parser.getOffset
+            |. leftBracket
+            |= inlineName
+            |= argsAndBody
+            |. rightBracket
+            |= Parser.getOffset
+            |= Parser.getSource
 
 
 inlineName =
@@ -132,13 +137,13 @@ inlineName =
 
 
 argsAndBody =
-  Parser.inContext (CInline_ "argsAndBody") <|
-    Parser.oneOf [ argsAndBody_, bodyOnly ]
+    Parser.inContext (CInline_ "argsAndBody") <|
+        Parser.oneOf [ argsAndBody_, bodyOnly ]
 
 
 inlineArgs =
-  Parser.inContext (CInline_ "inlineArgs") <|
-    T.between pipeSymbol innerInlineArgs pipeSymbol
+    Parser.inContext (CInline_ "inlineArgs") <|
+        T.between pipeSymbol innerInlineArgs pipeSymbol
 
 
 innerInlineArgs =
@@ -147,8 +152,8 @@ innerInlineArgs =
 
 body : Parser.Parser Context Problem Expression
 body =
-  Parser.inContext (CInline_ "body") <|
-    Parser.lazy (\_ -> T.many (inlineExpression  0 0) |> Parser.map (\list -> LX list Nothing))
+    Parser.inContext (CInline_ "body") <|
+        Parser.lazy (\_ -> T.many (inlineExpression 0 0) |> Parser.map (\list -> LX list Nothing))
 
 
 argsAndBody_ =
@@ -227,16 +232,16 @@ string stopChars =
 -- SYMBOLS
 
 
+symbol_ c e =
+    Parser.symbol (Parser.Token c (ExpectingToken e))
+
+
 comma_ =
-    Parser.symbol (Parser.Token "," (ExpectingToken ","))
+    symbol_ "," "Comma"
 
 
 comma =
     T.first comma_ Parser.spaces
-
-
-symbol_ c e =
-    Parser.symbol (Parser.Token c (ExpectingToken e))
 
 
 pipeSymbol =
