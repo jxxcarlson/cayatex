@@ -80,7 +80,7 @@ endOfBlock =
 
 blockArgs =
     Parser.succeed identity
-        |= T.manySeparatedBy comma_ (inlineExpression 0 0)
+        |= T.manySeparatedBy comma_ (inlineExpressionWithPredicate XString.isNotExtendedLanguageChar 0 0)
         |. Parser.spaces
 
 
