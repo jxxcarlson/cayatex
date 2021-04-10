@@ -34,6 +34,12 @@ text =
         |> Parser.Advanced.map reduce
 
 
+textWithPredicate : (Char -> Bool) -> Parser StringData
+textWithPredicate predicate =
+    textListWithPredicate predicate
+        |> Parser.Advanced.map reduce
+
+
 reduce : List StringData -> StringData
 reduce list =
     let
@@ -54,6 +60,11 @@ text_ =
     T.manyNonEmpty (Parser.Advanced.oneOf [ textWithoutEscape, escapedChar ])
 
 
+textListWithPredicate : (Char -> Bool) -> Parser (List StringData)
+textListWithPredicate predicate =
+    T.manyNonEmpty (Parser.Advanced.oneOf [ textWithPredicate_ predicate, escapedChar ])
+
+
 
 -- PREDICATES
 
@@ -63,13 +74,28 @@ isLanguageChar c =
     c == '|' || c == '[' || c == ']' || c == '\\'
 
 
+isExtendedLanguageChar : Char -> Bool
+isExtendedLanguageChar c =
+    c == '|' || c == '[' || c == ']' || c == '\\' || c == ','
+
+
 isNonLanguageChar : Char -> Bool
 isNonLanguageChar c =
     not (isLanguageChar c)
 
 
+isNotExtendedLanguageChar : Char -> Bool
+isNotExtendedLanguageChar c =
+    not (isExtendedLanguageChar c)
+
+
 
 -- SUBPARSERS
+
+
+textWithPredicate_ : (Char -> Bool) -> Parser StringData
+textWithPredicate_ predicate =
+    T.text predicate (\c -> c /= '\\' || predicate c)
 
 
 textWithoutEscape : Parser StringData

@@ -100,8 +100,19 @@ inlineExpressionList generation lineNumber =
         Parser.lazy (\_ -> T.many (inlineExpression generation lineNumber) |> Parser.map (\list -> LX list Nothing))
 
 
+inlineExpressionListWithPredicate : (Char -> Bool) -> Int -> Int -> Parser Expression
+inlineExpressionListWithPredicate predicate generation lineNumber =
+    Parser.inContext (CInline_ "inlineExpressionList") <|
+        Parser.lazy (\_ -> T.many (inlineExpressionWithPredicate predicate generation lineNumber) |> Parser.map (\list -> LX list Nothing))
+
+
 
 --  Parser.oneOf [ inline generation lineNumber, text generation lineNumber ]
+
+
+inlineExpressionWithPredicate : (Char -> Bool) -> Int -> Int -> Parser Expression
+inlineExpressionWithPredicate predicate generation lineNumber =
+    Parser.oneOf [ inline generation lineNumber, textWithPredicate predicate generation lineNumber ]
 
 
 inlineExpression : Int -> Int -> Parser Expression
@@ -180,6 +191,14 @@ text : Int -> Int -> Parser Expression
 text generation lineNumber =
     Parser.inContext TextExpression <|
         (XString.text
+            |> Parser.map (\data -> Text data.content (Just { blockOffset = lineNumber, offset = data.start, length = data.finish - data.start, generation = generation }))
+        )
+
+
+textWithPredicate : (Char -> Bool) -> Int -> Int -> Parser Expression
+textWithPredicate predicate generation lineNumber =
+    Parser.inContext TextExpression <|
+        (XString.textWithPredicate predicate
             |> Parser.map (\data -> Text data.content (Just { blockOffset = lineNumber, offset = data.start, length = data.finish - data.start, generation = generation }))
         )
 
