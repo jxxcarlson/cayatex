@@ -2,6 +2,7 @@ module Parser.Loop exposing (..)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context, Problem)
+import Parser.Getters
 import Parser.SourceMap exposing (SourceMap)
 import Parser.TextCursor as TextCursor exposing (TextCursor)
 import Parser.Tool as ParserTool
@@ -54,6 +55,16 @@ operated by parseLoop is updated:
 -}
 nextCursor : Packet a -> TextCursor a -> ParserTool.Step (TextCursor a) (TextCursor a)
 nextCursor packet tc =
+    let
+        _ =
+            Debug.log "N" tc.count
+
+        _ =
+            Debug.log "text" tc.text
+
+        _ =
+            Debug.log "text" tc.parsed
+    in
     if tc.text == "" || tc.count > 10 then
         -- TODO: that usage of count needs to be removed after bug is fixed
         ParserTool.Done { tc | parsed = List.reverse tc.parsed }

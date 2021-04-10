@@ -277,3 +277,27 @@ getChompedString generation lineNumber parser_ =
         |. parser_
         |= Parser.getOffset
         |= Parser.getSource
+
+
+
+-- TEST DATA
+
+
+numberedList =
+    """|numbered-list|
+
+[item Raspberry jam]
+
+[item Sourdough bread]
+
+|end
+"""
+
+
+table =
+    """|table|
+  |row| [Hydrogen, H, 1, 1] |end
+  |row| [Helium, He, 2, 4]  |end
+  |row |Lithium, Li, 3, 5]  |end
+|end
+"""

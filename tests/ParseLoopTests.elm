@@ -11,6 +11,28 @@ pl str =
     Parser.Driver.parseLoop 0 0 str |> .parsed
 
 
+numberedList =
+    """
+|numbered-list|
+
+[item Raspberry jam]
+
+[item Sourdough bread]
+
+|end
+"""
+
+
+table =
+    """
+|table|
+  |row| [Hydrogen, H, 1, 1] |end
+  |row| [Helium, He, 2, 4]  |end
+  |row |Lithium, Li, 3, 5]  |end
+|end
+"""
+
+
 suite =
     describe "Parser.Driver"
         [ describe "parseLoop"
@@ -40,5 +62,10 @@ suite =
                         Expect.equal
                             (pl "|theorem [strong c], [italic d], foo| [strong many] primes |end" |> getBody)
                             [ Just (Text " [strong many] primes " Nothing) ]
+            , test "List" <|
+                \_ ->
+                    Expect.equal
+                        (pl "|theorem [strong c], [italic d], foo| many primes |end" |> getBody)
+                        [ Just (Text " many primes " Nothing) ]
             ]
         ]
