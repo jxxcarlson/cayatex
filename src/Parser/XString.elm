@@ -95,7 +95,7 @@ isNotExtendedLanguageChar c =
 
 textWithPredicate_ : (Char -> Bool) -> Parser StringData
 textWithPredicate_ predicate =
-    T.text predicate (\c -> c /= '\\' || predicate c)
+    T.text predicate (\c -> c /= '\\' && predicate c)
 
 
 textWithoutEscape : Parser StringData

@@ -80,7 +80,8 @@ endOfBlock =
 
 blockArgs =
     Parser.succeed identity
-        |= T.manySeparatedBy comma_ (inlineExpressionWithPredicate XString.isNotExtendedLanguageChar 0 0)
+        |= T.manySeparatedBy comma (inlineExpressionWithPredicate XString.isNotExtendedLanguageChar 0 0)
+        --|= T.manySeparatedBy comma_ (inlineExpression 0 0)
         |. Parser.spaces
 
 
@@ -308,8 +309,8 @@ numberedList =
 
 table =
     """|table|
-  |row| [Hydrogen, H, 1, 1] |end
-  |row| [Helium, He, 2, 4]  |end
-  |row |Lithium, Li, 3, 5]  |end
+|row| [Hydrogen, H, 1, 1] |end
+|row| [Helium, He, 2, 4]  |end
+|row |Lithium, Li, 3, 5]  |end
 |end
 """
