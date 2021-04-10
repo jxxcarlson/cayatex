@@ -56,13 +56,13 @@ suite =
                     Expect.equal
                         (pl "|theorem [strong c], [italic d], foo| many primes |end" |> getBody)
                         [ Just (Text " many primes " Nothing) ]
-            , Test.skip <|
-                test "Complex block body" <|
+            ,
+                Test.skip <|  test "Complex block body" <|
                     \_ ->
                         Expect.equal
                             (pl "|theorem [strong c], [italic d], foo| [strong many] primes |end" |> getBody)
                             [ Just (Text " [strong many] primes " Nothing) ]
-            , test "List" <|
+            , Test.skip <| test "List" <|
                 \_ ->
                     Expect.equal
                         (pl "|theorem [strong c], [italic d], foo| many primes |end" |> getBody)

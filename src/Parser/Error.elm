@@ -10,6 +10,7 @@ type Problem
 
 
 type Context
-    = InlineFunction
+    = CInline
+    | CInline_ String
     | DisplayMathContext
     | TextExpression

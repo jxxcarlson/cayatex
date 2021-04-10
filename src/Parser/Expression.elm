@@ -116,6 +116,7 @@ standardInlineStopChars =
 -}
 inline : Int -> Int -> Parser Expression
 inline generation blockOffset =
+  Parser.inContext CInline <|
     Parser.succeed (\start name ( args, body_ ) end source -> Inline name args body_ (Just { generation = generation, blockOffset = blockOffset, offset = start, length = end - start }))
         |= Parser.getOffset
         |. leftBracket
@@ -131,10 +132,12 @@ inlineName =
 
 
 argsAndBody =
+  Parser.inContext (CInline_ "argsAndBody") <|
     Parser.oneOf [ argsAndBody_, bodyOnly ]
 
 
 inlineArgs =
+  Parser.inContext (CInline_ "inlineArgs") <|
     T.between pipeSymbol innerInlineArgs pipeSymbol
 
 
@@ -144,9 +147,10 @@ innerInlineArgs =
 
 body : Parser.Parser Context Problem Expression
 body =
+  Parser.inContext (CInline_ "body") <|
     -- (1) Parser.lazy (\_ -> inlineExpression  0 0)
-    -- (2) Parser.lazy (\_ -> Tool.many (inlineExpression  0 0) |> Parser.map (\list -> LX list Nothing))
-    Parser.lazy (\_ -> inlineExpression  0 0)
+    -- (2) Parser.lazy (\_ -> T.many (inlineExpression  0 0) |> Parser.map (\list -> LX list Nothing))
+    Parser.lazy (\_ -> T.many (inlineExpression  0 0) |> Parser.map (\list -> LX list Nothing))
 
 
 argsAndBody_ =
