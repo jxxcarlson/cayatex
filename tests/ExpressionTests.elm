@@ -10,7 +10,7 @@ import Test exposing (describe, fuzz, test)
 
 suite =
     describe "Parser.Expression"
-        [ describe "parser"
+        [ describe "inline"
             [ test "Text" <|
                 \_ ->
                     Expect.equal
@@ -21,16 +21,6 @@ suite =
                     Expect.equal
                         (run (parser 1 2) "[image |height:40,width:100| stuff]" |> Result.map strip)
                         (Ok (Inline "image" [ "height:40", "width:100" ] (Text "stuff" Nothing) Nothing))
-            , test "Block" <|
-                \_ ->
-                    Expect.equal
-                        (run (parser 1 2) "|yada| foo bar |end mmm" |> Result.map strip)
-                        (Ok (Block "yada" [] (Just (Text " foo bar " Nothing)) Nothing))
-            , test "Block with argument" <|
-                \_ ->
-                    Expect.equal
-                        (run (parser 1 2) "|yada [strong stuff]| foo bar |end mmm" |> Result.map strip)
-                        (Ok (Block "yada" [ Inline "strong" [] (Text "stuff" Nothing) Nothing ] (Just (Text " foo bar " Nothing)) Nothing))
             , test "Inline, complex" <|
                 \_ ->
                     Expect.equal
@@ -57,5 +47,17 @@ suite =
                 \_ ->
                     Expect.equal (run (T.many (inlineExpression [ '[', ']' ] 0 0)) "[strong |font-size 36, la-di-dah: 79| [italic stuff]] ho ho [large ho]!" |> Result.map (List.map Parser.Getters.strip))
                         (Ok [ Inline "strong" [ "font-size 36", "la-di-dah: 79" ] (Inline "italic" [] (Text "stuff" Nothing) Nothing) Nothing, Text " ho ho " Nothing, Inline "large" [] (Text "ho" Nothing) Nothing, Text "!" Nothing ])
+            ]
+        , describe "block" <|
+            [ test "Block" <|
+                \_ ->
+                    Expect.equal
+                        (run (parser 1 2) "|yada| foo bar |end mmm" |> Result.map strip)
+                        (Ok (Block "yada" [] (Just (Text " foo bar " Nothing)) Nothing))
+            , test "Block with argument" <|
+                \_ ->
+                    Expect.equal
+                        (run (parser 1 2) "|yada [strong stuff]| foo bar |end mmm" |> Result.map strip)
+                        (Ok (Block "yada" [ Inline "strong" [] (Text "stuff" Nothing) Nothing ] (Just (Text " foo bar " Nothing)) Nothing))
             ]
         ]
