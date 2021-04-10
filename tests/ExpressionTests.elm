@@ -11,7 +11,6 @@ import Test exposing (describe, fuzz, test)
 suite =
     describe "Parser.Expression"
         [ describe "inline"
-
             [ test "Text" <|
                 \_ ->
                     Expect.equal
@@ -21,30 +20,30 @@ suite =
                 \_ ->
                     Expect.equal
                         (run (parser 1 2) "[image |height:40,width:100| stuff]" |> Result.map strip)
-                        (Ok (Inline "image" ["height:40","width:100"] (LX [Text "stuff" Nothing] Nothing) Nothing))
+                        (Ok (Inline "image" [ "height:40", "width:100" ] (LX [ Text "stuff" Nothing ] Nothing) Nothing))
             , test "Inline, complex" <|
                 \_ ->
                     Expect.equal
                         (run (T.many (inlineExpression 0 0)) "foo bar [strong stuff] ho ho ho" |> Result.map (List.map strip))
-                        (Ok [Text ("foo bar ") Nothing,Inline "strong" [] (LX [Text "stuff" Nothing] Nothing) Nothing,Text (" ho ho ho") Nothing])
+                        (Ok [ Text "foo bar " Nothing, Inline "strong" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing, Text " ho ho ho" Nothing ])
             , test "inline (2)" <|
                 \_ ->
                     Expect.equal (run (inline 0 0) "[strong [italic stuff]] ho ho ho!" |> Result.map Parser.Getters.strip)
-                        (Ok (Inline "strong" [] (LX [Inline "italic" [] (LX [Text "stuff" Nothing] Nothing) Nothing] Nothing) Nothing))
+                        (Ok (Inline "strong" [] (LX [ Inline "italic" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing ] Nothing) Nothing))
             , test "inline (3)" <|
                 \_ ->
                     Expect.equal (run (inline 0 0) "[strong |font-size 36, la-di-dah: 79| [italic stuff]] ho ho ho!" |> Result.map Parser.Getters.strip)
-                        (Ok (Inline "strong" ["font-size 36","la-di-dah: 79"] (LX [Inline "italic" [] (LX [Text "stuff" Nothing] Nothing) Nothing] Nothing) Nothing))
+                        (Ok (Inline "strong" [ "font-size 36", "la-di-dah: 79" ] (LX [ Inline "italic" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing ] Nothing) Nothing))
             , test "inlineExpression" <|
                 \_ ->
                     Expect.equal (run (inlineExpression 0 0) "[strong |font-size 36, la-di-dah: 79| [italic stuff]] ho ho ho!" |> Result.map Parser.Getters.strip)
-                        (Ok (Inline "strong" ["font-size 36","la-di-dah: 79"] (LX [Inline "italic" [] (LX [Text "stuff" Nothing] Nothing) Nothing] Nothing) Nothing))
+                        (Ok (Inline "strong" [ "font-size 36", "la-di-dah: 79" ] (LX [ Inline "italic" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing ] Nothing) Nothing))
             , test "many inlineExpression" <|
                 \_ ->
                     Expect.equal (run (T.many (inlineExpression 0 0)) "[strong |font-size 36, la-di-dah: 79| [italic stuff]] ho ho [large ho]!" |> Result.map (List.map Parser.Getters.strip))
-                        (Ok [Inline "strong" ["font-size 36","la-di-dah: 79"] (LX [Inline "italic" [] (LX [Text "stuff" Nothing] Nothing) Nothing] Nothing) Nothing,Text (" ho ho ") Nothing,Inline "large" [] (LX [Text "ho" Nothing] Nothing) Nothing,Text "!" Nothing])
+                        (Ok [ Inline "strong" [ "font-size 36", "la-di-dah: 79" ] (LX [ Inline "italic" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing ] Nothing) Nothing, Text " ho ho " Nothing, Inline "large" [] (LX [ Text "ho" Nothing ] Nothing) Nothing, Text "!" Nothing ])
             ]
-        ,  describe "block" <|
+        , describe "block" <|
             [ test "Block" <|
                 \_ ->
                     Expect.equal
@@ -54,6 +53,6 @@ suite =
                 \_ ->
                     Expect.equal
                         (run (parser 1 2) "|yada [strong stuff]| foo bar |end mmm" |> Result.map strip)
-                        (Ok (Block "yada" [ Inline "strong" [] (Text "stuff" Nothing) Nothing ] (Just (Text " foo bar " Nothing)) Nothing))
+                        (Ok (Block "yada" [ Inline "strong" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing ] (Just (Text " foo bar " Nothing)) Nothing))
             ]
         ]
