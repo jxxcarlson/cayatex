@@ -1,4 +1,4 @@
-module Parser.XString exposing (isNonLanguageChar, isNotExtendedLanguageChar, text, textWithPredicate)
+module Parser.XString exposing (isNonLanguageChar, isNotExtendedLanguageChar, textWithPredicate)
 
 {-| Grammar:
 
@@ -13,7 +13,7 @@ module Parser.XString exposing (isNonLanguageChar, isNotExtendedLanguageChar, te
 
 -}
 
-{- (text, text_) -}
+{- (text -}
 
 import Parser.Advanced exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
@@ -26,12 +26,6 @@ type alias Parser a =
 
 type alias StringData =
     { content : String, start : Int, finish : Int }
-
-
-text : Parser StringData
-text =
-    text_
-        |> Parser.Advanced.map reduce
 
 
 textWithPredicate : (Char -> Bool) -> Parser StringData
@@ -53,11 +47,6 @@ reduce list =
             reversedList |> List.head |> Maybe.map .finish |> Maybe.withDefault 0
     in
     { content = List.foldl (++) "" (List.map .content reversedList), start = start, finish = finish }
-
-
-text_ : Parser (List StringData)
-text_ =
-    T.manyNonEmpty (Parser.Advanced.oneOf [ textWithoutEscape, escapedChar ])
 
 
 textListWithPredicate : (Char -> Bool) -> Parser (List StringData)

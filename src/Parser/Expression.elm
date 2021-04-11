@@ -44,9 +44,7 @@ block generation lineNumber =
     Parser.succeed (\start ( name, args_, body_ ) end source -> Block name args_ body_ (Just { generation = generation, blockOffset = lineNumber, offset = start, length = end - start }))
         |= Parser.getOffset
         |. blockStartSymbol
-        --|= Parser.oneOf [ Parser.backtrackable (blockPath3 generation lineNumber), blockPath1 generation lineNumber, blockPath2 generation lineNumber ]
-        |= Parser.oneOf [ Parser.backtrackable (blockPath1 generation lineNumber), blockPath3 generation lineNumber ]
-        -- |= blockPath3 generation lineNumber
+        |= Parser.oneOf [ Parser.backtrackable (blockPath1 generation lineNumber), blockPath2 generation lineNumber ]
         |= Parser.getOffset
         |= Parser.getSource
 
@@ -63,7 +61,7 @@ blockPath1 generation lineNumber =
 
 {-| "|theorem title:Pythagoras| Many primes!|end"
 -}
-blockPath3 generation lineNumber =
+blockPath2 generation lineNumber =
     Parser.succeed (\name args_ body_ -> ( name, args_, body_ ))
         |= (string_ [ ' ' ] |> Parser.map String.trim)
         |. symbol_ " " "blockPath3, 1"
@@ -84,34 +82,13 @@ blockBody generation lineNumber =
 
 
 
---{-| "|theorem | Many primes!|end"
----}
---blockPath2 generation lineNumber =
---    Parser.succeed (\name body_ -> ( name, [], body_ ))
---        |= (string_ [ ' ' ] |> Parser.map String.trim)
---        |. blockSeparatorSymbol
---        --|= T.first (T.maybe (inlineExpressionList generation lineNumber)) endOfBlockSymbol
---        |= blockBody generation lineNumber
---        |. Parser.spaces
 -- INLINE
-
-
-body2 : Parser.Parser Context Problem Expression
-body2 =
-    Parser.inContext (CInline_ "body") <|
-        Parser.lazy (\_ -> T.many (inlineExpression 0 0) |> Parser.map (\list -> LX list Nothing))
 
 
 inlineExpressionList : Int -> Int -> Parser Expression
 inlineExpressionList generation lineNumber =
     Parser.inContext (CInline_ "inlineExpressionList") <|
         Parser.lazy (\_ -> T.many (inlineExpression generation lineNumber) |> Parser.map (\list -> LX list Nothing))
-
-
-inlineExpressionListWithPredicate : (Char -> Bool) -> Int -> Int -> Parser Expression
-inlineExpressionListWithPredicate predicate generation lineNumber =
-    Parser.inContext (CInline_ "inlineExpressionList") <|
-        Parser.lazy (\_ -> T.many (inlineExpressionWithPredicate predicate generation lineNumber) |> Parser.map (\list -> LX list Nothing))
 
 
 inlineExpressionWithPredicate : (Char -> Bool) -> Int -> Int -> Parser Expression
@@ -164,8 +141,8 @@ innerInlineArgs =
     T.manySeparatedBy comma (string [ ',', '|' ])
 
 
-body : Parser.Parser Context Problem Expression
-body =
+inlineBody : Parser.Parser Context Problem Expression
+inlineBody =
     Parser.inContext (CInline_ "body") <|
         Parser.lazy (\_ -> T.many (inlineExpression 0 0) |> Parser.map (\list -> LX list Nothing))
 
@@ -174,17 +151,12 @@ argsAndBody_ =
     Parser.succeed (\args body_ -> ( args, body_ ))
         |= inlineArgs
         |. Parser.spaces
-        |= body
+        |= inlineBody
 
 
 bodyOnly =
     Parser.succeed (\body_ -> ( [], body_ ))
-        |= body
-
-
-fubar =
-    Parser.lazy (\_ -> T.many (Parser.lazy (\_ -> inlineExpression 0 0)))
-        |> Parser.map (\le -> LX le Nothing)
+        |= inlineBody
 
 
 
@@ -227,13 +199,8 @@ type alias SourceMap =
     }
 
 
-rawText_ : List Char -> Parser { start : Int, length : Int, content : String }
-rawText_ stopChars =
-    Parser.succeed (\begin end content -> { start = begin, length = end - begin, content = String.slice begin end content })
-        |= Parser.getOffset
-        |. Parser.chompWhile (\c -> not (List.member c stopChars))
-        |= Parser.getOffset
-        |= Parser.getSource
+string stopChars =
+    T.first (string_ stopChars) Parser.spaces
 
 
 string_ : List Char -> Parser String
@@ -241,8 +208,13 @@ string_ stopChars =
     rawText_ stopChars |> Parser.map .content
 
 
-string stopChars =
-    T.first (string_ stopChars) Parser.spaces
+rawText_ : List Char -> Parser { start : Int, length : Int, content : String }
+rawText_ stopChars =
+    Parser.succeed (\begin end content -> { start = begin, length = end - begin, content = String.slice begin end content })
+        |= Parser.getOffset
+        |. Parser.chompWhile (\c -> not (List.member c stopChars))
+        |= Parser.getOffset
+        |= Parser.getSource
 
 
 
@@ -313,27 +285,3 @@ getChompedString generation lineNumber parser_ =
         |. parser_
         |= Parser.getOffset
         |= Parser.getSource
-
-
-
--- TEST DATA
-
-
-numberedList =
-    """|numbered-list|
-
-[item Raspberry jam]
-
-[item Sourdough bread]
-
-|end
-"""
-
-
-table =
-    """|table|
-|row| [Hydrogen, H, 1, 1] |end
-|row| [Helium, He, 2, 4]  |end
-|row |Lithium, Li, 3, 5]  |end
-|end
-"""
