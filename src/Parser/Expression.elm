@@ -47,7 +47,7 @@ block generation lineNumber =
 blockPath1 generation lineNumber =
     Parser.succeed (\name body_ -> ( name, [], body_ ))
         |= (string_ [ '|' ] |> Parser.map String.trim)
-        |. symbol_ "|" "blockPath1"
+        |. blockSeparatorSymbol
         |= T.first (T.maybe (inlineExpressionList generation lineNumber)) endOfBlock
         |. Parser.spaces
 
@@ -57,7 +57,7 @@ blockPath1 generation lineNumber =
 blockPath2 generation lineNumber =
     Parser.succeed (\name body_ -> ( name, [], body_ ))
         |= (string_ [ ' ' ] |> Parser.map String.trim)
-        |. symbol_ " |" "blockPath2"
+        |. blockSeparatorSymbol
         |= T.first (T.maybe (inlineExpressionList generation lineNumber)) endOfBlock
         |. Parser.spaces
 
@@ -69,7 +69,7 @@ blockPath3 generation lineNumber =
         |= (string_ [ ' ' ] |> Parser.map String.trim)
         |. symbol_ " " "blockPath3, 1"
         |= T.optionalList blockArgs
-        |. symbol_ "|" "blockPath3, 2"
+        |. blockSeparatorSymbol
         |= T.first (T.maybe (inlineExpressionList generation lineNumber)) endOfBlock
         |. Parser.spaces
 
@@ -252,6 +252,10 @@ comma =
 
 blockStartSymbol =
     symbol_ "|" "Block start"
+
+
+blockSeparatorSymbol =
+    symbol_ "|\n" "Block separator"
 
 
 blockEndSymbol =
