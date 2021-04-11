@@ -97,29 +97,38 @@ Here is how one writes a list:
 
 	{numbered-list|
 
-	{item eggs}
+	{item| Eggs}
 
-	[item milk]
+	{item| Milk}
 
-	[item bread]
+	{item| Bread}
 
-	|end
+	}
 
 A table is written like this:
 
-|table|
-  |row| [Hydrogen, H, 1, 1] |end
-  |row| [Helium, He, 2, 4]  |end
-  |row |Lithium, Li, 3, 5]  |end
-|end
+    {table|
+    {row| Hydrogen, 1, 1}
+    {row| Helium, 2, 4}
+    {row| Lithium, 3, 6}
+    }
 
 Or like this:
 
-|table [l, c, r, r]|
-  |row| [Hydrogen, H, 1, 1] |end
-  |row| [Helium, He, 2, 4]  |end
-  |row |Lithium, Li, 3, 5]  |end
-|end
+    {table|
+    {format| l, c, r, r}
+    {row| Hydrogen, 1, 1}
+    {row| Helium, 2, 4}
+    {row| Lithium, 3, 6}
+    }
+
+One also has CSV tables:
+
+    {csv|
+    Hydrogen, 1, 1
+    Helium, 2, 4
+    Lithium, 3, 6
+    }
 
 
 ## Shorthand
@@ -183,28 +192,26 @@ or an outer Block.  Here is an example:
 	0 This is a test.
 	1 Ho ho ho!
 	2
-	3 |theorem
-	4 There are [strong many] primes!
-	5 |end
-	6
-	7 One, two, [italic three!]
+	3 {theorem|There are [strong many] primes!}
+	4
+	5 One, two, [italic three!]
 
 In this example there are three blocks, with blockOffsets
 0, 3, and 7.  The source map for [strong many] is
 
 	blockOffset = 3
-	offset = 18
+	offset = 19
 	length = 13
 
 To arrive at this conclusion, convert the list of
 lines 3, 4, 5 to the string
 
-	foo = "theorem\nThere are [strong many] primes!\n|end"
+	blockText = "{theorem|There are [strong many] primes!}"
 
 and find the offset of the substring "[strong many]".
 Consequently we have
 
-	String.slice 18 (18 + 13) foo == "[strong many]"
+	String.slice 19 (19 + 13) blockText == "[strong many]"
 
 The generation is supplied to parseLoop as an argument
 with the assumption that it is incremented for each
