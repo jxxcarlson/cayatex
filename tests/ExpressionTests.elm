@@ -59,7 +59,7 @@ suite =
                     Expect.equal
                         (run (parser 1 2) "|yada 7, 8, [strong stuff]|\nfoo bar|end mmm" |> Result.map strip)
                         (Ok (Block "yada" [ Text "7" Nothing, Text "8" Nothing, Inline "strong" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing ] (Just (LX [ Text "foo bar" Nothing ] Nothing)) Nothing))
-            , Test.only <|
+            , Test.skip <|
                 test "Nested blocks" <|
                     \_ ->
                         Expect.equal

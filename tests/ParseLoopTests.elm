@@ -37,22 +37,22 @@ suite =
             [ test "Various" <|
                 \_ ->
                     Expect.equal
-                        (pl "this [strong is] a test |theorem | many primes |end ho ho ho" |> List.map strip)
-                        [ Text "this " Nothing, Inline "strong" [] (LX [ Text "is" Nothing ] Nothing) Nothing, Text " a test " Nothing, Block "theorem" [] (Just (LX [ Text " many primes " Nothing ] Nothing)) Nothing, Text "ho ho ho" Nothing ]
+                        (pl "this [strong is] a test |theorem |\nmany primes |end ho ho ho" |> List.map strip)
+                        [ Text "this " Nothing, Inline "strong" [] (LX [ Text "is" Nothing ] Nothing) Nothing, Text " a test " Nothing, Block "theorem" [] (Just (LX [ Text "many primes " Nothing ] Nothing)) Nothing, Text "ho ho ho" Nothing ]
             , test "Block arguments" <|
                 \_ ->
                     Expect.equal
-                        (pl "|theorem [strong c], [italic d], foo| many primes |end" |> getArgs)
+                        (pl "|theorem [strong c], [italic d], foo|\nmany primes|end" |> getArgs)
                         [ Just [ Inline "strong" [] (LX [ Text "c" Nothing ] Nothing) Nothing, Inline "italic" [] (LX [ Text "d" Nothing ] Nothing) Nothing, Text "foo" Nothing ] ]
             , test "Block body" <|
                 \_ ->
                     Expect.equal
-                        (pl "|theorem [strong c], [italic d], foo| many primes |end" |> getBody)
-                        [ Just (LX [ Text " many primes " Nothing ] Nothing) ]
+                        (pl "|theorem [strong c], [italic d], foo|\nmany primes|end" |> getBody)
+                        [ Just (LX [ Text "many primes" Nothing ] Nothing) ]
             , test "Complex block body" <|
                 \_ ->
                     Expect.equal
-                        (pl "|theorem [strong c], [italic d], foo| [strong many] primes |end" |> getBody)
+                        (pl "|theorem [strong c], [italic d], foo|\n [strong many] primes |end" |> getBody)
                         [ Just (LX [ Text " " Nothing, Inline "strong" [] (LX [ Text "many" Nothing ] Nothing) Nothing, Text " primes " Nothing ] Nothing) ]
             , test "List" <|
                 \_ ->
@@ -62,7 +62,7 @@ suite =
                             []
                             (Just
                                 (LX
-                                    [ Text "\n\n" Nothing
+                                    [ Text "\n" Nothing
                                     , Inline "item" [] (LX [ Text "Raspberry jam" Nothing ] Nothing) Nothing
                                     , Text "\n\n" Nothing
                                     , Inline "item" [] (LX [ Text "Sourdough bread" Nothing ] Nothing) Nothing

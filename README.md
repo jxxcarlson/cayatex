@@ -76,9 +76,10 @@ The body of the block, the line "There are ..." is an inline expression.
 The body can also be a block, as in the case of the nested blocks below.
 The inner block has argument.
 
-	|indent|theorem [Pythagoras]|
+	|indent|
+    |theorem [Pythagoras]|
 	There are infinitely many primes [math p \equiv 1 \modulo 4].
-	|endall
+	|end|end
 
 
 ### Grammar
