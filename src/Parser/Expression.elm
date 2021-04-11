@@ -36,7 +36,7 @@ block : Int -> Int -> Parser Expression
 block generation lineNumber =
     Parser.succeed (\start ( name, args_, body_ ) end source -> Block name args_ body_ (Just { generation = generation, blockOffset = lineNumber, offset = start, length = end - start }))
         |= Parser.getOffset
-        |. pipeSymbol
+        |. blockStartSymbol
         |= Parser.oneOf [ Parser.backtrackable (blockPath3 generation lineNumber), blockPath1 generation lineNumber, blockPath2 generation lineNumber ]
         |= Parser.getOffset
         |= Parser.getSource
@@ -248,6 +248,14 @@ comma_ =
 
 comma =
     T.first comma_ Parser.spaces
+
+
+blockStartSymbol =
+    symbol_ "|" "Block start"
+
+
+blockEndSymbol =
+    symbol_ "|end" "Block end"
 
 
 pipeSymbol =
