@@ -68,37 +68,36 @@ Args = |width:400, height:250| and Body = https://yada.io/xy.jpg.
 
 Here is a piece of text that parses to a block:
 
-	|theorem|
-	There are infinitely many primes [math p \equiv 1 \modulo 4].
-	|end
+	{theorem|There are infinitely many primes [math p \equiv 1 \modulo 4].}
 
 The body of the block, the line "There are ..." is an inline expression.
 The body can also be a block, as in the case of the nested blocks below.
 The inner block has argument.
 
-	|indent|
-    |theorem [Pythagoras]|
-	There are infinitely many primes [math p \equiv 1 \modulo 4].
-	|end|end
+	{indent|
+    {theorem [Pythagoras]|There are infinitely many primes [math p \equiv 1 \modulo 4].}
+	}
 
 
 ### Grammar
 
 The grammar for blocks is as follows.
 
-	Block -> "|" Name Args "|end"
-			  | "|" Name Expression "|end"
-			  | "|" Name Args Expression "|end"
+	Block -> "{" Name "|" Args "}"
+			  | "{" Name "|" Expression "}"
+			  | "{" Name Args "|" Expression "}"
 	Name -> String
-	Args: as above, except bounded by brackets, not pipes
+    BlockArgs -> 
+         Empty 
+         | NonemptyString ("," NonemptyString)* 
 
 ### Examples
 
 Here is how one writes a list:
 
-	|numbered-list|
+	{numbered-list|
 
-	[item eggs]
+	{item eggs}
 
 	[item milk]
 

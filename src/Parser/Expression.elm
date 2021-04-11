@@ -98,7 +98,7 @@ inlineExpressionWithPredicate predicate generation lineNumber =
 
 inlineExpression : Int -> Int -> Parser Expression
 inlineExpression generation lineNumber =
-    Parser.oneOf [ inline generation lineNumber, text2 generation lineNumber ]
+    Parser.oneOf [ inline generation lineNumber, text generation lineNumber ]
 
 
 {-|

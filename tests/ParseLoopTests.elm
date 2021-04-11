@@ -14,9 +14,9 @@ pl str =
 numberedList =
     """{numbered-list|
 
-[item Raspberry jam]
+{item| Raspberry jam}
 
-[item Sourdough bread]
+{item| Sourdough bread}
 
 }
 """
@@ -24,9 +24,18 @@ numberedList =
 
 table =
     """{table|
-  {row| [Hydrogen, H, 1, 1] }
-  {row| [Helium, He, 2, 4]  }
-  {row |Lithium, Li, 3, 5]  }
+{row| Hydrogen, 1, 1}
+{row| Helium, 2, 4}
+{row| Lithium, 3, 6}
+}
+"""
+
+
+csv =
+    """{csv|
+Hydrogen, 1, 1
+Helium, 2, 4
+Lithium, 3, 6
 }
 """
 
@@ -34,7 +43,7 @@ table =
 suite =
     describe "Parser.Driver"
         [ describe "parseLoop"
-            [ test "Various (BAD)" <|
+            [ test "Various" <|
                 \_ ->
                     Expect.equal
                         (pl "this [strong is] a test {theorem|many primes}ho ho ho" |> List.map strip)
@@ -44,17 +53,17 @@ suite =
                     Expect.equal
                         (pl "{theorem [strong c], [italic d], foo|many primes}" |> getArgs)
                         [ Just [ Inline "strong" [] (LX [ Text "c" Nothing ] Nothing) Nothing, Inline "italic" [] (LX [ Text "d" Nothing ] Nothing) Nothing, Text "foo" Nothing ] ]
-            , test "Block body (OK)" <|
+            , test "Block body" <|
                 \_ ->
                     Expect.equal
                         (pl "{theorem [strong c], [italic d], foo|[strong many] primes}" |> getBody)
                         [ Just (LX [ Inline "strong" [] (LX [ Text "many" Nothing ] Nothing) Nothing, Text " primes" Nothing ] Nothing) ]
-            , test "Complex block body (OK)" <|
+            , test "Complex block body" <|
                 \_ ->
                     Expect.equal
                         (pl "{theorem [strong c], [italic d], foo|[strong many] primes}" |> getBody)
                         [ Just (LX [ Inline "strong" [] (LX [ Text "many" Nothing ] Nothing) Nothing, Text " primes" Nothing ] Nothing) ]
-            , test "List (OK)" <|
+            , test "List" <|
                 \_ ->
                     Expect.equal
                         (pl numberedList |> List.map strip)
@@ -63,15 +72,53 @@ suite =
                             (Just
                                 (LX
                                     [ Text "\n\n" Nothing
-                                    , Inline "item" [] (LX [ Text "Raspberry jam" Nothing ] Nothing) Nothing
-                                    , Text "\n\n" Nothing
-                                    , Inline "item" [] (LX [ Text "Sourdough bread" Nothing ] Nothing) Nothing
-                                    , Text "\n\n" Nothing
+                                    , Block "item" [] (Just (LX [ Text " Raspberry jam" Nothing ] Nothing)) Nothing
+                                    , Block "item" [] (Just (LX [ Text " Sourdough bread" Nothing ] Nothing)) Nothing
                                     ]
                                     Nothing
                                 )
                             )
                             Nothing
+                        ]
+            , test "table" <|
+                \_ ->
+                    Expect.equal
+                        (pl table |> List.map strip)
+                        [ Block "table"
+                            []
+                            (Just
+                                (LX
+                                    [ Text "\n" Nothing
+                                    , Block "row" [] (Just (LX [ Text " Hydrogen, 1, 1" Nothing ] Nothing)) Nothing
+                                    , Block "row" [] (Just (LX [ Text " Helium, 2, 4" Nothing ] Nothing)) Nothing
+                                    , Block "row" [] (Just (LX [ Text " Lithium, 3, 6" Nothing ] Nothing)) Nothing
+                                    ]
+                                    Nothing
+                                )
+                            )
+                            Nothing
+                        ]
+            , test
+                "csv"
+              <|
+                \_ ->
+                    Expect.equal
+                        (pl csv |> List.map strip)
+                        [ Block "csv"
+                            []
+                            (Just
+                                (LX [ Text "\nHydrogen, 1, 1\nHelium, 2, 4\nLithium, 3, 6\n" Nothing ] Nothing)
+                            )
+                            Nothing
+                        ]
+            , test
+                "text + csv"
+              <|
+                \_ ->
+                    Expect.equal
+                        (pl ("Below is a CSV table.\nIt will be processed further in the rendering step\n" ++ csv) |> List.map strip)
+                        [ Text "Below is a CSV table.\nIt will be processed further in the rendering step\n" Nothing
+                        , Block "csv" [] (Just (LX [ Text "\nHydrogen, 1, 1\nHelium, 2, 4\nLithium, 3, 6\n" Nothing ] Nothing)) Nothing
                         ]
             ]
         ]
