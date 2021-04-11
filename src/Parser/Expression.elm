@@ -1,6 +1,4 @@
-module Parser.Expression exposing (..)
-
-{- (Expression(..), parser, strip, getSource, incrementOffset) -}
+module Parser.Expression exposing (Expression(..), parser)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
