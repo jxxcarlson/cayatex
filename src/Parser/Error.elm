@@ -13,4 +13,5 @@ type Context
     = CInline
     | CInline_ String
     | DisplayMathContext
+    | CManyExpression
     | TextExpression

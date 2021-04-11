@@ -1,4 +1,4 @@
-module Parser.XString exposing (..)
+module Parser.XString exposing (isNonLanguageChar, isNotExtendedLanguageChar, text, textWithPredicate)
 
 {-| Grammar:
 
@@ -71,12 +71,12 @@ textListWithPredicate predicate =
 
 isLanguageChar : Char -> Bool
 isLanguageChar c =
-    c == '|' || c == '[' || c == ']' || c == '\\'
+    c == '|' || c == '[' || c == ']' || c == '{' || c == '}' || c == '\\'
 
 
 isExtendedLanguageChar : Char -> Bool
 isExtendedLanguageChar c =
-    c == '|' || c == '[' || c == ']' || c == '\\' || c == ','
+    c == '|' || c == '[' || c == ']' || c == '{' || c == '}' || c == ',' || c == '\\'
 
 
 isNonLanguageChar : Char -> Bool

@@ -28,6 +28,15 @@ parser generation lineNumber =
     Parser.oneOf [ inlineExpression generation lineNumber, block generation lineNumber ]
 
 
+manyExpression : Int -> Int -> Parser Expression
+manyExpression generation lineNumber =
+    Parser.inContext CManyExpression <|
+        (T.many
+            (parser generation lineNumber)
+            |> Parser.map (\list -> LX list Nothing)
+        )
+
+
 
 -- BLOCK
 
@@ -37,7 +46,9 @@ block generation lineNumber =
     Parser.succeed (\start ( name, args_, body_ ) end source -> Block name args_ body_ (Just { generation = generation, blockOffset = lineNumber, offset = start, length = end - start }))
         |= Parser.getOffset
         |. blockStartSymbol
-        |= Parser.oneOf [ Parser.backtrackable (blockPath3 generation lineNumber), blockPath1 generation lineNumber, blockPath2 generation lineNumber ]
+        --|= Parser.oneOf [ Parser.backtrackable (blockPath3 generation lineNumber), blockPath1 generation lineNumber, blockPath2 generation lineNumber ]
+        |= Parser.oneOf [ Parser.backtrackable (blockPath1 generation lineNumber), blockPath3 generation lineNumber ]
+        -- |= blockPath3 generation lineNumber
         |= Parser.getOffset
         |= Parser.getSource
 
@@ -46,23 +57,13 @@ block generation lineNumber =
 -}
 blockPath1 generation lineNumber =
     Parser.succeed (\name body_ -> ( name, [], body_ ))
-        |= (string_ [ '|' ] |> Parser.map String.trim)
+        |= (string_ [ ' ', '|' ] |> Parser.map String.trim)
         |. blockSeparatorSymbol
-        |= T.first (T.maybe (inlineExpressionList generation lineNumber)) endOfBlock
+        |= blockBody generation lineNumber
         |. Parser.spaces
 
 
-{-| "|theorem | Many primes!|end"
--}
-blockPath2 generation lineNumber =
-    Parser.succeed (\name body_ -> ( name, [], body_ ))
-        |= (string_ [ ' ' ] |> Parser.map String.trim)
-        |. blockSeparatorSymbol
-        |= T.first (T.maybe (inlineExpressionList generation lineNumber)) endOfBlock
-        |. Parser.spaces
-
-
-{-| "|theorem title:Pythagoras| Many primes!"
+{-| "|theorem title:Pythagoras| Many primes!|end"
 -}
 blockPath3 generation lineNumber =
     Parser.succeed (\name args_ body_ -> ( name, args_, body_ ))
@@ -70,22 +71,30 @@ blockPath3 generation lineNumber =
         |. symbol_ " " "blockPath3, 1"
         |= T.optionalList blockArgs
         |. blockSeparatorSymbol
-        |= T.first (T.maybe (inlineExpressionList generation lineNumber)) endOfBlock
+        |= blockBody generation lineNumber
         |. Parser.spaces
-
-
-endOfBlock =
-    Parser.symbol (Parser.Token "|end" (ExpectingToken "|end"))
 
 
 blockArgs =
     Parser.succeed identity
         |= T.manySeparatedBy comma (inlineExpressionWithPredicate XString.isNotExtendedLanguageChar 0 0)
-        --|= T.manySeparatedBy comma_ (inlineExpression 0 0)
         |. Parser.spaces
 
 
+blockBody generation lineNumber =
+    T.first (T.maybe (Parser.lazy (\_ -> manyExpression generation lineNumber))) endOfBlockSymbol
 
+
+
+--{-| "|theorem | Many primes!|end"
+---}
+--blockPath2 generation lineNumber =
+--    Parser.succeed (\name body_ -> ( name, [], body_ ))
+--        |= (string_ [ ' ' ] |> Parser.map String.trim)
+--        |. blockSeparatorSymbol
+--        --|= T.first (T.maybe (inlineExpressionList generation lineNumber)) endOfBlockSymbol
+--        |= blockBody generation lineNumber
+--        |. Parser.spaces
 -- INLINE
 
 
@@ -107,10 +116,6 @@ inlineExpressionListWithPredicate predicate generation lineNumber =
         Parser.lazy (\_ -> T.many (inlineExpressionWithPredicate predicate generation lineNumber) |> Parser.map (\list -> LX list Nothing))
 
 
-
---  Parser.oneOf [ inline generation lineNumber, text generation lineNumber ]
-
-
 inlineExpressionWithPredicate : (Char -> Bool) -> Int -> Int -> Parser Expression
 inlineExpressionWithPredicate predicate generation lineNumber =
     Parser.oneOf [ inline generation lineNumber, textWithPredicate predicate generation lineNumber ]
@@ -118,7 +123,7 @@ inlineExpressionWithPredicate predicate generation lineNumber =
 
 inlineExpression : Int -> Int -> Parser Expression
 inlineExpression generation lineNumber =
-    Parser.oneOf [ inline generation lineNumber, text generation lineNumber ]
+    Parser.oneOf [ inline generation lineNumber, text2 generation lineNumber ]
 
 
 {-|
@@ -191,7 +196,15 @@ fubar =
 text : Int -> Int -> Parser Expression
 text generation lineNumber =
     Parser.inContext TextExpression <|
-        (XString.text
+        (XString.textWithPredicate XString.isNonLanguageChar
+            |> Parser.map (\data -> Text data.content (Just { blockOffset = lineNumber, offset = data.start, length = data.finish - data.start, generation = generation }))
+        )
+
+
+text2 : Int -> Int -> Parser Expression
+text2 generation lineNumber =
+    Parser.inContext TextExpression <|
+        (XString.textWithPredicate XString.isNotExtendedLanguageChar
             |> Parser.map (\data -> Text data.content (Just { blockOffset = lineNumber, offset = data.start, length = data.finish - data.start, generation = generation }))
         )
 
@@ -251,15 +264,15 @@ comma =
 
 
 blockStartSymbol =
-    symbol_ "|" "Block start"
+    symbol_ "{" "Block start"
 
 
 blockSeparatorSymbol =
-    symbol_ "|\n" "Block separator"
+    symbol_ "|" "Block separator"
 
 
-blockEndSymbol =
-    symbol_ "|end" "Block end"
+endOfBlockSymbol =
+    Parser.symbol (Parser.Token "}" (ExpectingToken "}"))
 
 
 pipeSymbol =
