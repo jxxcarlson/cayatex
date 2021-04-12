@@ -8,6 +8,21 @@ import Parser.Tool as T
 import Test exposing (describe, fuzz, test)
 
 
+numberedList =
+    """[numbered-list 
+
+[item Raspberry jam]
+
+[item Sourdough bread]
+
+]
+"""
+
+
+p str =
+    run (parser 1 2) str |> Result.map strip
+
+
 suite =
     describe "Parser.Expression"
         [ describe "inline"
@@ -42,6 +57,32 @@ suite =
                 \_ ->
                     Expect.equal (run (T.many (parser 0 0)) "[strong |font-size 36, la-di-dah: 79| [italic stuff]] ho ho [large ho]!" |> Result.map (List.map Parser.Getters.strip))
                         (Ok [ Inline "strong" [ "font-size 36", "la-di-dah: 79" ] (LX [ Inline "italic" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing ] Nothing) Nothing, Text " ho ho " Nothing, Inline "large" [] (LX [ Text "ho" Nothing ] Nothing) Nothing, Text "!" Nothing ])
+            ]
+        , describe "inline-extended" <|
+            [ test "theorem" <|
+                \_ ->
+                    Expect.equal
+                        (p "[theorem |title Euclid| There are infinitely many primes [math p \\equiv 1 \\mod 4]]")
+                        (Ok (Inline "theorem" [ "title Euclid" ] (LX [ Text "There are infinitely many primes " Nothing, Inline "math" [] (LX [ Text "p \\equiv 1 \\mod 4" Nothing ] Nothing) Nothing ] Nothing) Nothing))
+            , test "numbered-list" <|
+                \_ ->
+                    Expect.equal
+                        (p numberedList)
+                        (Ok
+                            (Inline "numbered-list"
+                                []
+                                (LX
+                                    [ Text "\n\n" Nothing
+                                    , Inline "item" [] (LX [ Text "Raspberry jam" Nothing ] Nothing) Nothing
+                                    , Text "\n\n" Nothing
+                                    , Inline "item" [] (LX [ Text "Sourdough bread" Nothing ] Nothing) Nothing
+                                    , Text "\n\n" Nothing
+                                    ]
+                                    Nothing
+                                )
+                                Nothing
+                            )
+                        )
             ]
         , describe "block" <|
             [ test "Block" <|

@@ -1,4 +1,4 @@
-module Parser.Expression exposing (Expression(..), parser)
+module Parser.Expression exposing (Expression(..), csv, numberedList, parser, table)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
@@ -277,3 +277,36 @@ getChompedString generation lineNumber parser_ =
         |. parser_
         |= Parser.getOffset
         |= Parser.getSource
+
+
+numberedList =
+    """[numbered-list 
+
+[item Raspberry jam]
+
+[item Sourdough bread]
+
+]
+"""
+
+
+table =
+    """[table
+
+[row Hydrogen, 1, 1]
+
+[row Helium, 2, 4]
+
+[row Lithium, 3, 6]
+
+]
+"""
+
+
+csv =
+    """[csv
+Hydrogen, 1, 1
+Helium, 2, 4
+Lithium, 3, 6
+]
+"""
