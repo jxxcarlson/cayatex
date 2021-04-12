@@ -2,7 +2,7 @@ module ExpressionTests exposing (..)
 
 import Expect
 import Parser.Advanced exposing (run)
-import Parser.Expression exposing (..)
+import Parser.Element exposing (..)
 import Parser.Getters exposing (getArgs, getBody, strip)
 import Parser.Tool as T
 import Test exposing (describe, fuzz, test)
@@ -56,7 +56,7 @@ p str =
 
 
 suite =
-    describe "Parser.Expression"
+    describe "Parser.Element"
         [ describe "inline"
             [ test "Text" <|
                 \_ ->
@@ -144,27 +144,5 @@ suite =
                     Expect.equal
                         (p verbatim)
                         (Ok (Element "verbatim" [] (LX [ Text "This is a test:\n  indented 2\n\n    indented 4\n" Nothing ] Nothing) Nothing))
-            ]
-        , describe "block" <|
-            [ test "Block" <|
-                \_ ->
-                    Expect.equal
-                        (run (parser 1 2) "{yada|foo bar}mmm" |> Result.map strip)
-                        (Ok (Block "yada" [] (Just (LX [ Text "foo bar" Nothing ] Nothing)) Nothing))
-            , test "Block with argument" <|
-                \_ ->
-                    Expect.equal
-                        (run (parser 1 2) "{yada [strong stuff]|foo bar}mmm" |> Result.map strip)
-                        (Ok (Block "yada" [ Element "strong" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing ] (Just (LX [ Text "foo bar" Nothing ] Nothing)) Nothing))
-            , test "Block with several arguments" <|
-                \_ ->
-                    Expect.equal
-                        (run (parser 1 2) "{yada 7, 8, [strong stuff]|foo bar} mmm" |> Result.map strip)
-                        (Ok (Block "yada" [ Text "7" Nothing, Text "8" Nothing, Element "strong" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing ] (Just (LX [ Text "foo bar" Nothing ] Nothing)) Nothing))
-            , test "Nested blocks" <|
-                \_ ->
-                    Expect.equal
-                        (run (parser 1 2) "{indent|\nThis is a test:\n{theorem|\nMany primes!}}" |> Result.map strip)
-                        (Ok (Block "indent" [] (Just (LX [ Text "\nThis is a test:\n" Nothing, Block "theorem" [] (Just (LX [ Text "\nMany primes!" Nothing ] Nothing)) Nothing ] Nothing)) Nothing))
             ]
         ]

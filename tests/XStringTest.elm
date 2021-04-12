@@ -11,7 +11,7 @@ text =
 
 
 suite =
-    describe "Parser.Expression"
+    describe "Parser.Element"
         [ describe "XString"
             [ test "text without escape" <|
                 \_ ->

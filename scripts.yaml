@@ -1,5 +1,5 @@
 scripts:
  
-  make: elm make src/Expression.elm
+  make: elm make src/Element.elm
   
   cloc: cloc --by-file src/

@@ -1,12 +1,12 @@
 module Parser.Getters exposing (..)
 
-import Parser.Expression exposing (Expression(..))
+import Parser.Element exposing (Element(..))
 import Parser.SourceMap exposing (SourceMap)
 
 
 {-| Set the SourceMap to Nothing
 -}
-strip : Expression -> Expression
+strip : Element -> Element
 strip expr =
     case expr of
         Text str _ ->
@@ -15,23 +15,17 @@ strip expr =
         Element name args body_ _ ->
             Element name args (strip body_) Nothing
 
-        Block name args body_ _ ->
-            Block name (List.map strip args) (Maybe.map strip body_) Nothing
-
         LX expr_ _ ->
             LX (List.map strip expr_) Nothing
 
 
-getSource : Expression -> Maybe SourceMap
+getSource : Element -> Maybe SourceMap
 getSource expr =
     case expr of
         Text _ sm ->
             sm
 
         Element _ _ _ sm ->
-            sm
-
-        Block _ _ _ sm ->
             sm
 
         LX expr_ sm ->
@@ -50,9 +44,6 @@ getArgs_ expr =
         Element _ args_ _ _ ->
             Nothing
 
-        Block _ args_ _ _ ->
-            Just args_
-
         LX expr_ _ ->
             Nothing
 
@@ -68,9 +59,6 @@ getBody_ expr =
 
         Element _ _ body_ _ ->
             Nothing
-
-        Block _ _ body_ _ ->
-            body_
 
         LX _ _ ->
             Nothing

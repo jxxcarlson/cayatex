@@ -1,13 +1,13 @@
 module Parser.Driver exposing (..)
 
-import Parser.Expression as Expression exposing (Expression(..))
+import Parser.Element as Expression exposing (Element(..))
 import Parser.Getters as Getters
 import Parser.Loop as Loop
 import Parser.SourceMap exposing (SourceMap)
 import Parser.TextCursor exposing (TextCursor)
 
 
-packet : Loop.Packet Expression
+packet : Loop.Packet Element
 packet =
     { parser = Expression.parser
     , getSource = Getters.getSource
@@ -17,7 +17,7 @@ packet =
     }
 
 
-parseLoop : Int -> Int -> String -> TextCursor Expression
+parseLoop : Int -> Int -> String -> TextCursor Element
 parseLoop generation initialLineNumber str =
     Loop.parseLoop packet generation initialLineNumber str
 
@@ -28,7 +28,7 @@ pl str =
 
 {-| increment the offset field of the SourceMap component of an Expression
 -}
-incrementOffset : Int -> Expression -> Expression
+incrementOffset : Int -> Element -> Element
 incrementOffset delta expr =
     case expr of
         Text s sm ->
@@ -36,9 +36,6 @@ incrementOffset delta expr =
 
         Element name args body_ sm ->
             Element name args body_ (incrementSourceMapOffset delta sm)
-
-        Block name args body_ sm ->
-            Block name args body_ (incrementSourceMapOffset delta sm)
 
         LX e sm ->
             LX e (incrementSourceMapOffset delta sm)

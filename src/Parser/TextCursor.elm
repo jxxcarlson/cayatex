@@ -6,7 +6,7 @@ module Parser.TextCursor exposing (TextCursor, init, incrementBlockIndex, increm
 
 -}
 
--- import Parser.Expression exposing (Expression)
+-- import Parser.Element exposing (Expression)
 
 
 {-| Data structure used by Parser.Loop.run as it progressively "eats" bites of

@@ -1,4 +1,4 @@
-module Parser.Expression exposing (Expression(..), parser)
+module Parser.Element exposing (Element(..), parser)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
@@ -6,11 +6,10 @@ import Parser.Tool as T
 import Parser.XString as XString
 
 
-type Expression
+type Element
     = Text String (Maybe SourceMap)
-    | Element String (List String) Expression (Maybe SourceMap)
-    | Block String (List Expression) (Maybe Expression) (Maybe SourceMap)
-    | LX (List Expression) (Maybe SourceMap)
+    | Element String (List String) Element (Maybe SourceMap)
+    | LX (List Element) (Maybe SourceMap)
 
 
 
@@ -21,12 +20,12 @@ type alias Parser a =
     Parser.Parser Context Problem a
 
 
-parser : Int -> Int -> Parser Expression
+parser : Int -> Int -> Parser Element
 parser generation lineNumber =
-    Parser.oneOf [ inlineExpression generation lineNumber, block generation lineNumber ]
+    inlineExpression generation lineNumber
 
 
-manyExpression : Int -> Int -> Parser Expression
+manyExpression : Int -> Int -> Parser Element
 manyExpression generation lineNumber =
     Parser.inContext CManyExpression <|
         (T.many
@@ -36,94 +35,48 @@ manyExpression generation lineNumber =
 
 
 
--- BLOCK
-
-
-block : Int -> Int -> Parser Expression
-block generation lineNumber =
-    Parser.succeed (\start ( name, args_, body_ ) end source -> Block name args_ body_ (Just { generation = generation, blockOffset = lineNumber, offset = start, length = end - start }))
-        |= Parser.getOffset
-        |. blockStartSymbol
-        |= Parser.oneOf [ Parser.backtrackable (blockPath1 generation lineNumber), blockPath2 generation lineNumber ]
-        |= Parser.getOffset
-        |= Parser.getSource
-
-
-{-| "|theorem|Many primes!|end"
--}
-blockPath1 generation lineNumber =
-    Parser.succeed (\name body_ -> ( name, [], body_ ))
-        |= (string_ [ ' ', '|' ] |> Parser.map String.trim)
-        |. blockSeparatorSymbol
-        |= blockBody generation lineNumber
-        |. Parser.spaces
-
-
-{-| "|theorem title:Pythagoras| Many primes!|end"
--}
-blockPath2 generation lineNumber =
-    Parser.succeed (\name args_ body_ -> ( name, args_, body_ ))
-        |= (string_ [ ' ' ] |> Parser.map String.trim)
-        |. symbol_ " " "blockPath3, 1"
-        |= T.optionalList blockArgs
-        |. blockSeparatorSymbol
-        |= blockBody generation lineNumber
-        |. Parser.spaces
-
-
-blockArgs =
-    Parser.succeed identity
-        |= T.manySeparatedBy comma (inlineExpressionWithPredicate XString.isNotExtendedLanguageChar 0 0)
-        |. Parser.spaces
-
-
-blockBody generation lineNumber =
-    T.first (T.maybe (Parser.lazy (\_ -> manyExpression generation lineNumber))) endOfBlockSymbol
-
-
-
 -- INLINE
 
 
-inlineExpressionList : Int -> Int -> Parser Expression
+inlineExpressionList : Int -> Int -> Parser Element
 inlineExpressionList generation lineNumber =
     Parser.inContext (CInline_ "inlineExpressionList") <|
         Parser.lazy (\_ -> T.many (inlineExpression generation lineNumber) |> Parser.map (\list -> LX list Nothing))
 
 
-inlineExpressionWithPredicate : (Char -> Bool) -> Int -> Int -> Parser Expression
+inlineExpressionWithPredicate : (Char -> Bool) -> Int -> Int -> Parser Element
 inlineExpressionWithPredicate predicate generation lineNumber =
-    Parser.oneOf [ inline generation lineNumber, textWithPredicate predicate generation lineNumber ]
+    Parser.oneOf [ primitiveElement generation lineNumber, textWithPredicate predicate generation lineNumber ]
 
 
-inlineExpression : Int -> Int -> Parser Expression
+inlineExpression : Int -> Int -> Parser Element
 inlineExpression generation lineNumber =
-    Parser.oneOf [ inline generation lineNumber, text generation lineNumber ]
+    Parser.oneOf [ primitiveElement generation lineNumber, text generation lineNumber ]
 
 
 {-|
 
-> run (inline 0 0) "[strong |0| stuff]"
-> Ok (Inline "strong" ["0"] (" stuff") (Just { blockOffset = 0, content = "[strong |0| stuff]", generation = 0, length = 18, offset = 0 }))
+> run (primitiveElement 0 0) "[strong |0| stuff]"
+> Ok (Element "strong" ["0"] (" stuff") (Just { blockOffset = 0, content = "[strong |0| stuff]", generation = 0, length = 18, offset = 0 }))
 
-> run (inline 0 0) "[strong stuff]"
-> Ok (Inline "strong" [] "stuff" (Just { blockOffset = 0, content = "[strong stuff]", generation = 0, length = 14, offset = 0 }))
+> run (primitiveElement 0 0) "[strong stuff]"
+> Ok (Element "strong" [] "stuff" (Just { blockOffset = 0, content = "[strong stuff]", generation = 0, length = 14, offset = 0 }))
 
 -}
-inline : Int -> Int -> Parser Expression
-inline generation blockOffset =
+primitiveElement : Int -> Int -> Parser Element
+primitiveElement generation blockOffset =
     Parser.inContext CInline <|
         Parser.succeed (\start name ( args, body_ ) end source -> Element name args body_ (Just { generation = generation, blockOffset = blockOffset, offset = start, length = end - start }))
             |= Parser.getOffset
             |. leftBracket
-            |= inlineName
+            |= elementName
             |= argsAndBody
             |. rightBracket
             |= Parser.getOffset
             |= Parser.getSource
 
 
-inlineName =
+elementName =
     -- Parser.oneOf [ Parser.backtrackable (T.first (string_ [ ' ' ]) oneSpace), T.first (string_ [ '\n' ]) newLine ]
     T.first (string_ [ ' ', '\n' ]) Parser.spaces
 
@@ -133,38 +86,38 @@ argsAndBody =
         Parser.oneOf [ argsAndBody_, bodyOnly ]
 
 
-inlineArgs =
+elementArgs =
     Parser.inContext (CInline_ "inlineArgs") <|
-        T.between pipeSymbol innerInlineArgs pipeSymbol
+        T.between pipeSymbol innerElementArgs pipeSymbol
 
 
-innerInlineArgs =
+innerElementArgs =
     T.manySeparatedBy comma (string [ ',', '|' ])
 
 
-inlineBody : Parser.Parser Context Problem Expression
-inlineBody =
+elementBody : Parser.Parser Context Problem Element
+elementBody =
     Parser.inContext (CInline_ "body") <|
         Parser.lazy (\_ -> T.many (inlineExpression 0 0) |> Parser.map (\list -> LX list Nothing))
 
 
 argsAndBody_ =
     Parser.succeed (\args body_ -> ( args, body_ ))
-        |= inlineArgs
+        |= elementArgs
         |. Parser.spaces
-        |= inlineBody
+        |= elementBody
 
 
 bodyOnly =
     Parser.succeed (\body_ -> ( [], body_ ))
-        |= inlineBody
+        |= elementBody
 
 
 
 -- TEXT AND STRINGS
 
 
-text : Int -> Int -> Parser Expression
+text : Int -> Int -> Parser Element
 text generation lineNumber =
     Parser.inContext TextExpression <|
         (XString.textWithPredicate XString.isNonLanguageChar
@@ -172,7 +125,7 @@ text generation lineNumber =
         )
 
 
-textWithPredicate : (Char -> Bool) -> Int -> Int -> Parser Expression
+textWithPredicate : (Char -> Bool) -> Int -> Int -> Parser Element
 textWithPredicate predicate generation lineNumber =
     Parser.inContext TextExpression <|
         (XString.textWithPredicate predicate
