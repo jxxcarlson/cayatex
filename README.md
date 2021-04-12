@@ -238,6 +238,76 @@ later.
 
 ## Questions and Issues
 
+## On the question of one construct or two
+
+Re the idea of using only one construct — e.g. inline elements — it
+works.  All of the examples below are parsed into the current AST type.
+If we adopt this idea, we should change the name of InLine to something
+else.
+
+Re the type of arguments, in the current setup, an Inline element
+has a (function) name, a list of arguments, and a body.  The list
+of arguments is a possibly empty list of strings.  The body
+is a possibly empty list of InlineExpressions.  An InlineExpression
+is either Text or an Inline.  Thus the body is parsed but the args
+are not.
+
+Note that this setup (see example below) can handle verbatim text
+without having some special treatment by the parser.
+
+There is a theoretical reason why we don't need two constructs: if we
+can define functions, we can do anything.  The only downside that I see
+is that LaTeX has text, macros, and environments, so the mapping 
+from CaYaTeX to LaTeX will not be quite so straightforward.  We will
+probably need a dictionary which tells us which function names map
+to macros and which map to environments.  For rendering to Html, we 
+won't need this.
+    
+
+### Examples
+
+    [theorem |title Euclid| There are infinitely many primes [math p \\equiv 1 \\mod 4]]
+    
+    [numbered-list
+    
+    [item Raspberry jam]
+    
+    [item Sourdough bread]
+    
+    ]
+    
+    
+    
+    
+    [table
+    
+    [row Hydrogen, 1, 1]
+    
+    [row Helium, 2, 4]
+    
+    [row Lithium, 3, 6]
+    
+    ]
+    
+    
+    
+    [csv
+    Hydrogen, 1, 1
+    Helium, 2, 4
+    Lithium, 3, 6
+    ]
+    
+    
+    
+    [verbatim
+    This is a test:
+    indented 2
+    
+        indented 4
+    
+
+
+
 
 ## Prior Art
 
