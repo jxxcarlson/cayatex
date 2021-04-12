@@ -51,8 +51,8 @@ This is a test:
 """
 
 
-p str =
-    run (parser 1 2) str |> Result.map strip
+runElement str =
+    run (element 1 2) str |> Result.map strip
 
 
 suite =
@@ -61,45 +61,45 @@ suite =
             [ test "Text" <|
                 \_ ->
                     Expect.equal
-                        (run (parser 0 0) "this is a test")
-                        (Ok (Text "this is a test" (Just { blockOffset = 0, generation = 0, length = 14, offset = 0 })))
+                        (runElement "this is a test")
+                        (Ok (Text "this is a test" Nothing))
             , test "Inline" <|
                 \_ ->
                     Expect.equal
-                        (run (parser 1 2) "[image |height:40, width:100| stuff]" |> Result.map strip)
+                        (run (element 1 2) "[image |height:40, width:100| stuff]" |> Result.map strip)
                         (Ok (Element "image" [ "height:40", "width:100" ] (LX [ Text "stuff" Nothing ] Nothing) Nothing))
             , test "Inline, complex" <|
                 \_ ->
                     Expect.equal
-                        (run (T.many (parser 0 0)) "foo bar [strong stuff] ho ho ho" |> Result.map (List.map strip))
+                        (run (T.many (element 0 0)) "foo bar [strong stuff] ho ho ho" |> Result.map (List.map strip))
                         (Ok [ Text "foo bar " Nothing, Element "strong" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing, Text " ho ho ho" Nothing ])
             , test "inline (2)" <|
                 \_ ->
-                    Expect.equal (run (parser 0 0) "[strong [italic stuff]] ho ho ho!" |> Result.map Parser.Getters.strip)
+                    Expect.equal (runElement "[strong [italic stuff]] ho ho ho!" |> Result.map Parser.Getters.strip)
                         (Ok (Element "strong" [] (LX [ Element "italic" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing ] Nothing) Nothing))
             , test "inline (3)" <|
                 \_ ->
-                    Expect.equal (run (parser 0 0) "[strong |font-size 36, la-di-dah: 79| [italic stuff]] ho ho ho!" |> Result.map Parser.Getters.strip)
+                    Expect.equal (runElement "[strong |font-size 36, la-di-dah: 79| [italic stuff]] ho ho ho!" |> Result.map Parser.Getters.strip)
                         (Ok (Element "strong" [ "font-size 36", "la-di-dah: 79" ] (LX [ Element "italic" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing ] Nothing) Nothing))
             , test "inlineExpression" <|
                 \_ ->
-                    Expect.equal (run (parser 0 0) "[strong |font-size 36, la-di-dah: 79| [italic stuff]] ho ho ho!" |> Result.map Parser.Getters.strip)
+                    Expect.equal (runElement "[strong |font-size 36, la-di-dah: 79| [italic stuff]] ho ho ho!" |> Result.map Parser.Getters.strip)
                         (Ok (Element "strong" [ "font-size 36", "la-di-dah: 79" ] (LX [ Element "italic" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing ] Nothing) Nothing))
             , test "many inlineExpression" <|
                 \_ ->
-                    Expect.equal (run (T.many (parser 0 0)) "[strong |font-size 36, la-di-dah: 79| [italic stuff]] ho ho [large ho]!" |> Result.map (List.map Parser.Getters.strip))
+                    Expect.equal (run (T.many (element 0 0)) "[strong |font-size 36, la-di-dah: 79| [italic stuff]] ho ho [large ho]!" |> Result.map (List.map Parser.Getters.strip))
                         (Ok [ Element "strong" [ "font-size 36", "la-di-dah: 79" ] (LX [ Element "italic" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing ] Nothing) Nothing, Text " ho ho " Nothing, Element "large" [] (LX [ Text "ho" Nothing ] Nothing) Nothing, Text "!" Nothing ])
             ]
         , describe "inline-extended" <|
             [ test "theorem" <|
                 \_ ->
                     Expect.equal
-                        (p "[theorem |title Euclid| There are infinitely many primes [math p \\equiv 1 \\mod 4]]")
+                        (runElement "[theorem |title Euclid| There are infinitely many primes [math p \\equiv 1 \\mod 4]]")
                         (Ok (Element "theorem" [ "title Euclid" ] (LX [ Text "There are infinitely many primes " Nothing, Element "math" [] (LX [ Text "p \\equiv 1 \\mod 4" Nothing ] Nothing) Nothing ] Nothing) Nothing))
             , test "numbered-list" <|
                 \_ ->
                     Expect.equal
-                        (p numberedList)
+                        (runElement numberedList)
                         (Ok
                             (Element "numbered-list"
                                 []
@@ -117,7 +117,7 @@ suite =
             , test "table" <|
                 \_ ->
                     Expect.equal
-                        (p table)
+                        (runElement table)
                         (Ok
                             (Element "table"
                                 []
@@ -137,12 +137,12 @@ suite =
             , test "csv" <|
                 \_ ->
                     Expect.equal
-                        (p csv)
+                        (runElement csv)
                         (Ok (Element "csv" [] (LX [ Text "Hydrogen, 1, 1\nHelium, 2, 4\nLithium, 3, 6\n" Nothing ] Nothing) Nothing))
             , test "verbatim" <|
                 \_ ->
                     Expect.equal
-                        (p verbatim)
+                        (runElement verbatim)
                         (Ok (Element "verbatim" [] (LX [ Text "This is a test:\n  indented 2\n\n    indented 4\n" Nothing ] Nothing) Nothing))
             ]
         ]

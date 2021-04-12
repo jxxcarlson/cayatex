@@ -1,6 +1,6 @@
 module Parser.Driver exposing (..)
 
-import Parser.Element as Expression exposing (Element(..))
+import Parser.Element as Element exposing (Element(..))
 import Parser.Getters as Getters
 import Parser.Loop as Loop
 import Parser.SourceMap exposing (SourceMap)
@@ -9,7 +9,7 @@ import Parser.TextCursor exposing (TextCursor)
 
 packet : Loop.Packet Element
 packet =
-    { parser = Expression.parser
+    { parser = Element.element
     , getSource = Getters.getSource
     , incrementOffset = incrementOffset
     , highlighter = Nothing

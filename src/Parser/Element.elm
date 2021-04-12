@@ -1,4 +1,4 @@
-module Parser.Element exposing (Element(..), parser)
+module Parser.Element exposing (Element(..), element)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
@@ -20,37 +20,26 @@ type alias Parser a =
     Parser.Parser Context Problem a
 
 
-parser : Int -> Int -> Parser Element
-parser generation lineNumber =
-    inlineExpression generation lineNumber
 
-
-manyExpression : Int -> Int -> Parser Element
-manyExpression generation lineNumber =
-    Parser.inContext CManyExpression <|
-        (T.many
-            (parser generation lineNumber)
-            |> Parser.map (\list -> LX list Nothing)
-        )
-
-
-
+--parser : Int -> Int -> Parser Element
+--parser generation lineNumber =
+--    element generation lineNumber
+--manyExpression : Int -> Int -> Parser Element
+--manyExpression generation lineNumber =
+--    Parser.inContext CManyExpression <|
+--        (T.many
+--            (parser generation lineNumber)
+--            |> Parser.map (\list -> LX list Nothing)
+--        )
 -- INLINE
+--inlineExpressionList : Int -> Int -> Parser Element
+--inlineExpressionList generation lineNumber =
+--    Parser.inContext (CInline_ "inlineExpressionList") <|
+--        Parser.lazy (\_ -> T.many (inlineExpression generation lineNumber) |> Parser.map (\list -> LX list Nothing))
 
 
-inlineExpressionList : Int -> Int -> Parser Element
-inlineExpressionList generation lineNumber =
-    Parser.inContext (CInline_ "inlineExpressionList") <|
-        Parser.lazy (\_ -> T.many (inlineExpression generation lineNumber) |> Parser.map (\list -> LX list Nothing))
-
-
-inlineExpressionWithPredicate : (Char -> Bool) -> Int -> Int -> Parser Element
-inlineExpressionWithPredicate predicate generation lineNumber =
-    Parser.oneOf [ primitiveElement generation lineNumber, textWithPredicate predicate generation lineNumber ]
-
-
-inlineExpression : Int -> Int -> Parser Element
-inlineExpression generation lineNumber =
+element : Int -> Int -> Parser Element
+element generation lineNumber =
     Parser.oneOf [ primitiveElement generation lineNumber, text generation lineNumber ]
 
 
@@ -98,7 +87,7 @@ innerElementArgs =
 elementBody : Parser.Parser Context Problem Element
 elementBody =
     Parser.inContext (CInline_ "body") <|
-        Parser.lazy (\_ -> T.many (inlineExpression 0 0) |> Parser.map (\list -> LX list Nothing))
+        Parser.lazy (\_ -> T.many (element 0 0) |> Parser.map (\list -> LX list Nothing))
 
 
 argsAndBody_ =
@@ -179,18 +168,6 @@ comma =
     T.first comma_ Parser.spaces
 
 
-blockStartSymbol =
-    symbol_ "{" "Block start"
-
-
-blockSeparatorSymbol =
-    symbol_ "|" "Block separator"
-
-
-endOfBlockSymbol =
-    Parser.symbol (Parser.Token "}" (ExpectingToken "}"))
-
-
 pipeSymbol =
     symbol_ "|" "Pipe"
 
@@ -201,14 +178,6 @@ leftBracket =
 
 rightBracket =
     symbol_ "]" "Right bracket"
-
-
-oneSpace =
-    symbol_ " " "One space"
-
-
-newLine =
-    symbol_ "\n" "New line"
 
 
 
