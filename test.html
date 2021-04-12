@@ -1,0 +1,51 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>MathJax example</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+</head>
+<body>
+
+<div style = "margin-bottom:18px">
+<div>renderString "[strong ho ho ho]"
+</div>
+<strong>ho ho ho</strong>"
+</div>
+
+<div style = "margin-bottom:18px">
+<div>renderString "[strong ho ho ho [italic and] ha ha ha]"</div>
+<strong>ho ho ho  <i>and</i>  ha ha ha</strong>
+</div>
+
+<div style = "margin-bottom:18px">
+<div>renderString "Pythagoras said that [math a^2 + b^2 = c^2]"</div>
+    <div>Pythagoras said that  <span>\(a^2 + b^2 = c^2\)</span></div>
+</div>
+
+
+<div style = "margin-bottom:18px">
+    <div>renderString "In class we learned that [mathDisplay a^2 + b^2 = c^2.] This is an extremely cool formula."</div>
+    <div>In class we learned that  <div>\[a^2 + b^2 = c^2.\]</div>  This is an extremely cool formula.</div>
+</div>
+
+
+
+<div style = "margin-bottom:18px">
+    <div>renderString "Today we will discuss the following result: [theorem There are infinitely many primes!]"</div>
+    <div>Today we will discuss the following result:
+        <div><strong>Theorem</strong>There are infinitely many primes!</div>
+    </div>
+</div>
+
+<div>Today we will discuss the following result:
+    <div><strong>Theorem.</strong>
+        There are infinitely many primes!
+    </div>
+</div>
+

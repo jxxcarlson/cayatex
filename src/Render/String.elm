@@ -17,7 +17,17 @@ import Parser.Element as Element exposing (Element(..))
 
 renderString : String -> String
 renderString str =
-    case Element.parse str of
+    case Element.parseList 0 0 str of
+        Err _ ->
+            "Parser error for ((" ++ str ++ "))"
+
+        Ok list ->
+            List.map renderElement list |> String.join " " |> div
+
+
+renderString_ : String -> String
+renderString_ str =
+    case Element.parse 0 0 str of
         Err _ ->
             "Parser error for ((" ++ str ++ "))"
 
@@ -29,7 +39,7 @@ renderElement : Element -> String
 renderElement element =
     case element of
         Text str _ ->
-            span str
+            str
 
         Element name args body _ ->
             renderWithDictionary name args body
@@ -44,30 +54,70 @@ renderWithDictionary name args body =
             span (name ++ ": unimplemented")
 
         Just f ->
-            f name args body
+            case f of
+                I g ->
+                    g name args body
 
-
-renderStrong name _ body =
-    tag "strong" (renderElement body)
+                B g ->
+                    g name args body
 
 
 type alias FRender =
     String -> List String -> Element -> String
 
 
+type RenderFunction
+    = I FRender
+    | B FRender
+
+
 type alias RenderElementDict =
-    Dict String FRender
+    Dict String RenderFunction
 
 
 renderElementDict : RenderElementDict
 renderElementDict =
     Dict.fromList
-        [ ( "strong", renderStrong )
+        [ ( "strong", I renderStrong )
+        , ( "italic", I renderItalic )
+        , ( "code", I renderCode )
+        , ( "math", I renderMath )
+        , ( "mathDisplay", B renderMathDisplay )
+        , ( "theorem", B renderTheorem )
         ]
+
+
+renderTheorem _ args body =
+    div ("<p><strong>Theorem.</strong></p><p>" ++ renderElement body ++ "</p>")
+
+
+renderMath _ _ body =
+    span ("\\(" ++ renderElement body ++ "\\)")
+
+
+renderMathDisplay _ _ body =
+    div ("\\[" ++ renderElement body ++ "\\]")
+
+
+renderCode _ _ body =
+    tag "code" (renderElement body)
+
+
+renderStrong _ _ body =
+    tag "strong" (renderElement body)
+
+
+renderItalic _ _ body =
+    tag "i" (renderElement body)
 
 
 
 -- HELPERS
+
+
+div : String -> String
+div str =
+    tag "div" str
 
 
 span : String -> String

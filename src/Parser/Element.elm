@@ -1,4 +1,4 @@
-module Parser.Element exposing (Element(..), element, parse)
+module Parser.Element exposing (Element(..), element, elementList, parse, parseList)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
@@ -16,13 +16,23 @@ type Element
 -- PARSER
 
 
-parse : String -> Result (List (Parser.DeadEnd Context Problem)) Element
-parse str =
+parse : Int -> Int -> String -> Result (List (Parser.DeadEnd Context Problem)) Element
+parse generation lineNumber str =
     Parser.run (element 1 2) str
+
+
+parseList : Int -> Int -> String -> Result (List (Parser.DeadEnd Context Problem)) (List Element)
+parseList generation lineNumber str =
+    Parser.run (elementList generation lineNumber) str
 
 
 type alias Parser a =
     Parser.Parser Context Problem a
+
+
+elementList : Int -> Int -> Parser (List Element)
+elementList generation lineNumber =
+    T.many (element generation lineNumber)
 
 
 element : Int -> Int -> Parser Element
