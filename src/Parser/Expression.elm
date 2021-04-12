@@ -1,4 +1,4 @@
-module Parser.Expression exposing (Expression(..), csv, numberedList, parser, table, verbatim)
+module Parser.Expression exposing (Expression(..), parser)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))

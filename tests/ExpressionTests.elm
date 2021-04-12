@@ -143,7 +143,7 @@ suite =
                 \_ ->
                     Expect.equal
                         (p verbatim)
-                        (Ok (Inline "verbatim" [] (LX [ Text "This is a test:\n  indented 2\n  \n    indented 4\n" Nothing ] Nothing) Nothing))
+                        (Ok (Inline "verbatim" [] (LX [ Text "This is a test:\n  indented 2\n\n    indented 4\n" Nothing ] Nothing) Nothing))
             ]
         , describe "block" <|
             [ test "Block" <|
