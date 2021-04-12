@@ -19,6 +19,38 @@ numberedList =
 """
 
 
+table =
+    """[table
+
+[row Hydrogen, 1, 1]
+
+[row Helium, 2, 4]
+
+[row Lithium, 3, 6]
+
+]
+"""
+
+
+csv =
+    """[csv
+Hydrogen, 1, 1
+Helium, 2, 4
+Lithium, 3, 6
+]
+"""
+
+
+verbatim =
+    """[verbatim
+This is a test:
+  indented 2
+
+    indented 4
+]
+"""
+
+
 p str =
     run (parser 1 2) str |> Result.map strip
 
@@ -72,8 +104,7 @@ suite =
                             (Inline "numbered-list"
                                 []
                                 (LX
-                                    [ Text "\n\n" Nothing
-                                    , Inline "item" [] (LX [ Text "Raspberry jam" Nothing ] Nothing) Nothing
+                                    [ Inline "item" [] (LX [ Text "Raspberry jam" Nothing ] Nothing) Nothing
                                     , Text "\n\n" Nothing
                                     , Inline "item" [] (LX [ Text "Sourdough bread" Nothing ] Nothing) Nothing
                                     , Text "\n\n" Nothing
@@ -83,6 +114,36 @@ suite =
                                 Nothing
                             )
                         )
+            , test "table" <|
+                \_ ->
+                    Expect.equal
+                        (p table)
+                        (Ok
+                            (Inline "table"
+                                []
+                                (LX
+                                    [ Inline "row" [] (LX [ Text "Hydrogen, 1, 1" Nothing ] Nothing) Nothing
+                                    , Text "\n\n" Nothing
+                                    , Inline "row" [] (LX [ Text "Helium, 2, 4" Nothing ] Nothing) Nothing
+                                    , Text "\n\n" Nothing
+                                    , Inline "row" [] (LX [ Text "Lithium, 3, 6" Nothing ] Nothing) Nothing
+                                    , Text "\n\n" Nothing
+                                    ]
+                                    Nothing
+                                )
+                                Nothing
+                            )
+                        )
+            , test "csv" <|
+                \_ ->
+                    Expect.equal
+                        (p csv)
+                        (Ok (Inline "csv" [] (LX [ Text "Hydrogen, 1, 1\nHelium, 2, 4\nLithium, 3, 6\n" Nothing ] Nothing) Nothing))
+            , test "verbatim" <|
+                \_ ->
+                    Expect.equal
+                        (p verbatim)
+                        (Ok (Inline "verbatim" [] (LX [ Text "This is a test:\n  indented 2\n  \n    indented 4\n" Nothing ] Nothing) Nothing))
             ]
         , describe "block" <|
             [ test "Block" <|
