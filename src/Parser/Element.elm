@@ -20,24 +20,6 @@ type alias Parser a =
     Parser.Parser Context Problem a
 
 
-
---parser : Int -> Int -> Parser Element
---parser generation lineNumber =
---    element generation lineNumber
---manyExpression : Int -> Int -> Parser Element
---manyExpression generation lineNumber =
---    Parser.inContext CManyExpression <|
---        (T.many
---            (parser generation lineNumber)
---            |> Parser.map (\list -> LX list Nothing)
---        )
--- INLINE
---inlineExpressionList : Int -> Int -> Parser Element
---inlineExpressionList generation lineNumber =
---    Parser.inContext (CInline_ "inlineExpressionList") <|
---        Parser.lazy (\_ -> T.many (inlineExpression generation lineNumber) |> Parser.map (\list -> LX list Nothing))
-
-
 element : Int -> Int -> Parser Element
 element generation lineNumber =
     Parser.oneOf [ primitiveElement generation lineNumber, text generation lineNumber ]

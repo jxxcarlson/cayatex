@@ -11,7 +11,7 @@ suite =
             [ test "nonTerminals" <|
                 \_ ->
                     Expect.equal
-                        (nonTerminals [ GInlineArgs, GTerminal "foo", GInlineArgs ])
-                        [ GInlineArgs, GInlineArgs ]
+                        (nonTerminals [ GElementArgs, GTerminal "foo", GElementArgs ])
+                        [ GElementArgs, GElementArgs ]
             ]
         ]

@@ -6,12 +6,10 @@ import Random
 
 type Symbol
     = GText
-    | GInline
-    | GInlineArgs
-    | GInlineBody
-    | GInlineExpression
-    | GExpression
-    | GBlock
+    | GPrmitiveElement
+    | GElementArgs
+    | GElementBody
+    | GElement
     | GLX
     | GTerminal String
     | GTerminalList (List String)
@@ -47,24 +45,11 @@ isTerminal symbol =
             False
 
 
-
-{-
-   InlineExpression ->
-           Text String
-           | Inline "[" Name Args InlineExpression "]"
-           | List InlineExpression
-   Args ->
-           Empty
-           | "|" NonemptyString ("," NonemptyString)* "|"
-
--}
-
-
 grammar =
-    [ { lhs = GInlineExpression, rhs = [ GTerminal "_x" ] }
-    , { lhs = GInlineExpression, rhs = [ leftBracket, GTerminal "_name", GInlineArgs, GInlineExpression, rightBracket ] }
-    , { lhs = GInlineArgs, rhs = [ GTerminal "" ] }
-    , { lhs = GInlineArgs, rhs = [ pipeSymbol, GTerminalList [], pipeSymbol ] }
+    [ { lhs = GElement, rhs = [ GTerminal "_x" ] }
+    , { lhs = GElement, rhs = [ leftBracket, GTerminal "_name", GElementArgs, GElement, rightBracket ] }
+    , { lhs = GElementArgs, rhs = [ GTerminal "" ] }
+    , { lhs = GElementArgs, rhs = [ pipeSymbol, GTerminalList [], pipeSymbol ] }
     ]
 
 
@@ -73,7 +58,12 @@ nonTerminals symbols =
     List.filter (\s -> not (isTerminal s)) symbols
 
 
-{-| -}
+{-|
+
+    > generate 33 [GElement]
+    > "[italic [green mountain ]]"
+
+-}
 generate : Int -> List Symbol -> String
 generate k symbols =
     process k symbols
