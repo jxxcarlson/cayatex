@@ -1,4 +1,4 @@
-module Parser.Element exposing (Element(..), element)
+module Parser.Element exposing (Element(..), element, parse)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
@@ -14,6 +14,11 @@ type Element
 
 
 -- PARSER
+
+
+parse : String -> Result (List (Parser.DeadEnd Context Problem)) Element
+parse str =
+    Parser.run (element 1 2) str
 
 
 type alias Parser a =
