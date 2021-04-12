@@ -19,7 +19,7 @@ suite =
             , test "Inline" <|
                 \_ ->
                     Expect.equal
-                        (run (parser 1 2) "[image |height:40,width:100| stuff]" |> Result.map strip)
+                        (run (parser 1 2) "[image |height:40, width:100| stuff]" |> Result.map strip)
                         (Ok (Inline "image" [ "height:40", "width:100" ] (LX [ Text "stuff" Nothing ] Nothing) Nothing))
             , test "Inline, complex" <|
                 \_ ->

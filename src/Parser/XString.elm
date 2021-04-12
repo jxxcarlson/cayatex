@@ -97,13 +97,6 @@ languageChar =
     T.char isLanguageChar
 
 
-
---escapedChar : Parser StringData
---escapedChar =
---    T.second (Parser.Advanced.symbol (Parser.Advanced.Token "\\" ExpectingEscape)) languageChar
---        |> Parser.Advanced.map (\result -> { content = "\\" ++ result.content, start = result.start - 1, finish = result.finish })
-
-
 escapedChar : Parser StringData
 escapedChar =
     T.second (Parser.Advanced.symbol (Parser.Advanced.Token "\\" ExpectingEscape)) (T.char (\c -> True))

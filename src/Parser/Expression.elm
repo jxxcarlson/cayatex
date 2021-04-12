@@ -1,4 +1,4 @@
-module Parser.Expression exposing (Expression(..), parser, text)
+module Parser.Expression exposing (Expression(..), parser)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
@@ -167,14 +167,6 @@ text : Int -> Int -> Parser Expression
 text generation lineNumber =
     Parser.inContext TextExpression <|
         (XString.textWithPredicate XString.isNonLanguageChar
-            |> Parser.map (\data -> Text data.content (Just { blockOffset = lineNumber, offset = data.start, length = data.finish - data.start, generation = generation }))
-        )
-
-
-text2 : Int -> Int -> Parser Expression
-text2 generation lineNumber =
-    Parser.inContext TextExpression <|
-        (XString.textWithPredicate XString.isNotExtendedLanguageChar
             |> Parser.map (\data -> Text data.content (Just { blockOffset = lineNumber, offset = data.start, length = data.finish - data.start, generation = generation }))
         )
 
