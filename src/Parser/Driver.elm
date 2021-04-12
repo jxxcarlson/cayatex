@@ -34,8 +34,8 @@ incrementOffset delta expr =
         Text s sm ->
             Text s (incrementSourceMapOffset delta sm)
 
-        Inline name args body_ sm ->
-            Inline name args body_ (incrementSourceMapOffset delta sm)
+        Element name args body_ sm ->
+            Element name args body_ (incrementSourceMapOffset delta sm)
 
         Block name args body_ sm ->
             Block name args body_ (incrementSourceMapOffset delta sm)

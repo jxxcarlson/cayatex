@@ -12,8 +12,8 @@ strip expr =
         Text str _ ->
             Text str Nothing
 
-        Inline name args body_ _ ->
-            Inline name args (strip body_) Nothing
+        Element name args body_ _ ->
+            Element name args (strip body_) Nothing
 
         Block name args body_ _ ->
             Block name (List.map strip args) (Maybe.map strip body_) Nothing
@@ -28,7 +28,7 @@ getSource expr =
         Text _ sm ->
             sm
 
-        Inline _ _ _ sm ->
+        Element _ _ _ sm ->
             sm
 
         Block _ _ _ sm ->
@@ -47,7 +47,7 @@ getArgs_ expr =
         Text _ _ ->
             Nothing
 
-        Inline _ args_ _ _ ->
+        Element _ args_ _ _ ->
             Nothing
 
         Block _ args_ _ _ ->
@@ -66,7 +66,7 @@ getBody_ expr =
         Text str _ ->
             Nothing
 
-        Inline _ _ body_ _ ->
+        Element _ _ body_ _ ->
             Nothing
 
         Block _ _ body_ _ ->

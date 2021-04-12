@@ -8,7 +8,7 @@ import Parser.XString as XString
 
 type Expression
     = Text String (Maybe SourceMap)
-    | Inline String (List String) Expression (Maybe SourceMap)
+    | Element String (List String) Expression (Maybe SourceMap)
     | Block String (List Expression) (Maybe Expression) (Maybe SourceMap)
     | LX (List Expression) (Maybe SourceMap)
 
@@ -113,7 +113,7 @@ inlineExpression generation lineNumber =
 inline : Int -> Int -> Parser Expression
 inline generation blockOffset =
     Parser.inContext CInline <|
-        Parser.succeed (\start name ( args, body_ ) end source -> Inline name args body_ (Just { generation = generation, blockOffset = blockOffset, offset = start, length = end - start }))
+        Parser.succeed (\start name ( args, body_ ) end source -> Element name args body_ (Just { generation = generation, blockOffset = blockOffset, offset = start, length = end - start }))
             |= Parser.getOffset
             |. leftBracket
             |= inlineName

@@ -47,22 +47,22 @@ suite =
                 \_ ->
                     Expect.equal
                         (pl "this [strong is] a test {theorem|many primes}ho ho ho" |> List.map strip)
-                        [ Text "this " Nothing, Inline "strong" [] (LX [ Text "is" Nothing ] Nothing) Nothing, Text " a test " Nothing, Block "theorem" [] (Just (LX [ Text "many primes" Nothing ] Nothing)) Nothing, Text "ho ho ho" Nothing ]
+                        [ Text "this " Nothing, Element "strong" [] (LX [ Text "is" Nothing ] Nothing) Nothing, Text " a test " Nothing, Block "theorem" [] (Just (LX [ Text "many primes" Nothing ] Nothing)) Nothing, Text "ho ho ho" Nothing ]
             , test "Block arguments" <|
                 \_ ->
                     Expect.equal
                         (pl "{theorem [strong c], [italic d], foo|many primes}" |> getArgs)
-                        [ Just [ Inline "strong" [] (LX [ Text "c" Nothing ] Nothing) Nothing, Inline "italic" [] (LX [ Text "d" Nothing ] Nothing) Nothing, Text "foo" Nothing ] ]
+                        [ Just [ Element "strong" [] (LX [ Text "c" Nothing ] Nothing) Nothing, Element "italic" [] (LX [ Text "d" Nothing ] Nothing) Nothing, Text "foo" Nothing ] ]
             , test "Block body" <|
                 \_ ->
                     Expect.equal
                         (pl "{theorem [strong c], [italic d], foo|[strong many] primes}" |> getBody)
-                        [ Just (LX [ Inline "strong" [] (LX [ Text "many" Nothing ] Nothing) Nothing, Text " primes" Nothing ] Nothing) ]
+                        [ Just (LX [ Element "strong" [] (LX [ Text "many" Nothing ] Nothing) Nothing, Text " primes" Nothing ] Nothing) ]
             , test "Complex block body" <|
                 \_ ->
                     Expect.equal
                         (pl "{theorem [strong c], [italic d], foo|[strong many] primes}" |> getBody)
-                        [ Just (LX [ Inline "strong" [] (LX [ Text "many" Nothing ] Nothing) Nothing, Text " primes" Nothing ] Nothing) ]
+                        [ Just (LX [ Element "strong" [] (LX [ Text "many" Nothing ] Nothing) Nothing, Text " primes" Nothing ] Nothing) ]
             , test "List" <|
                 \_ ->
                     Expect.equal
@@ -126,6 +126,6 @@ suite =
                 \_ ->
                     Expect.equal
                         (pl "{theorem Euclid | There are infinitely many primes [math p \\not\\equiv 1 \\mod 4] }" |> List.map strip)
-                        [ Block "theorem" [ Text "Euclid " Nothing ] (Just (LX [ Text " There are infinitely many primes " Nothing, Inline "math" [] (LX [ Text "p \\not\\equiv 1 \\mod 4" Nothing ] Nothing) Nothing, Text " " Nothing ] Nothing)) Nothing ]
+                        [ Block "theorem" [ Text "Euclid " Nothing ] (Just (LX [ Text " There are infinitely many primes " Nothing, Element "math" [] (LX [ Text "p \\not\\equiv 1 \\mod 4" Nothing ] Nothing) Nothing, Text " " Nothing ] Nothing)) Nothing ]
             ]
         ]
