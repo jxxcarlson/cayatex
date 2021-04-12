@@ -1,4 +1,4 @@
-module Parser.XStringSimple exposing (reduce, text, text_)
+module Parser.XStringSimple exposing (..)
 
 {-| Grammar:
 
@@ -12,6 +12,8 @@ module Parser.XStringSimple exposing (reduce, text, text_)
     String -> (Text|RawString)+
 
 -}
+
+{- (reduce, text, text_) -}
 
 import Parser exposing ((|.), (|=), Parser)
 import Parser.ToolSimple as T
@@ -44,7 +46,7 @@ reduce list =
 
 text_ : Parser (List StringData)
 text_ =
-    T.many (Parser.oneOf [ textWithoutEscape, escapedChar ])
+    T.many (Parser.oneOf [ escapedChar, textWithoutEscape ])
 
 
 
@@ -77,5 +79,5 @@ languageChar =
 
 escapedChar : Parser StringData
 escapedChar =
-    T.second (Parser.symbol "\\") languageChar
+    T.second (Parser.symbol "\\") (T.char (\c -> True))
         |> Parser.map (\result -> { content = "\\" ++ result.content, start = result.start - 1, finish = result.finish })

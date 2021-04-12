@@ -28,6 +28,11 @@ suite =
                     Expect.equal
                         (run text "\\|")
                         (Ok "\\|")
+            , test "escapedText (2)" <|
+                \_ ->
+                    Expect.equal
+                        (run text "\\not true")
+                        (Ok "\\not true")
             , test "text_" <|
                 \_ ->
                     Expect.equal

@@ -5,16 +5,16 @@ import Random
 
 
 type Symbol
-    = NTText
-    | NTInline
-    | NTInlineArgs
-    | NTInlineBody
-    | NTInlineExpression
-    | NTExpression
-    | NTBlock
-    | NTLX
-    | Terminal String
-    | TerminalList (List String)
+    = GText
+    | GInline
+    | GInlineArgs
+    | GInlineBody
+    | GInlineExpression
+    | GExpression
+    | GBlock
+    | GLX
+    | GTerminal String
+    | GTerminalList (List String)
 
 
 type alias Production =
@@ -37,10 +37,10 @@ nextInt seed_ limit =
 isTerminal : Symbol -> Bool
 isTerminal symbol =
     case symbol of
-        Terminal _ ->
+        GTerminal _ ->
             True
 
-        TerminalList _ ->
+        GTerminalList _ ->
             True
 
         _ ->
@@ -61,10 +61,10 @@ isTerminal symbol =
 
 
 grammar =
-    [ { lhs = NTInlineExpression, rhs = [ Terminal "_x" ] }
-    , { lhs = NTInlineExpression, rhs = [ leftBracket, Terminal "_name", NTInlineArgs, NTInlineExpression, rightBracket ] }
-    , { lhs = NTInlineArgs, rhs = [ Terminal "" ] }
-    , { lhs = NTInlineArgs, rhs = [ pipeSymbol, TerminalList [], pipeSymbol ] }
+    [ { lhs = GInlineExpression, rhs = [ GTerminal "_x" ] }
+    , { lhs = GInlineExpression, rhs = [ leftBracket, GTerminal "_name", GInlineArgs, GInlineExpression, rightBracket ] }
+    , { lhs = GInlineArgs, rhs = [ GTerminal "" ] }
+    , { lhs = GInlineArgs, rhs = [ pipeSymbol, GTerminalList [], pipeSymbol ] }
     ]
 
 
@@ -73,9 +73,29 @@ nonTerminals symbols =
     List.filter (\s -> not (isTerminal s)) symbols
 
 
+{-| -}
 generate : Int -> List Symbol -> String
 generate k symbols =
-    process k symbols |> List.map render |> String.join " "
+    process k symbols
+        |> (\symbols_ -> ( Random.initialSeed k, symbols_ ))
+        |> mapWithState render2
+        |> Tuple.second
+        |> List.reverse
+        |> String.join ""
+
+
+mapWithState : (s -> a -> ( s, b )) -> ( s, List a ) -> ( s, List b )
+mapWithState f ( state, list ) =
+    let
+        folder : a -> ( s, List b ) -> ( s, List b )
+        folder item ( state_, list_ ) =
+            let
+                ( newState_, item_ ) =
+                    f state_ item
+            in
+            ( newState_, item_ :: list_ )
+    in
+    List.foldl folder ( state, [] ) list
 
 
 process : Int -> List Symbol -> List Symbol
@@ -157,25 +177,37 @@ matches a rules =
         |> List.map .rhs
 
 
-render : Symbol -> String
-render symbol =
+render2 : Random.Seed -> Symbol -> ( Random.Seed, String )
+render2 seed_ symbol =
     case symbol of
-        Terminal s ->
+        GTerminal s ->
             case s of
                 "_name" ->
-                    "strong"
+                    randomElement seed_ "strong " [ "italic ", "red ", "blue ", "green " ]
 
                 "_x" ->
-                    "foo"
+                    randomElement seed_ "mathematics " [ "physics ", "chemistry ", "biology ", "mountain ", "cloud ", "French ", "German " ]
 
                 _ ->
-                    s
+                    ( seed_, s )
 
-        TerminalList [] ->
-            "1, 2, 3"
+        GTerminalList [] ->
+            ( seed_, "1, 2, 3" )
 
         _ ->
-            ""
+            ( seed_, "" )
+
+
+randomElement : Random.Seed -> a -> List a -> ( Random.Seed, a )
+randomElement seed_ default list =
+    let
+        ( k, newSeed_ ) =
+            Random.step (Random.int 0 (List.length list - 1)) seed_
+
+        element =
+            List.Extra.getAt k list |> Maybe.withDefault default
+    in
+    ( newSeed_, element )
 
 
 {-|
@@ -214,12 +246,12 @@ loop s nextState_ =
 
 
 pipeSymbol =
-    Terminal "|"
+    GTerminal "|"
 
 
 leftBracket =
-    Terminal "["
+    GTerminal "["
 
 
 rightBracket =
-    Terminal "]"
+    GTerminal "]"

@@ -7,12 +7,11 @@ import Test exposing (describe, fuzz, test)
 
 suite =
     describe "Parser.Production"
-        [ Test.only <|
-            describe "helpers"
-                [ test "nonTerminals" <|
-                    \_ ->
-                        Expect.equal
-                            (nonTerminals [ NTInlineArgs, Terminal "foo", NTInlineArgs ])
-                            [ NTInlineArgs, NTInlineArgs ]
-                ]
+        [ describe "helpers"
+            [ test "nonTerminals" <|
+                \_ ->
+                    Expect.equal
+                        (nonTerminals [ GInlineArgs, GTerminal "foo", GInlineArgs ])
+                        [ GInlineArgs, GInlineArgs ]
+            ]
         ]

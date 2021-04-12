@@ -120,5 +120,12 @@ suite =
                         [ Text "Below is a CSV table.\nIt will be processed further in the rendering step\n" Nothing
                         , Block "csv" [] (Just (LX [ Text "\nHydrogen, 1, 1\nHelium, 2, 4\nLithium, 3, 6\n" Nothing ] Nothing)) Nothing
                         ]
+            , test
+                "block with math in body"
+              <|
+                \_ ->
+                    Expect.equal
+                        (pl "{theorem Euclid | There are infinitely many primes [math p \\not\\equiv 1 \\mod 4] }" |> List.map strip)
+                        [ Block "theorem" [ Text "Euclid " Nothing ] (Just (LX [ Text " There are infinitely many primes " Nothing, Inline "math" [] (LX [ Text "p \\not\\equiv 1 \\mod 4" Nothing ] Nothing) Nothing, Text " " Nothing ] Nothing)) Nothing ]
             ]
         ]
