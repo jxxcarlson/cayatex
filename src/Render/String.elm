@@ -19,7 +19,7 @@ renderString : String -> String
 renderString str =
     case Element.parseList 0 0 str of
         Err _ ->
-            "Parser error for ((" ++ str ++ "))"
+            "<span style='color:red'>Parser error for</span> <span style='color:blue'>" ++ str ++ "</span>"
 
         Ok list ->
             List.map renderElement list |> String.join "" |> div
