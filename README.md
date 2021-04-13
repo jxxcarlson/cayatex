@@ -16,6 +16,8 @@ individual args are strings without commas, (c) the body is an Element.
 4. [image |width:500, height:300, align:center| https://pythagoras.io/proof.png]
 5. [theorem |Pythagoras| For any right triangle, [math a^2 + b^2 = c^2], where
    [math a], [math b] are the legs, and [math c] is the hypotenuse.]
+   
+**Note.** See branch master for a variant of the language which contains *Blocks.*   
 
 *Comments:*
 
