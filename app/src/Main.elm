@@ -131,7 +131,7 @@ mainColumn model =
         [ column [ spacing 36, width (px 900), height (px 900) ]
             [ title "CaYaTeX"
             , row [ spacing 12 ] [ inputText model, outputDisplay model ]
-            , row [ Font.size 14, Font.color whiteColor ] [ text ("Count: " ++ String.fromInt model.count) ]
+            , row [ Font.size 14, Font.color whiteColor ] []
             ]
         ]
 
@@ -148,8 +148,9 @@ outputDisplay model =
             [ fontGray 0.9
             , spacing 12
             , moveUp 9
+            , Font.size 14
             ]
-            [ rawModeButton, renderedModeButton ]
+            [ rawModeButton model.mode, renderedModeButton model.mode, text ("Count: " ++ String.fromInt model.count) ]
         , outputDisplay_ model
         ]
 
@@ -207,9 +208,21 @@ inputText model =
         }
 
 
-rawModeButton : Element Msg
-rawModeButton =
-    row []
+
+-- buttonColor : Mode -> Mode ->
+
+
+buttonColor buttonMode currentMode =
+    if buttonMode == currentMode then
+        Element.rgb255 12 40 180
+
+    else
+        Element.rgb255 130 12 9
+
+
+rawModeButton : Mode -> Element Msg
+rawModeButton currentMode =
+    row [ Background.color (buttonColor currentMode RawHTMLMode) ]
         [ Input.button buttonStyle
             { onPress = Just (SetMode RawHTMLMode)
             , label = el [ centerX, centerY, Font.size 14 ] (text "Raw")
@@ -217,9 +230,9 @@ rawModeButton =
         ]
 
 
-renderedModeButton : Element Msg
-renderedModeButton =
-    row []
+renderedModeButton : Mode -> Element Msg
+renderedModeButton currentMode =
+    row [ Background.color (buttonColor currentMode RenderedMode) ]
         [ Input.button buttonStyle
             { onPress = Just (SetMode RenderedMode)
             , label = el [ centerX, centerY, Font.size 14 ] (text "Rendered")
@@ -242,8 +255,7 @@ mainColumnStyle =
 
 
 buttonStyle =
-    [ Background.color (Element.rgb 0.5 0.5 1.0)
-    , Font.color (rgb255 255 255 255)
+    [ Font.color (rgb255 255 255 255)
     , paddingXY 15 8
     ]
 

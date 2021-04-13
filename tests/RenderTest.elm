@@ -1,7 +1,7 @@
 module RenderTest exposing (..)
 
 import Expect
-import Render.String exposing (renderString_)
+import Render.String exposing (renderString)
 import Test exposing (describe, fuzz, test)
 
 
@@ -11,7 +11,7 @@ suite =
             [ test "text" <|
                 \_ ->
                     Expect.equal
-                        (renderString_ "This is a test")
-                        "<span>This is a test</span>"
+                        (renderString "This is a test")
+                        "<div>This is a test</div>"
             ]
         ]
