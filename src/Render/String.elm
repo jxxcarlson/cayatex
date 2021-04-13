@@ -22,7 +22,7 @@ renderString str =
             "Parser error for ((" ++ str ++ "))"
 
         Ok list ->
-            List.map renderElement list |> String.join " " |> div
+            List.map renderElement list |> String.join "" |> div
 
 
 renderString_ : String -> String
