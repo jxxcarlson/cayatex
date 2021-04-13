@@ -62,7 +62,7 @@ suite =
                 \_ ->
                     Expect.equal
                         (runElement "this is a test")
-                        (Ok (Text "this is a test!" Nothing))
+                        (Ok (Text "this is a test" Nothing))
             , test "Inline" <|
                 \_ ->
                     Expect.equal

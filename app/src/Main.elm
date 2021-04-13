@@ -16,6 +16,7 @@ import Html.Keyed
 import Html.Parser
 import Html.Parser.Util
 import Http
+import Paragraph
 import Render.String
 
 
@@ -52,14 +53,14 @@ type alias Flags =
 
 
 initialText =
-    "Pythagoras said that [mathDisplay a^2 + b^2 = c^2,] which is extremely cool."
+    "I like my whisky really [strong [italic strong]]!."
 
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     ( { input = initialText
       , output = Render.String.renderString initialText
-      , mode = RenderedMode
+      , mode = RawHTMLMode
       , count = 0
       }
     , Cmd.none
@@ -122,7 +123,7 @@ panelWidth =
 
 
 panelHeight =
-    px 600
+    px 200
 
 
 mainColumn : Model -> Element Msg
@@ -170,8 +171,12 @@ outputDisplay_ model =
             render model.count model.output
 
          else
-            [ text model.output ]
+            List.map text (Paragraph.lines paragraphFormat model.output)
         )
+
+
+paragraphFormat =
+    { maximumWidth = 80, optimalWidth = 70, stringWidth = String.length }
 
 
 render : Int -> String -> List (Element msg)
@@ -214,10 +219,10 @@ inputText model =
 
 buttonColor buttonMode currentMode =
     if buttonMode == currentMode then
-        Element.rgb255 12 40 180
+        Element.rgb255 130 12 9
 
     else
-        Element.rgb255 130 12 9
+        Element.rgb255 60 60 60
 
 
 rawModeButton : Mode -> Element Msg
