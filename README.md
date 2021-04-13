@@ -40,7 +40,7 @@ and easy to use.
 
 Here is a piece of text that parses to an inline expression:
 
-	Pythagoras, a [italic [bold really, really] good] mathematician, showed
+	Pythagoras, a [italic [strong really, really] good] mathematician, showed
 	that the sides of a right triangle satisfy the relation
 	[math a^2 + b^2 = c^2].  For more information, see
 	[link |Wikipedia| https://en.wikipedia.org/wiki/Pythagorean_theorem].
