@@ -53,7 +53,7 @@ type alias Flags =
 
 
 initialText =
-    "I like my whisky really [strong [italic strong]]!."
+    "I like my whisky really [strong [italic strong]]!"
 
 
 init : Flags -> ( Model, Cmd Msg )
