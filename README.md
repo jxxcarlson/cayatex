@@ -3,13 +3,37 @@
 by James Carlson and Nicholas Yang
 
 
-Mark2 is an experimental markup language that compiles to LaTeX and to Html.   There are two constructs in the language: _inline expressions_ and _blocks_.
-The former are like LaTeX macros and the latter are like LaTeX environments.
+Mark2 is an experimental markup language that compiles to LaTeX, Html, ahd PDF.  
+There are two constructs in the language: _text_ and _elements_.Below are
+some elements.  They have the form [name |args| body] where (a) |args| may be
+absent, (b) |args| is present, it has the form |arg1, arg2, ...| where the 
+indivisual args are strings without commas, (c) the body is an Element.
+
+1. [strong whiskey and other liquor]
+2. [italic [strong stuff]]  
+3. [math a^2 + b^2 = c^2]  
+4. [image |width:500, height:300, align:center| https://pythagoras.io/proof.png]
+5. [theorem |Pythagoras| For any right triangle, [math a^2 + b^2 = c^2], where
+   [math a], [math b] are the legs, and [math c] is the hypotenuse.]
+
+*Comments:*
+
+1. The function `strong` takes a single argument, the body, which
+is the string "whiskey and other liquor".
+
+2. Blocks can be nested.
+
+3. Example three uses TeX/LaTeX-style mathematical notation.
+
+4. In example four, the element takes to arguments in addition to its body.
+
+5. This element maps to a LaTeX theorem environment.
 
 One of the design goals is to have a clean, simple, and uniform syntax with as few
-constructs as possible.  We aim to show that simple can be powerful.
+constructs as possible.  We aim to show that simple can be powerful, easy to learn,
+and easy to use.
 
-## Inline Expressions
+### Another examples
 
 Here is a piece of text that parses to an inline expression:
 
@@ -18,126 +42,80 @@ Here is a piece of text that parses to an inline expression:
 	[math a^2 + b^2 = c^2].  For more information, see
 	[link |Wikipedia| https://en.wikipedia.org/wiki/Pythagorean_theorem].
 	For the idea of the proof, see
-	[image |width:500, height:300, align:center| https://pythogoras.io/proof.png]
+	[image |width:500, height:300, align:center| https://pythagoras.io/proof.png]
 
 
 ### Grammar
 
-The grammar of inline expressions is as follows.
+The grammar for elements is as follows.
 
-	InlineExpression ->   
+type Element
+= Text String (Maybe SourceMap)
+| Element String (List String) Element (Maybe SourceMap)
+| LX (List Element) (Maybe SourceMap)
+
+
+
+	Element ->   
          Text String
-         | Inline "[" Name Args Body "]"
-         | List InlineExpression
-	Args -> 
-         Empty 
-         | "|" NonemptyString ("," NonemptyString)* "|"
-	Body -> InlineExpression
+         | "[" Identifier  Element "]"
+         | "[" Identifier "|" Args "|"  Element "]"
+	Args ->
+         NonemptyString ("," NonemptyString)* 
 
 
-### The idea
 
-The idea behind both inlines and blocks is that they are functions. In the
-above example, _bold_ is a function whose argument is the string "really, really"
- and _italic_ is function whose argument is [bold really, really]. In the
- expression italic [bold really, really] good], the functions _italic_ and
- _bold_ are composed.
-
-The arguments to a function take form Args Body.  In [bold icky stuff],
-Args is empty and Body = "icky stuff".  In
-
-	[image |width:400, height:250| https://yada.io/xy.jpg],
-
-Args = |width:400, height:250| and Body = https://yada.io/xy.jpg.
-
-
-### Examples
-
-```
-> run (parser 1 2) "This is a test." |> Result.map strip
-  Ok (Text ("This is a test.") Nothing)
-
-> run (parser 1 2) "[strong  stuff]" |> Result.map strip
-  Ok (Inline "strong" [] (Text (" stuff") Nothing) Nothing)
-
-> run (parser 1 2) "[image |height:40,width:100| stuff]" |> Result.map strip
-  Ok (Inline "image" ["height:40","width:100"] (Text "stuff" Nothing) Nothing)
-```
-
-## Blocks
-
-Here is a piece of text that parses to a block:
-
-	{theorem|There are infinitely many primes [math p \equiv 1 \modulo 4].}
-
-The body of the block, the line "There are ..." is an inline expression.
-The body can also be a block, as in the case of the nested blocks below.
-The inner block has argument.
-
-	{indent|
-    {theorem [Pythagoras]|There are infinitely many primes [math p \equiv 1 \modulo 4].}
-	}
-
-
-### Grammar
-
-The grammar for blocks is as follows.
-
-	Block -> "{" Name "|" Args "}"
-			  | "{" Name "|" Expression "}"
-			  | "{" Name Args "|" Expression "}"
-	Name -> String
-    BlockArgs -> 
-         Empty 
-         | NonemptyString ("," NonemptyString)* 
-
-### Examples
+### More Examples
 
 Here is how one writes a list:
 
-	{numbered-list|
+	[numbered-list 
 
-	{item| Eggs}
-
-	{item| Milk}
-
-	{item| Bread}
-
-	}
+    [item Raspberry jam]
+    
+    [item Sourdough bread]
+    
+    ]
 
 A table is written like this:
 
-    {table|
-    {row| Hydrogen, 1, 1}
-    {row| Helium, 2, 4}
-    {row| Lithium, 3, 6}
-    }
+   [table
+   
+   [row Hydrogen, 1, 1]
+   
+   [row Helium, 2, 4]
+   
+   [row Lithium, 3, 6]
+   
+   ]
 
-Or like this:
-
-    {table|
-    {format| l, c, r, r}
-    {row| Hydrogen, 1, 1}
-    {row| Helium, 2, 4}
-    {row| Lithium, 3, 6}
-    }
+One can have a header row and a row that
+defines the format.
 
 One also has CSV tables:
 
-    {csv|
-    Hydrogen, 1, 1
-    Helium, 2, 4
-    Lithium, 3, 6
-    }
+   [csv
+   Hydrogen, 1, 1
+   Helium, 2, 4
+   Lithium, 3, 6
+   ]
 
+as well as verbatim text:
+
+   [verbatim
+   This is a test:
+   indented 2
+   
+       indented 4
+   ]
 
 ## Shorthand
 
-For common constructs, there are also shorthand features
+For a few common constructs, there are also shorthand features
 a la markdown. The idea is to make the composition of text more ergonomic.
 Thus, one can also say
 
-	|numbered-list|
+	[numbered-list
 
 	- eggs
 
@@ -145,18 +123,18 @@ Thus, one can also say
 
 	- bread
 
-	|end
+	]
 
 For italic text, one can say _italic text_, and for bold text, one can say *bold text*.
 For sections, etc., one says
 
-|section Introduction
-|subsection Examples
+   [section Introduction]
+   [subsection Examples]
 
 NOTE: What about saying
 
-|section [1] Introduction
-|section [2] Examples
+   [section |1| Introduction]
+   [section |2| Examples]
 
 where the first argument gives the _level_ of the section.
 Pro: this makes it easier to shift levels programmatically.
@@ -176,11 +154,10 @@ We intend the use of shorthand to be quite limited, perhaps just to the above ex
 The type of the AST is as below.
 
 ```elm
-type Expression
-	= Text String (Maybe SourceMap)
-	| Inline String (List String) Expression (Maybe SourceMap)
-	| Block String (List String) (Maybe Expression) (Maybe SourceMap)
-	| List Expression (Maybe SourceMap)
+type Element
+    = Text String (Maybe SourceMap)
+    | Element String (List String) Element (Maybe SourceMap)
+    | LX (List Element) (Maybe SourceMap)
 ```
 
 The SourceMap locates the parsed expression in the source text.
@@ -262,51 +239,6 @@ from CaYaTeX to LaTeX will not be quite so straightforward.  We will
 probably need a dictionary which tells us which function names map
 to macros and which map to environments.  For rendering to Html, we 
 won't need this.
-    
-
-### Examples
-
-    [theorem |title Euclid| There are infinitely many primes [math p \\equiv 1 \\mod 4]]
-    
-    [numbered-list
-    
-    [item Raspberry jam]
-    
-    [item Sourdough bread]
-    
-    ]
-    
-    
-    
-    
-    [table
-    
-    [row Hydrogen, 1, 1]
-    
-    [row Helium, 2, 4]
-    
-    [row Lithium, 3, 6]
-    
-    ]
-    
-    
-    
-    [csv
-    Hydrogen, 1, 1
-    Helium, 2, 4
-    Lithium, 3, 6
-    ]
-    
-    
-    
-    [verbatim
-    This is a test:
-    indented 2
-    
-        indented 4
-    
-
-
 
 
 ## Prior Art
