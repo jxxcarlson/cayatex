@@ -3,11 +3,12 @@
 by James Carlson and Nicholas Yang
 
 
-Mark2 is an experimental markup language that compiles to LaTeX, Html, ahd PDF.  
-There are two constructs in the language: _text_ and _elements_.Below are
-some elements.  They have the form [name |args| body] where (a) |args| may be
-absent, (b) |args| is present, it has the form |arg1, arg2, ...| where the 
-indivisual args are strings without commas, (c) the body is an Element.
+Mark2 is an experimental markup language that compiles to LaTeX, Html, ahd PDF. 
+
+There are two constructs in the language: _text_ and _elements_. Below are
+some elements.  They have the form `[name |args| body]` where (a) `|args|` may be
+absent, (b) `|args|` is present, it has the form `|arg1, arg2, ...|` where the 
+individual args are strings without commas, (c) the body is an Element.
 
 1. [strong whiskey and other liquor]
 2. [italic [strong stuff]]  
