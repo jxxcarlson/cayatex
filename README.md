@@ -6,6 +6,9 @@ by James Carlson and Nicholas Yang
 Mark2 is an experimental markup language that compiles to LaTeX and to Html.   There are two constructs in the language: _inline expressions_ and _blocks_.
 The former are like LaTeX macros and the latter are like LaTeX environments.
 
+**Note.** See branch *simple* for a variant of the language in which there are no blocks, just inlines.
+These are renamed (primitive) elements, where an Element may be either a primitive element or text.
+
 One of the design goals is to have a clean, simple, and uniform syntax with as few
 constructs as possible.  We aim to show that simple can be powerful.
 
