@@ -18,6 +18,7 @@ import Html.Parser.Util
 import Http
 import Paragraph
 import Parser.Element
+import Render.Elm
 import Render.String
 
 
@@ -42,6 +43,7 @@ type Msg
     = NoOp
     | InputText String
     | SetMode Mode
+    | Mark2Msg Render.Elm.Mark2Msg
 
 
 type Mode
@@ -54,8 +56,8 @@ type alias Flags =
 
 
 initialText =
-    -- "I like my whisky really [strong [italic strong]]!\n\nPythagoras says that [math a^2 + b^2 = c^2]"
-    "[math a^2 + b^2 = c^2]"
+    --"I like my whisky really [strong [italic strong]]!\n\nPythagoras says that [math a^2 + b^2 = c^2]"
+    "I like my whisky really [strong [italic strong]]!"
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -90,6 +92,9 @@ update msg model =
 
         SetMode mode ->
             ( { model | mode = mode, count = model.count + 1 }, Cmd.none )
+
+        Mark2Msg _ ->
+            ( model, Cmd.none )
 
 
 
@@ -194,7 +199,7 @@ outputDisplay model =
         ]
 
 
-outputDisplay_ : Model -> Element msg
+outputDisplay_ : Model -> Element Msg
 outputDisplay_ model =
     column
         [ spacing 8
@@ -206,11 +211,17 @@ outputDisplay_ model =
         , Font.size 12
         ]
         (if model.mode == RenderedMode then
-            render model.count model.renderedText
+            -- render model.count model.renderedText
+            [ render2 model.count model.input ]
 
          else
             List.map text (Paragraph.lines paragraphFormat model.renderedText)
         )
+
+
+render2 : Int -> String -> Element Msg
+render2 k str =
+    Render.Elm.renderString k 0 str |> Element.map Mark2Msg
 
 
 paragraphFormat =

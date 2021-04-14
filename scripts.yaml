@@ -1,5 +1,5 @@
 scripts:
  
-  make: elm make src/Element.elm
+  make: elm make src/Parser/Element.elm
   
   cloc: cloc --by-file src/
