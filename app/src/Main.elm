@@ -53,14 +53,14 @@ type alias Flags =
 
 
 initialText =
-    "I like my whisky really [strong [italic strong]]!"
+    "I like my whisky really [strong [italic strong]]!\n\n[math a^2 + b^2 = c^2]"
 
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     ( { input = initialText
       , output = Render.String.renderString initialText
-      , mode = RawHTMLMode
+      , mode = RenderedMode
       , count = 0
       }
     , Cmd.none

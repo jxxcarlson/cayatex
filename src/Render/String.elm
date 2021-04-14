@@ -3,6 +3,9 @@ module Render.String exposing (renderElement, renderString)
 import Dict exposing (Dict)
 import Parser.Element as Element exposing (Element(..))
 
+type DisplayMode
+    = InlineMathMode
+    | DisplayMathMode
 
 
 {-
@@ -138,3 +141,35 @@ endTag str =
 tag : String -> String -> String
 tag tag_ str =
     beginTag tag_ ++ str ++ endTag tag_
+--- MATH
+--
+--
+--mathText : DisplayMode -> String -> Html msg
+--mathText sdisplayMode content =
+--    Html.node "math-text"
+--        (active sm selectedId
+--            ++ [ HA.property "display" (Json.Encode.bool (isDisplayMathMode displayMode))
+--               , HA.property "content" (Json.Encode.string content)
+--               ]
+--        )
+--        []
+--
+--
+--isDisplayMathMode : DisplayMode -> Bool
+--isDisplayMathMode displayMode =
+--    case displayMode of
+--        InlineMathMode ->
+--            False
+--
+--        DisplayMathMode ->
+--            True
+--
+--
+--inlineMathText :String -> String
+--inlineMathText  str_ =
+--    mathText InlineMathMode (String.trim str_)
+--
+--
+--displayMathText : String -> String
+--displayMathText str_ =
+--    mathText DisplayMathMode (String.trim str_)
