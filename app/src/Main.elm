@@ -17,6 +17,7 @@ import Html.Parser
 import Html.Parser.Util
 import Http
 import Paragraph
+import Parser.Element
 import Render.String
 
 
@@ -31,7 +32,7 @@ main =
 
 type alias Model =
     { input : String
-    , output : String
+    , renderedText : String
     , mode : Mode
     , count : Int
     }
@@ -53,13 +54,14 @@ type alias Flags =
 
 
 initialText =
-    "I like my whisky really [strong [italic strong]]!\n\nPythagoras says that [math a^2 + b^2 = c^2]"
+    -- "I like my whisky really [strong [italic strong]]!\n\nPythagoras says that [math a^2 + b^2 = c^2]"
+    "[math a^2 + b^2 = c^2]"
 
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     ( { input = initialText
-      , output = Render.String.renderString initialText
+      , renderedText = Render.String.renderString initialText
       , mode = RenderedMode
       , count = 0
       }
@@ -80,7 +82,7 @@ update msg model =
         InputText str ->
             ( { model
                 | input = str
-                , output = Render.String.renderString str
+                , renderedText = Render.String.renderString str
                 , count = model.count + 1
               }
             , Cmd.none
@@ -118,8 +120,16 @@ noFocus =
     }
 
 
+widePanelWidth =
+    px (2 * panelWidth_ + 12)
+
+
+panelWidth_ =
+    400
+
+
 panelWidth =
-    px 400
+    px panelWidth_
 
 
 panelHeight =
@@ -131,7 +141,10 @@ mainColumn model =
     column mainColumnStyle
         [ column [ spacing 36, width (px 900), height (px 900) ]
             [ title "CaYaTeX"
-            , row [ spacing 12 ] [ inputText model, outputDisplay model ]
+            , column [ spacing 12 ]
+                [ row [ spacing 12 ] [ inputText model, outputDisplay model ]
+                , parserDisplay model
+                ]
             , row [ Font.size 14, Font.color whiteColor ] []
             ]
         ]
@@ -140,6 +153,31 @@ mainColumn model =
 title : String -> Element msg
 title str =
     row [ centerX, Font.bold, fontGray 0.9 ] [ text str ]
+
+
+parserDisplay model =
+    row
+        [ moveUp 10
+        , width widePanelWidth
+        , height panelHeight
+        , Font.size 14
+        , Background.color whiteColor
+        , padding 8
+        ]
+        [ parsed model ]
+
+
+parsed model =
+    case Parser.Element.parseList model.count 0 model.input of
+        Err _ ->
+            text "Parse error"
+
+        Ok pt ->
+            el [ alignTop ] (column [ width widePanelWidth ] (List.map (\s -> Element.paragraph [] [ text s ]) (parsed_ pt)))
+
+
+parsed_ pt =
+    Paragraph.lines paragraphFormat2 (Debug.toString pt)
 
 
 outputDisplay : Model -> Element Msg
@@ -168,15 +206,19 @@ outputDisplay_ model =
         , Font.size 12
         ]
         (if model.mode == RenderedMode then
-            render model.count model.output
+            render model.count model.renderedText
 
          else
-            List.map text (Paragraph.lines paragraphFormat model.output)
+            List.map text (Paragraph.lines paragraphFormat model.renderedText)
         )
 
 
 paragraphFormat =
     { maximumWidth = 80, optimalWidth = 70, stringWidth = String.length }
+
+
+paragraphFormat2 =
+    { maximumWidth = 160, optimalWidth = 150, stringWidth = String.length }
 
 
 render : Int -> String -> List (Element msg)
