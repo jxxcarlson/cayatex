@@ -1,7 +1,7 @@
 module Render.Elm exposing (..)
 
 import Dict exposing (Dict)
-import Element exposing (Element, column, el, paragraph, row, text)
+import Element exposing (Element, column, el, paragraph, spacing, row, text)
 import Element.Font as Font
 import Parser.Element
 import Parser.SourceMap
@@ -28,6 +28,10 @@ redColor =
 
 blueColor =
     Element.rgb 0 0 0.8
+
+
+codeColor =
+    Element.rgb 0.2 0.5 1.0
 
 
 renderString : Int -> Int -> String -> Element Mark2Msg
@@ -88,30 +92,33 @@ renderElementDict =
     Dict.fromList
         [ ( "strong", I renderStrong )
         , ( "italic", I renderItalic )
+        , ( "code", I renderCode )
 
-        --, ( "code", I renderCode )
         --, ( "math", I renderMath )
         --, ( "mathDisplay", B renderMathDisplay )
-        --, ( "theorem", B renderTheorem )
+        , ( "theorem", B renderTheorem )
         ]
 
 
+renderTheorem : FRender Mark2Msg
+renderTheorem _ args body sm =
+    column [ spacing 3 ]
+        [ row [ Font.bold ] [ text "Theorem." ]
+        , el [] (renderElement body)
+        ]
 
---renderTheorem _ args body =
---    div ("<p><strong>Theorem.</strong></p><p>" ++ renderElement body ++ "</p>")
---
---
---renderMath _ _ body =
---    span ("\\(" ++ renderElement body ++ "\\)")
---
---
---renderMathDisplay _ _ body =
---    div ("\\[" ++ renderElement body ++ "\\]")
---
---renderCode _ _ body =
---    tag "code" (renderElement body)
---
--- renderStrong : a -> b -> Parser.Element.Element -> Maybe Parser.SourceMap.SourceMap -> Element Mark2Msg
+
+renderCode : FRender Mark2Msg
+renderCode _ _ body sm =
+    el
+        [ Font.family
+            [ Font.typeface "Inconsolata"
+            , Font.monospace
+            ]
+        , Font.size 14
+        , Font.color codeColor
+        ]
+        (renderElement body)
 
 
 renderStrong : FRender Mark2Msg
@@ -122,32 +129,3 @@ renderStrong _ _ body sm =
 renderItalic : FRender Mark2Msg
 renderItalic _ _ body sm =
     el [ Font.italic ] (renderElement body)
-
-
-
--- HELPERS
-
-
-div : String -> String
-div str =
-    tag "div" str
-
-
-span : String -> String
-span str =
-    tag "span" str
-
-
-beginTag : String -> String
-beginTag str =
-    "<" ++ str ++ ">"
-
-
-endTag : String -> String
-endTag str =
-    "</" ++ str ++ ">"
-
-
-tag : String -> String -> String
-tag tag_ str =
-    beginTag tag_ ++ str ++ endTag tag_
