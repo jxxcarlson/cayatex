@@ -35,7 +35,7 @@ renderString generation blockOffset str =
     case Parser.Element.parseList generation blockOffset str of
         Err _ ->
             row []
-                [ el [ Font.color redColor ] (text "Parser error for")
+                [ el [ Font.color redColor ] (text "Parse error for ")
                 , el [ Font.color blueColor ] (text str)
                 ]
 

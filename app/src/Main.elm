@@ -15,9 +15,9 @@ import Html exposing (Html)
 import Html.Keyed
 import Html.Parser
 import Html.Parser.Util
-import Http
 import Paragraph
 import Parser.Element
+import Parser.Getters
 import Render.Elm
 import Render.String
 
@@ -173,7 +173,7 @@ parserDisplay model =
 
 
 parsed model =
-    case Parser.Element.parseList model.count 0 model.input of
+    case Parser.Element.parseList model.count 0 model.input |> Result.map (List.map Parser.Getters.strip) of
         Err _ ->
             text "Parse error"
 
