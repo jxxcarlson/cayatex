@@ -89,7 +89,7 @@ renderElement generation blockOffset element =
 
 
 theoremLikeElements =
-    [ "corollary", "lemma" ]
+    [ "theorem", "proposition", "proof", "definition", "example", "problem", "corollary", "lemma" ]
 
 
 renderWithDictionary generation blockOffset name args body sm =
@@ -231,8 +231,24 @@ fontRGB generation blockOffset _ args body sm =
 
 renderaAsTheoremLikeElement : FRender Mark2Msg
 renderaAsTheoremLikeElement generation blockOffset name args body sm =
+    let
+        label_ =
+            getArg_ 0 args
+
+        heading =
+            case label_ of
+                Nothing ->
+                    row [] [ el [ Font.bold ] (text <| String.Extra.toSentenceCase name ++ ".") ]
+
+                Just label ->
+                    paragraph []
+                        [ el [ Font.bold ] (text <| String.Extra.toSentenceCase name)
+                        , el [] (text <| " (" ++ label ++ ")")
+                        , el [ Font.bold ] (text <| ".")
+                        ]
+    in
     column [ spacing 3 ]
-        [ row [ Font.bold ] [ text (String.Extra.toSentenceCase name ++ ".") ]
+        [ heading
         , el [] (renderElement generation blockOffset body)
         ]
 
@@ -295,6 +311,11 @@ getInt k stringList =
     List.Extra.getAt k stringList
         |> Maybe.andThen String.toInt
         |> Maybe.withDefault 0
+
+
+getArg_ : Int -> List String -> Maybe String
+getArg_ k stringList =
+    List.Extra.getAt k stringList
 
 
 getArg : Int -> String -> List String -> String

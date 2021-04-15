@@ -126,11 +126,11 @@ noFocus =
 
 
 widePanelWidth =
-    px (2 * panelWidth_ + 12)
+    px (2 * panelWidth_)
 
 
 panelWidth_ =
-    400
+    440
 
 
 panelWidth =
@@ -138,13 +138,13 @@ panelWidth =
 
 
 panelHeight =
-    px 370
+    px 550
 
 
 mainColumn : Model -> Element Msg
 mainColumn model =
     column mainColumnStyle
-        [ column [ spacing 36, width (px 900), height (px 900) ]
+        [ column [ spacing 24, width (px 900), height (px 750) ]
             [ title "CaYaTeX"
             , column [ spacing 12 ]
                 [ row [ spacing 12 ] [ inputText model, outputDisplay model ]
@@ -176,7 +176,7 @@ parsed model =
             text "Parse error"
 
         Ok pt ->
-            el [ alignTop ] (column [ width widePanelWidth, height (px 200), scrollbarY ] (List.map (\s -> Element.paragraph [] [ text s ]) (parsed_ pt)))
+            el [ alignTop ] (column [ width widePanelWidth, height (px 100), scrollbarY ] (List.map (\s -> Element.paragraph [] [ text s ]) (parsed_ pt)))
 
 
 parsed_ : a -> List String

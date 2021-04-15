@@ -14,11 +14,11 @@ which goes back to the work of Nicole Oresme
 
 [theorem There are infinitely many primes [math p \\equiv 1 (4).]]
 
-[corollary There are infinitely many primes.]
+[corollary |Euclid| There are infinitely many primes.]
 
 Some code: [code col :: Int -> Matrix a -> \\[a\\]]. 
-Do you recognize the language (ha ha)?"
-[italic And can we do something about the [highlight awkwardness] of escaping brackets inside code elements?]
+Do you recognize the language (ha ha)?
+[italic [highlight And can we do something about the awkwardness of escaping brackets inside code elements?]]
 
 Example:  [highlightRGB |214, 93, 32| [fontRGB |169, 232, 245| What color is this?]]
 
