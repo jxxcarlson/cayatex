@@ -39,8 +39,13 @@ blueColor =
     Element.rgb 0 0 0.8
 
 
+violetColor =
+    Element.rgb 0.4 0 0.8
+
+
 codeColor =
-    Element.rgb 0.2 0.5 1.0
+    -- Element.rgb 0.2 0.5 1.0
+    Element.rgb 0.4 0 0.8
 
 
 textWidth =
@@ -88,7 +93,13 @@ renderElement generation blockOffset element =
 renderWithDictionary generation blockOffset name args body sm =
     case Dict.get name renderElementDict of
         Nothing ->
-            text (name ++ ": unimplemented")
+            paragraph []
+                [ el [ Font.bold ] (text "[")
+                , el [ Font.color blueColor ] (text (name ++ " "))
+                , el [ Font.color violetColor ] (text (getText body |> Maybe.withDefault ""))
+                , el [ Font.color redColor ] (text " is unimplemented")
+                , el [ Font.bold ] (text "]")
+                ]
 
         Just f ->
             case f of
@@ -118,6 +129,8 @@ renderElementDict =
         [ ( "strong", I renderStrong )
         , ( "italic", I renderItalic )
         , ( "code", I renderCode )
+
+        --, ( "link", I renderLink )
         , ( "math", I renderMath )
         , ( "mathDisplay", B renderMathDisplay )
         , ( "theorem", B renderTheorem )
@@ -170,6 +183,12 @@ renderTheorem generation blockOffset name args body sm =
         [ row [ Font.bold ] [ text "Theorem." ]
         , el [] (renderElement generation blockOffset body)
         ]
+
+
+
+--renderLink: FRender Mark2Msg
+--renderLink generation blockOffset _ _ body sm =
+--
 
 
 renderCode : FRender Mark2Msg
