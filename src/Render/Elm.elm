@@ -14,6 +14,7 @@ import Parser.Element
 import Parser.Getters
 import Parser.SourceMap
 import Parser.TextCursor
+import String.Extra
 
 
 
@@ -87,16 +88,24 @@ renderElement generation blockOffset element =
 -- RENDERER DICTIONARY
 
 
+theoremLikeElements =
+    [ "corollary", "lemma" ]
+
+
 renderWithDictionary generation blockOffset name args body sm =
     case Dict.get name renderElementDict of
         Nothing ->
-            paragraph []
-                [ el [ Font.bold ] (text "[")
-                , el [ Font.color blueColor, Font.bold ] (text (name ++ " "))
-                , el [ Font.color violetColor ] (text (getText body |> Maybe.withDefault ""))
-                , el [ Font.color redColor ] (text " is misstyped or unimplemented")
-                , el [ Font.bold ] (text "]")
-                ]
+            if List.member name theoremLikeElements then
+                renderaAsTheoremLikeElement generation blockOffset name args body sm
+
+            else
+                paragraph []
+                    [ el [ Font.bold ] (text "[")
+                    , el [ Font.color blueColor, Font.bold ] (text (name ++ " "))
+                    , el [ Font.color violetColor ] (text (getText body |> Maybe.withDefault ""))
+                    , el [ Font.color redColor ] (text " is misstyped or unimplemented")
+                    , el [ Font.bold ] (text "]")
+                    ]
 
         Just f ->
             case f of
@@ -119,7 +128,6 @@ renderElementDict =
         , ( "link", I link )
         , ( "math", I renderMath )
         , ( "mathDisplay", B renderMathDisplay )
-        , ( "theorem", B renderTheorem )
         ]
 
 
@@ -221,10 +229,10 @@ fontRGB generation blockOffset _ args body sm =
 -- MATH
 
 
-renderTheorem : FRender Mark2Msg
-renderTheorem generation blockOffset name args body sm =
+renderaAsTheoremLikeElement : FRender Mark2Msg
+renderaAsTheoremLikeElement generation blockOffset name args body sm =
     column [ spacing 3 ]
-        [ row [ Font.bold ] [ text "Theorem." ]
+        [ row [ Font.bold ] [ text (String.Extra.toSentenceCase name ++ ".") ]
         , el [] (renderElement generation blockOffset body)
         ]
 
