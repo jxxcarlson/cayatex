@@ -174,10 +174,22 @@ renderCode generation blockOffset _ _ body sm =
 
 link : FRender Mark2Msg
 link generation blockOffset name args body sm =
-    Element.newTabLink []
-        { url = getText body |> Maybe.withDefault "no url"
-        , label = el [ Font.color linkColor, Font.italic ] (text <| getArg 0 "link" args)
-        }
+    case getArg_ 0 args of
+        Nothing ->
+            let
+                url_ =
+                    getText body |> Maybe.withDefault "missing url"
+            in
+            Element.newTabLink []
+                { url = url_
+                , label = el [ Font.color linkColor, Font.italic ] (text url_)
+                }
+
+        Just labelText ->
+            Element.newTabLink []
+                { url = getText body |> Maybe.withDefault "missing url"
+                , label = el [ Font.color linkColor, Font.italic ] (text labelText)
+                }
 
 
 renderStrong : FRender Mark2Msg

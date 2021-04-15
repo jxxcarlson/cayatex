@@ -9,14 +9,15 @@ text =
     """Pythagoras says that [math a^2 + b^2 = c^2].  
 This is an [strong [italic extremely]] cool result. But just as cool is the below:
 [mathDisplay \\sum_1^\\infty 1/n = \\infty,]
-which goes back to the work of Nicole Oresme
- (1320–1382).  See the entry in the [link |Stanford Encyclopedia of Philosophy| https://plato.stanford.edu/entries/nicole-oresme/].
+which goes back to the work of Nicole Oresme (1320–1382).  See the entry in the
+[link |Stanford Encyclopedia of Philosophy| https://plato.stanford.edu/entries/nicole-oresme/].
+You can also consult [link https://en.wikipedia.org/wiki/Nicole_Oresme].
 
 [theorem There are infinitely many primes [math p \\equiv 1 (4).]]
 
 [corollary |Euclid| There are infinitely many primes.]
 
-Some code: [code col :: Int -> Matrix a -> \\[a\\]]. 
+Time for some code: [code col :: Int -> Matrix a -> \\[a\\]].
 Do you recognize the language (ha ha)?
 [italic [highlight And can we do something about the awkwardness of escaping brackets inside code elements?]]
 
