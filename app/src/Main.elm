@@ -54,9 +54,12 @@ type Mode
 type alias Flags =
     {}
 
+
 initialText =
-   -- "I like my whisky really [strong [italic strong]]!\n\n[math a^2 + b^2 = c^2]"
-    "[math a^2 + b^2 = c^2]"
+    -- "I like my whisky really [strong [italic strong]]!\n\n[math a^2 + b^2 = c^2]"
+    -- "[math a^2 + b^2 = c^2]"
+    "Pythagoras says that [math a^2 + b^2 = c^2].  This is an [strong [italic extremely]] cool result. This is an [strong [italic extremely]] cool result."
+
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =

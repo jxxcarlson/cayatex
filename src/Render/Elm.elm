@@ -43,17 +43,25 @@ codeColor =
     Element.rgb 0.2 0.5 1.0
 
 
+textWidth =
+    Element.width (Element.px 200)
+
+
+format =
+    []
+
+
 renderString : Int -> Int -> String -> Element Mark2Msg
 renderString generation blockOffset str =
     case Parser.Element.parseList generation blockOffset str of
         Err _ ->
-            row []
+            row format
                 [ el [ Font.color redColor ] (text "Parse error for ")
                 , el [ Font.color blueColor ] (text str)
                 ]
 
         Ok list ->
-            row [] (List.map (renderElement generation blockOffset) list)
+            paragraph format (List.map (renderElement generation blockOffset) list)
 
 
 renderElement : Int -> Int -> Parser.Element.Element -> Element Mark2Msg
@@ -74,7 +82,7 @@ renderElement generation blockOffset element =
             renderWithDictionary generation blockOffset name args body sm
 
         Parser.Element.LX list _ ->
-            row [] (List.map (renderElement generation blockOffset) list)
+            paragraph format (List.map (renderElement generation blockOffset) list)
 
 
 renderWithDictionary generation blockOffset name args body sm =
