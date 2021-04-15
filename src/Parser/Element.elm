@@ -56,7 +56,7 @@ primitiveElement generation blockOffset =
             |= Parser.getOffset
             |. leftBracket
             |= elementName
-            |= argsAndBody
+            |= argsAndBody generation blockOffset
             |. rightBracket
             |= Parser.getOffset
             |= Parser.getSource
@@ -67,9 +67,9 @@ elementName =
     T.first (string_ [ ' ', '\n' ]) Parser.spaces
 
 
-argsAndBody =
+argsAndBody generation lineNumber =
     Parser.inContext (CInline_ "argsAndBody") <|
-        Parser.oneOf [ argsAndBody_, bodyOnly ]
+        Parser.oneOf [ argsAndBody_ generation lineNumber, bodyOnly generation lineNumber ]
 
 
 elementArgs =
@@ -81,22 +81,22 @@ innerElementArgs =
     T.manySeparatedBy comma (string [ ',', '|' ])
 
 
-elementBody : Parser.Parser Context Problem Element
-elementBody =
+elementBody : Int -> Int -> Parser.Parser Context Problem Element
+elementBody generation lineNumber =
     Parser.inContext (CInline_ "body") <|
-        Parser.lazy (\_ -> T.many (element 0 0) |> Parser.map (\list -> LX list Nothing))
+        Parser.lazy (\_ -> T.many (element generation lineNumber) |> Parser.map (\list -> LX list Nothing))
 
 
-argsAndBody_ =
+argsAndBody_ generation lineNumber =
     Parser.succeed (\args body_ -> ( args, body_ ))
         |= elementArgs
         |. Parser.spaces
-        |= elementBody
+        |= elementBody generation lineNumber
 
 
-bodyOnly =
+bodyOnly generation lineNumber =
     Parser.succeed (\body_ -> ( [], body_ ))
-        |= elementBody
+        |= elementBody generation lineNumber
 
 
 
