@@ -65,18 +65,6 @@ renderString generation blockOffset str =
         |> renderList generation blockOffset
 
 
-
--- |> (List.map (paragraph [] [renderElement generation blockOffset])
---Err _ ->
---    row format
---        [ el [ Font.color redColor ] (text "Parse error for ")
---        , el [ Font.color blueColor ] (text str)
---        ]
---
---Ok list ->
---    paragraph format (List.map (renderElement generation blockOffset) list)
-
-
 renderList : Int -> Int -> List Parser.Element.Element -> Element Mark2Msg
 renderList generation blockOffset list =
     paragraph format (List.map (renderElement generation blockOffset) list)
@@ -183,12 +171,6 @@ renderMath generation blockOffset name args body sm =
             el [ Font.color redColor ] (text "Error rendering math !!!")
 
 
-
---mathText : Int -> Int -> DisplayMode -> String -> String -> Maybe Parser.SourceMap.SourceMap -> Element Mark2Msg
---mathText generation blockOffset displayMode selectedId content sm
--- getText :  Parser.Element.Element -> Maybe String
-
-
 getText : Parser.Element.Element -> Maybe String
 getText element =
     let
@@ -209,12 +191,6 @@ renderTheorem generation blockOffset name args body sm =
         [ row [ Font.bold ] [ text "Theorem." ]
         , el [] (renderElement generation blockOffset body)
         ]
-
-
-
---renderLink: FRender Mark2Msg
---renderLink generation blockOffset _ _ body sm =
---
 
 
 renderCode : FRender Mark2Msg
@@ -246,10 +222,6 @@ renderStrong generation blockOffset _ _ body sm =
 renderItalic : FRender Mark2Msg
 renderItalic generation blockOffset _ _ body sm =
     el [ Font.italic ] (renderElement generation blockOffset body)
-
-
-
--- mathText : Int -> Int -> DisplayMode -> String -> String -> Maybe Parser.SourceMap.SourceMap -> Element Mark2Msg
 
 
 mathText : Int -> b -> DisplayMode -> String -> String -> Maybe Parser.SourceMap.SourceMap -> Element Mark2Msg
