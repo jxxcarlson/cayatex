@@ -1,6 +1,7 @@
 module Parser.Document exposing
     ( process, toParsed, toText
     , State, Block, BlockType(..), LineType(..)
+    , runProcess
     )
 
 {-| The main function in this module is process, which takes as input

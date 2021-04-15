@@ -16,7 +16,8 @@ import Html.Keyed
 import Html.Parser
 import Html.Parser.Util
 import Paragraph
-import Parser.Element
+import Parser.Document
+import Parser.Element as Parser
 import Parser.Getters
 import Render.Elm
 import Render.String
@@ -176,7 +177,7 @@ parserDisplay model =
 
 
 parsed model =
-    case Parser.Element.parseList model.count 0 model.input |> Result.map (List.map Parser.Getters.strip) of
+    case Parser.parseList model.count 0 model.input |> Result.map (List.map Parser.Getters.strip) of
         Err _ ->
             text "Parse error"
 
@@ -228,9 +229,30 @@ outputDisplay_ model =
 -- TODO: Working on this now
 
 
+render2a : Int -> String -> Element Msg
+render2a k str =
+    Render.Elm.renderString k 0 str |> Element.map Mark2Msg
+
+
+
+-- render2x : List String -> List (List Parser.Element)
+-- render2x : List String -> List (List (Element Render.Elm.Mark2Msg))
+
+
 render2 : Int -> String -> Element Msg
 render2 k str =
-    Render.Elm.renderString k 0 str |> Element.map Mark2Msg
+    Parser.Document.runProcess k (String.lines str)
+        |> Parser.Document.toParsed
+        |> List.map (Render.Elm.renderList k 0)
+        |> column [ spacing 18 ]
+        |> Element.map Mark2Msg
+
+
+
+--renderList : Int -> Int -> List Parser.Element.Element -> Element Mark2Msg
+--renderList generation blockOffset list
+-- |> List.map (List.map Render.Elm.renderElementX)
+-- |> List.map (Render.Elm.renderElement)
 
 
 paragraphFormat =

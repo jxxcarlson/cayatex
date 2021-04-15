@@ -1,4 +1,4 @@
-module Render.Elm exposing (Mark2Msg(..), renderElement, renderString)
+module Render.Elm exposing (Mark2Msg(..), renderElement, renderElementX, renderList, renderString)
 
 import Dict exposing (Dict)
 import Element exposing (Element, column, el, paragraph, row, spacing, text)
@@ -9,6 +9,7 @@ import Html.Keyed
 import Json.Encode
 import Parser.Driver
 import Parser.Element
+import Parser.Getters
 import Parser.SourceMap
 import Parser.TextCursor
 
@@ -81,6 +82,16 @@ renderString1 generation blockOffset str =
 
         Ok list ->
             paragraph format (List.map (renderElement generation blockOffset) list)
+
+
+renderElementX : Parser.Element.Element -> Element Mark2Msg
+renderElementX element =
+    case Parser.Getters.getSource element of
+        Nothing ->
+            renderElement 0 0 element
+
+        Just sm ->
+            renderElement sm.generation sm.blockOffset element
 
 
 renderElement : Int -> Int -> Parser.Element.Element -> Element Mark2Msg
