@@ -186,6 +186,7 @@ rightBracket =
     Use this to parse a string and return information about its location in the source
 
 -}
+
 getChompedString : Int -> Int -> Parser a -> Parser ( String, Maybe SourceMap )
 getChompedString generation lineNumber parser_ =
     let

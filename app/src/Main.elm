@@ -7,6 +7,7 @@ module Main exposing (keyedNode, main)
 -}
 
 import Browser
+import Data
 import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
@@ -57,13 +58,7 @@ type alias Flags =
 
 
 initialText =
-    -- "I like my whisky really [strong [italic strong]]!\n\n[math a^2 + b^2 = c^2]"
-    -- "[math a^2 + b^2 = c^2]"
-    "Pythagoras says that [math a^2 + b^2 = c^2].  This is an [strong [italic extremely]] cool result. But just as cool is"
-        ++ " the below: \n\n[mathDisplay \\sum_1^\\infty 1/n = \\infty,]\n\n which goes back to the work of Nicole Oresme"
-        ++ " (1320–1382).  See the entry in the Stanford Encyclopedia of philosophy."
-        ++ "\n\nSome code: [code col :: Int -> Matrix a -> \\[a\\]]. Do you recognize the language (ha ha)?"
-        ++ " [italic And can we do something about the awkwardness of escaping brackets inside code elements?]"
+    Data.text
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -119,7 +114,6 @@ bgGray g =
 
 view : Model -> Html Msg
 view model =
-    --  Element.layout [ bgGray 0.2 ] (mainColumn model)
     Element.layoutWith { options = [ focusStyle noFocus ] } [ bgGray 0.2, clipX, clipY ] (mainColumn model)
 
 
@@ -182,7 +176,7 @@ parsed model =
             text "Parse error"
 
         Ok pt ->
-            el [ alignTop ] (column [ width widePanelWidth, height panelHeight, scrollbarY ] (List.map (\s -> Element.paragraph [] [ text s ]) (parsed_ pt)))
+            el [ alignTop ] (column [ width widePanelWidth, height (px 200), scrollbarY ] (List.map (\s -> Element.paragraph [] [ text s ]) (parsed_ pt)))
 
 
 parsed_ : a -> List String
@@ -243,6 +237,7 @@ render2 : Int -> String -> Element Msg
 render2 k str =
     Parser.Document.runProcess k (String.lines str)
         |> Parser.Document.toParsed
+        |> List.reverse
         |> List.map (Render.Elm.renderList k 0)
         |> column [ spacing 18 ]
         |> Element.map Mark2Msg
