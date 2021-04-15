@@ -84,10 +84,6 @@ renderElement generation blockOffset element =
             paragraph format (List.map (renderElement generation blockOffset) list)
 
 
-
--- RENDERER DICTIONARY
-
-
 theoremLikeElements =
     [ "theorem", "proposition", "proof", "definition", "example", "problem", "corollary", "lemma" ]
 
@@ -116,6 +112,10 @@ renderWithDictionary generation blockOffset name args body sm =
                     g generation blockOffset name args body sm
 
 
+
+-- RENDERER DICTIONARY
+
+
 renderElementDict : RenderElementDict Mark2Msg
 renderElementDict =
     Dict.fromList
@@ -126,6 +126,7 @@ renderElementDict =
         , ( "fontRGB", I fontRGB )
         , ( "code", I renderCode )
         , ( "link", I link )
+        , ( "image", I image )
         , ( "math", I renderMath )
         , ( "mathDisplay", B renderMathDisplay )
         ]
@@ -190,6 +191,12 @@ link generation blockOffset name args body sm =
                 { url = getText body |> Maybe.withDefault "missing url"
                 , label = el [ Font.color linkColor, Font.italic ] (text labelText)
                 }
+
+
+image : FRender Mark2Msg
+image generation blockOffset name args body sm =
+    Element.image [ Element.width Element.fill ]
+        { src = getText body |> Maybe.withDefault "no image url", description = "empty" }
 
 
 renderStrong : FRender Mark2Msg
