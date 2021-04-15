@@ -3,8 +3,9 @@ module Render.Elm exposing (Mark2Msg(..), renderElement, renderString)
 import Dict exposing (Dict)
 import Element exposing (Element, column, el, paragraph, row, spacing, text)
 import Element.Font as Font
-import Html
+import Html exposing (Html)
 import Html.Attributes as HA
+import Html.Keyed
 import Json.Encode
 import Parser.Element
 import Parser.SourceMap
@@ -52,11 +53,11 @@ renderString generation blockOffset str =
                 ]
 
         Ok list ->
-            row [] (List.map renderElement list)
+            row [] (List.map (renderElement generation blockOffset) list)
 
 
-renderElement : Parser.Element.Element -> Element Mark2Msg
-renderElement element =
+renderElement : Int -> Int -> Parser.Element.Element -> Element Mark2Msg
+renderElement generation blockOffset element =
     let
         _ =
             Debug.log "ELEMENT" element
@@ -70,13 +71,13 @@ renderElement element =
                 _ =
                     Debug.log "BODY" body
             in
-            renderWithDictionary name args body sm
+            renderWithDictionary generation blockOffset name args body sm
 
         Parser.Element.LX list _ ->
-            row [] (List.map renderElement list)
+            row [] (List.map (renderElement generation blockOffset) list)
 
 
-renderWithDictionary name args body sm =
+renderWithDictionary generation blockOffset name args body sm =
     case Dict.get name renderElementDict of
         Nothing ->
             text (name ++ ": unimplemented")
@@ -84,14 +85,14 @@ renderWithDictionary name args body sm =
         Just f ->
             case f of
                 I g ->
-                    g name args body sm
+                    g generation blockOffset name args body sm
 
                 B g ->
-                    g name args body sm
+                    g generation blockOffset name args body sm
 
 
 type alias FRender a =
-    String -> List String -> Parser.Element.Element -> Maybe Parser.SourceMap.SourceMap -> Element a
+    Int -> Int -> String -> List String -> Parser.Element.Element -> Maybe Parser.SourceMap.SourceMap -> Element a
 
 
 type RenderFunction a
@@ -110,23 +111,34 @@ renderElementDict =
         , ( "italic", I renderItalic )
         , ( "code", I renderCode )
         , ( "math", I renderMath )
-
-        --, ( "mathDisplay", B renderMathDisplay )
+        , ( "mathDisplay", B renderMathDisplay )
         , ( "theorem", B renderTheorem )
         ]
 
 
-renderMath : FRender Mark2Msg
-renderMath _ args body sm =
+renderMathDisplay : FRender Mark2Msg
+renderMathDisplay generation blockOffset name args body sm =
     case getText body of
         Just content ->
-            mathText InlineMathMode "foobar" content sm
+            mathText generation blockOffset DisplayMathMode "foobar" content sm
+
+        Nothing ->
+            el [ Font.color redColor ] (text "Error rendering math !!!")
+
+
+renderMath : FRender Mark2Msg
+renderMath generation blockOffset name args body sm =
+    case getText body of
+        Just content ->
+            mathText generation blockOffset InlineMathMode "foobar" content sm
 
         Nothing ->
             el [ Font.color redColor ] (text "Error rendering math !!!")
 
 
 
+--mathText : Int -> Int -> DisplayMode -> String -> String -> Maybe Parser.SourceMap.SourceMap -> Element Mark2Msg
+--mathText generation blockOffset displayMode selectedId content sm
 -- getText :  Parser.Element.Element -> Maybe String
 
 
@@ -145,15 +157,15 @@ getText element =
 
 
 renderTheorem : FRender Mark2Msg
-renderTheorem _ args body sm =
+renderTheorem generation blockOffset name args body sm =
     column [ spacing 3 ]
         [ row [ Font.bold ] [ text "Theorem." ]
-        , el [] (renderElement body)
+        , el [] (renderElement generation blockOffset body)
         ]
 
 
 renderCode : FRender Mark2Msg
-renderCode _ _ body sm =
+renderCode generation blockOffset _ _ body sm =
     el
         [ Font.family
             [ Font.typeface "Inconsolata"
@@ -162,21 +174,31 @@ renderCode _ _ body sm =
         , Font.size 14
         , Font.color codeColor
         ]
-        (renderElement body)
+        (renderElement generation blockOffset body)
 
 
 renderStrong : FRender Mark2Msg
-renderStrong _ _ body sm =
-    el [ Font.bold ] (renderElement body)
+renderStrong generation blockOffset _ _ body sm =
+    el [ Font.bold ] (renderElement generation blockOffset body)
 
 
 renderItalic : FRender Mark2Msg
-renderItalic _ _ body sm =
-    el [ Font.italic ] (renderElement body)
+renderItalic generation blockOffset _ _ body sm =
+    el [ Font.italic ] (renderElement generation blockOffset body)
 
 
-mathText : DisplayMode -> String -> String -> Maybe Parser.SourceMap.SourceMap -> Element Mark2Msg
-mathText displayMode selectedId content sm =
+
+-- mathText : Int -> Int -> DisplayMode -> String -> String -> Maybe Parser.SourceMap.SourceMap -> Element Mark2Msg
+
+
+mathText : Int -> b -> DisplayMode -> String -> String -> Maybe Parser.SourceMap.SourceMap -> Element Mark2Msg
+mathText generation blockOffset displayMode selectedId content sm =
+    Html.Keyed.node "span" [] [ ( String.fromInt generation, mathText_ displayMode selectedId content sm ) ]
+        |> Element.html
+
+
+mathText_ : DisplayMode -> String -> String -> Maybe Parser.SourceMap.SourceMap -> Html Mark2Msg
+mathText_ displayMode selectedId content sm =
     let
         _ =
             Debug.log "mathText" content
@@ -190,7 +212,6 @@ mathText displayMode selectedId content sm =
         -- , HA.id (makeId sm)
         ]
         []
-        |> Element.html
 
 
 isDisplayMathMode : DisplayMode -> Bool
