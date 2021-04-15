@@ -62,7 +62,7 @@ initialText =
         ++ " the below: \n\n[mathDisplay \\sum_1^\\infty 1/n = \\infty,]\n\n which goes back to the work of Nicole Oresme"
         ++ " (1320–1382).  See the entry in the Stanford Encyclopedia of philosophy."
         ++ "\n\nSome code: [code col :: Int -> Matrix a -> \\[a\\]]. Do you recognize the language (ha ha)?"
-        ++ " [italic And can we do something about the awkwardness of escaping brackets inside code elementS?]"
+        ++ " [italic And can we do something about the awkwardness of escaping brackets inside code elements?]"
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -184,6 +184,7 @@ parsed model =
             el [ alignTop ] (column [ width widePanelWidth, height panelHeight, scrollbarY ] (List.map (\s -> Element.paragraph [] [ text s ]) (parsed_ pt)))
 
 
+parsed_ : a -> List String
 parsed_ pt =
     Paragraph.lines paragraphFormat2 (Debug.toString pt)
 
@@ -221,6 +222,10 @@ outputDisplay_ model =
          else
             List.map text (Paragraph.lines paragraphFormat model.renderedText)
         )
+
+
+
+-- TODO: Working on this now
 
 
 render2 : Int -> String -> Element Msg

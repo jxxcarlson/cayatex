@@ -7,8 +7,10 @@ import Html exposing (Html)
 import Html.Attributes as HA
 import Html.Keyed
 import Json.Encode
+import Parser.Driver
 import Parser.Element
 import Parser.SourceMap
+import Parser.TextCursor
 
 
 type Mark2Msg
@@ -58,6 +60,30 @@ format =
 
 renderString : Int -> Int -> String -> Element Mark2Msg
 renderString generation blockOffset str =
+    Parser.Driver.parseLoop generation blockOffset str
+        |> Parser.TextCursor.parseResult
+        |> renderList generation blockOffset
+
+
+
+-- |> (List.map (paragraph [] [renderElement generation blockOffset])
+--Err _ ->
+--    row format
+--        [ el [ Font.color redColor ] (text "Parse error for ")
+--        , el [ Font.color blueColor ] (text str)
+--        ]
+--
+--Ok list ->
+--    paragraph format (List.map (renderElement generation blockOffset) list)
+
+
+renderList : Int -> Int -> List Parser.Element.Element -> Element Mark2Msg
+renderList generation blockOffset list =
+    paragraph format (List.map (renderElement generation blockOffset) list)
+
+
+renderString1 : Int -> Int -> String -> Element Mark2Msg
+renderString1 generation blockOffset str =
     case Parser.Element.parseList generation blockOffset str of
         Err _ ->
             row format

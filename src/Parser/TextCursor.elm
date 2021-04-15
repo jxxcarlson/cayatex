@@ -1,4 +1,7 @@
-module Parser.TextCursor exposing (TextCursor, init, incrementBlockIndex, incrementBlockOffset)
+module Parser.TextCursor exposing
+    ( TextCursor, init, incrementBlockIndex, incrementBlockOffset
+    , parseResult
+    )
 
 {-| TextCursor is the data structure used by Parser.parseLoop.
 
@@ -26,6 +29,11 @@ type alias TextCursor e =
     , count : Int
     , generation : Int
     }
+
+
+parseResult : TextCursor e -> List e
+parseResult t =
+    t.parsed
 
 
 empty : TextCursor a
