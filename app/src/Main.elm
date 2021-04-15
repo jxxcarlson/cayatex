@@ -61,7 +61,8 @@ initialText =
     "Pythagoras says that [math a^2 + b^2 = c^2].  This is an [strong [italic extremely]] cool result. But just as cool is"
         ++ " the below: \n\n[mathDisplay \\sum_1^\\infty 1/n = \\infty,]\n\n which goes back to the work of Nicole Oresme"
         ++ " (1320–1382).  See the entry in the Stanford Encyclopedia of philosophy."
-        ++ "\n\nSome code: [code col :: Int -> Matrix a -> \\[a\\]]. Do you recognize the language (ha ha!)"
+        ++ "\n\nSome code: [code col :: Int -> Matrix a -> \\[a\\]]. Do you recognize the language (ha ha)?"
+        ++ " [italic And can we do something about the awkwardness of escaping brackets inside code elementS?]"
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -142,7 +143,7 @@ panelWidth =
 
 
 panelHeight =
-    px 200
+    px 370
 
 
 mainColumn : Model -> Element Msg

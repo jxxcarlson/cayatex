@@ -193,6 +193,14 @@ renderTheorem generation blockOffset name args body sm =
 
 renderCode : FRender Mark2Msg
 renderCode generation blockOffset _ _ body sm =
+    let
+        adjustedBody =
+            getText body
+                |> Maybe.withDefault "(body)"
+                |> String.replace "\\[" "["
+                |> String.replace "\\]" "]"
+                |> (\text -> Parser.Element.Text text sm)
+    in
     el
         [ Font.family
             [ Font.typeface "Inconsolata"
@@ -201,7 +209,7 @@ renderCode generation blockOffset _ _ body sm =
         , Font.size 14
         , Font.color codeColor
         ]
-        (renderElement generation blockOffset body)
+        (renderElement generation blockOffset adjustedBody)
 
 
 renderStrong : FRender Mark2Msg
