@@ -2,7 +2,6 @@ module Parser.Loop exposing (..)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context, Problem)
-import Parser.Getters
 import Parser.SourceMap exposing (SourceMap)
 import Parser.TextCursor as TextCursor exposing (TextCursor)
 import Parser.Tool as ParserTool
