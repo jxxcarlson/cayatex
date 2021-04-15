@@ -167,8 +167,6 @@ title str =
 parserDisplay model =
     row
         [ moveUp 10
-        , width widePanelWidth
-        , height panelHeight
         , Font.size 14
         , Background.color whiteColor
         , padding 8
@@ -182,7 +180,7 @@ parsed model =
             text "Parse error"
 
         Ok pt ->
-            el [ alignTop ] (column [ width widePanelWidth ] (List.map (\s -> Element.paragraph [] [ text s ]) (parsed_ pt)))
+            el [ alignTop ] (column [ width widePanelWidth, height panelHeight, scrollbarY ] (List.map (\s -> Element.paragraph [] [ text s ]) (parsed_ pt)))
 
 
 parsed_ pt =
@@ -211,6 +209,7 @@ outputDisplay_ model =
         , paddingXY 8 12
         , width panelWidth
         , height panelHeight
+        , scrollbarY
         , moveUp 9
         , Font.size 12
         ]
