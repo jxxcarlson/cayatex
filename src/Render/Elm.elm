@@ -9,6 +9,7 @@ import Html.Attributes as HA
 import Html.Keyed
 import Json.Encode
 import List.Extra
+import Maybe.Extra
 import Parser.Driver
 import Parser.Element
 import Parser.Getters
@@ -193,10 +194,77 @@ link generation blockOffset name args body sm =
                 }
 
 
+keyValueDict : List String -> Dict String String
+keyValueDict strings =
+    List.map (String.split ":") strings
+        |> List.map (List.map String.trim)
+        |> List.map pairFromList
+        |> Maybe.Extra.values
+        |> Dict.fromList
+
+
+pairFromList : List String -> Maybe ( String, String )
+pairFromList strings =
+    case strings of
+        [ x, y ] ->
+            Just ( x, y )
+
+        _ ->
+            Nothing
+
+
 image : FRender Mark2Msg
 image generation blockOffset name args body sm =
-    Element.image [ Element.width Element.fill ]
-        { src = getText body |> Maybe.withDefault "no image url", description = "empty" }
+    let
+        dict =
+            keyValueDict args |> Debug.log "DICT"
+
+        description =
+            Dict.get "caption" dict |> Maybe.withDefault ""
+
+        caption =
+            case Dict.get "caption" dict of
+                Nothing ->
+                    Element.none
+
+                Just c ->
+                    row [ Element.centerX ] [ el [ Element.width Element.fill ] (text c) ]
+
+        width =
+            case Dict.get "width" dict of
+                Nothing ->
+                    Element.fill
+
+                Just w_ ->
+                    case String.toInt w_ of
+                        Nothing ->
+                            Element.fill
+
+                        Just w ->
+                            Element.px w
+
+        placement =
+            case Dict.get "placement" dict of
+                Nothing ->
+                    Element.centerX
+
+                Just "left" ->
+                    Element.alignLeft
+
+                Just "right" ->
+                    Element.alignRight
+
+                Just "center" ->
+                    Element.centerX
+
+                _ ->
+                    Element.centerX
+    in
+    Element.column [ spacing 8, placement, Element.width (Element.px 400) ]
+        [ Element.image [ Element.width width, placement ]
+            { src = getText body |> Maybe.withDefault "no image url", description = description }
+        , caption
+        ]
 
 
 renderStrong : FRender Mark2Msg
