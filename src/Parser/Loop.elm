@@ -56,7 +56,7 @@ nextCursor : Packet a -> TextCursor a -> ParserTool.Step (TextCursor a) (TextCur
 nextCursor packet tc =
     let
         _ =
-            Debug.log "TC" tc
+            Debug.log "tc COUNT" tc.count
     in
     if tc.text == "" || tc.count > 10 then
         -- TODO: that usage of count needs to be removed after bug is fixed

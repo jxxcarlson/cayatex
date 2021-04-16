@@ -7,3 +7,7 @@ scripts:
   look: open -a /Applications/Firefox.app public/index.html
 
   local: open -a /Applications/Firefox.app http://localhost:8000
+
+  publish:
+    - elm make src/Main.elm --output=public/Main.js
+    - cp public/Main.js /Users/jxxcarlson/dev/jxxcarlson.github.io/app/cayatex/

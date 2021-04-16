@@ -16,7 +16,7 @@ packet =
     , getSource = Getters.getSource
     , incrementOffset = incrementOffset
     , highlighter = Nothing
-    , handleError = Nothing
+    , handleError = Just handleError
     }
 
 
@@ -65,7 +65,9 @@ handleError tc_ e =
     let
         mFirstError =
             e
+                |> Debug.log "handle ERR"
                 |> List.head
+                |> Debug.log "FIRST ERR"
 
         problem : Problem
         problem =
@@ -88,17 +90,34 @@ handleError tc_ e =
         let
             textLines =
                 String.lines tc_.text
+                    |> Debug.log "handle TXT LINES"
+
+            badText =
+                (case List.head textLines of
+                    Nothing ->
+                        "Oops, couldn't find your error text"
+
+                    Just str ->
+                        str
+                )
+                    |> Debug.log "BAD TEXT"
+
+            correctedText =
+                String.fromChar '⁅' ++ String.replace "[" "" badText
 
             errorRow =
                 Maybe.map .row mFirstError |> Maybe.withDefault 0
 
+            errorLines : List String
             errorLines =
-                List.take (errorRow - 1) textLines ++ [ "\\]" ]
+                List.take (errorRow - 1) textLines
+                    -- ++ [ "\\]" ]
+                    |> Debug.log "handle ERR LINES"
 
             newTextLines =
-                "\\red{^^ I fixed the offending element for you (missing right bracket); please correct it.}" :: List.drop errorRow textLines
+                ("[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]") :: List.drop errorRow textLines
         in
-        { text = String.join "\n" newTextLines
+        { text = String.join "\n" (List.reverse newTextLines)
         , block = "?? TO DO"
         , blockIndex = tc_.blockIndex
         , parsed = parse__ (String.join "\n" errorLines)
