@@ -7,7 +7,6 @@ type Problem
     | ExpectingRightBracket
     | ExpectingPipe
     | ExpectingEscape
-    | ExpectingLanguageChar
     | EndOfInput
     | UnHandledError
 
@@ -15,6 +14,4 @@ type Problem
 type Context
     = CElement
     | CInline_ String
-    | DisplayMathContext
-    | CManyExpression
     | TextExpression
