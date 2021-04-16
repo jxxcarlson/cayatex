@@ -2,12 +2,7 @@ module Data exposing (text)
 
 
 test =
-    """Begin
-
-[corollary |Euclid| There are infinitely many primes.
-
-End
-"""
+    "Begin\n\n[corollary |Euclid| There are infinitely many primes.\n\nEnd"
 
 
 text =
