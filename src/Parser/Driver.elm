@@ -1,5 +1,6 @@
 module Parser.Driver exposing (..)
 
+import List.Extra
 import Parser.Advanced as PA
 import Parser.Element as Element exposing (Element(..))
 import Parser.Error exposing (Context(..), Problem(..))
@@ -114,8 +115,12 @@ handleError tc_ e =
                     -- ++ [ "\\]" ]
                     |> Debug.log "handle ERR LINES"
 
+            replacementText =
+                "[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]"
+
             newTextLines =
-                ("[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]") :: List.drop errorRow textLines
+                -- ("[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]") :: List.drop errorRow textLines
+                List.Extra.setIf (\t -> t == badText) replacementText textLines |> List.reverse
         in
         { text = String.join "\n" (List.reverse newTextLines)
         , block = "?? TO DO"
