@@ -119,26 +119,34 @@ noFocus =
     }
 
 
-widePanelWidth =
-    px (2 * panelWidth_)
+widePanelWidth_ =
+    2 * panelWidth_
 
 
 panelWidth_ =
     440
 
 
-panelWidth =
-    px panelWidth_
+panelHeight_ =
+    800
 
 
-panelHeight =
-    px 550
+parserDisplayPanelHeight_ =
+    100
+
+
+appHeight_ =
+    panelHeight_ + parserDisplayPanelHeight_ + 1200
+
+
+appWidth_ =
+    2 * panelWidth_ + 15
 
 
 mainColumn : Model -> Element Msg
 mainColumn model =
     column mainColumnStyle
-        [ column [ spacing 24, width (px 900), height (px 750) ]
+        [ column [ spacing 24, width (px appWidth_), height (px appHeight_) ]
             [ title "CaYaTeX"
             , column [ spacing 12 ]
                 [ row [ spacing 12 ] [ inputText model, outputDisplay model ]
@@ -170,7 +178,7 @@ parsed model =
             text "Parse error"
 
         Ok pt ->
-            el [ alignTop ] (column [ width widePanelWidth, height (px 100), scrollbarY ] (List.map (\s -> Element.paragraph [] [ text s ]) (parsed_ pt)))
+            el [ alignTop ] (column [ width (px widePanelWidth_), height (px parserDisplayPanelHeight_), scrollbarY ] (List.map (\s -> Element.paragraph [] [ text s ]) (parsed_ pt)))
 
 
 parsed_ : a -> List String
@@ -198,8 +206,8 @@ outputDisplay_ model =
         [ spacing 8
         , Background.color (Element.rgb 1.0 1.0 1.0)
         , paddingXY 8 12
-        , width panelWidth
-        , height panelHeight
+        , width (px panelWidth_)
+        , height (px panelHeight_)
         , scrollbarY
         , moveUp 9
         , Font.size 12
@@ -260,7 +268,7 @@ keyIt k list =
 
 inputText : Model -> Element Msg
 inputText model =
-    Input.multiline [ height panelHeight, width panelWidth, Font.size 14 ]
+    Input.multiline [ height (px panelHeight_), width (px panelWidth_), Font.size 14 ]
         { onChange = InputText
         , text = model.input
         , placeholder = Nothing

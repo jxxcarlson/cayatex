@@ -28,7 +28,7 @@ the one in the previous example.
 
 [image |caption: Rotkehlchen aufgeplustert, width: 200, placement: center|https://i.pinimg.com/originals/d4/07/a4/d407a45bcf3ade18468ac7ba633244b9.jpg]
 
-
+[strong Errors] Look what happens here: [ital One more beer, please!]
 """
 
 
