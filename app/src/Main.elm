@@ -1,11 +1,5 @@
 module Main exposing (keyedNode, main)
 
-{- This is a starter app which presents a text label, text field, and a button.
-   What you enter in the text field is echoed in the label.  When you press the
-   button, the text in the label is reverse.
-   This version uses `mdgriffith/elm-ui` for the view functions.
--}
-
 import Browser
 import Data
 import Element exposing (..)
@@ -233,13 +227,6 @@ render2 k str =
         |> Element.map Mark2Msg
 
 
-
---renderList : Int -> Int -> List Parser.Element.Element -> Element Mark2Msg
---renderList generation blockOffset list
--- |> List.map (List.map Render.Elm.renderElementX)
--- |> List.map (Render.Elm.renderElement)
-
-
 paragraphFormat =
     { maximumWidth = 80, optimalWidth = 70, stringWidth = String.length }
 
@@ -280,10 +267,6 @@ inputText model =
         , label = Input.labelAbove [ fontGray 0.9 ] <| el [] (text "Source text")
         , spellcheck = False
         }
-
-
-
--- buttonColor : Mode -> Mode ->
 
 
 buttonColor buttonMode currentMode =
