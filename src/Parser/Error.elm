@@ -2,7 +2,10 @@ module Parser.Error exposing (Context(..), Problem(..))
 
 
 type Problem
-    = ExpectingToken String
+    = ExpectingComma
+    | ExpectingLeftBracket
+    | ExpectingRightBracket
+    | ExpectingPipe
     | ExpectingEscape
     | ExpectingLanguageChar
     | EndOfInput
@@ -10,7 +13,7 @@ type Problem
 
 
 type Context
-    = CInline
+    = CElement
     | CInline_ String
     | DisplayMathContext
     | CManyExpression

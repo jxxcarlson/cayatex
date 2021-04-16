@@ -1,4 +1,4 @@
-module Parser.SourceMap exposing (SourceMap)
+module Parser.SourceMap exposing (SourceMap, dummy)
 
 
 type alias SourceMap =
@@ -6,4 +6,12 @@ type alias SourceMap =
     , offset : Int
     , length : Int
     , generation : Int
+    }
+
+
+dummy =
+    { blockOffset = 0
+    , offset = 0
+    , length = 0
+    , generation = 0
     }

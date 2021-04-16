@@ -51,7 +51,7 @@ element generation lineNumber =
 -}
 primitiveElement : Int -> Int -> Parser Element
 primitiveElement generation blockOffset =
-    Parser.inContext CInline <|
+    Parser.inContext CElement <|
         Parser.succeed (\start name ( args, body_ ) end source -> Element name args body_ (Just { generation = generation, blockOffset = blockOffset, offset = start, length = end - start }))
             |= Parser.getOffset
             |. leftBracket
@@ -152,12 +152,8 @@ rawText_ stopChars =
 -- SYMBOLS
 
 
-symbol_ c e =
-    Parser.symbol (Parser.Token c (ExpectingToken e))
-
-
 comma_ =
-    symbol_ "," "Comma"
+    Parser.symbol (Parser.Token "," ExpectingComma)
 
 
 comma =
@@ -165,15 +161,15 @@ comma =
 
 
 pipeSymbol =
-    symbol_ "|" "Pipe"
+    Parser.symbol (Parser.Token "|" ExpectingPipe)
 
 
 leftBracket =
-    symbol_ "[" "Left bracket"
+    Parser.symbol (Parser.Token "[" ExpectingLeftBracket)
 
 
 rightBracket =
-    symbol_ "]" "Right bracket"
+    Parser.symbol (Parser.Token "]" ExpectingRightBracket)
 
 
 
