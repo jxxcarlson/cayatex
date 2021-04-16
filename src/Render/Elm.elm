@@ -1,7 +1,7 @@
 module Render.Elm exposing (Mark2Msg(..), renderElement, renderList, renderString)
 
 import Dict exposing (Dict)
-import Element exposing (Element, column, el, paragraph, row, spacing, text)
+import Element as E exposing (column, el, paragraph, row, spacing, text)
 import Element.Background as Background
 import Element.Font as Font
 import Html exposing (Html)
@@ -11,9 +11,9 @@ import Json.Encode
 import List.Extra
 import Maybe.Extra
 import Parser.Driver
-import Parser.Element
+import Parser.Element exposing (Element(..))
 import Parser.Getters
-import Parser.SourceMap
+import Parser.SourceMap exposing (SourceMap)
 import Parser.TextCursor
 import String.Extra
 
@@ -22,8 +22,16 @@ import String.Extra
 -- TYPES
 
 
+type alias RenderArgs =
+    { width : Int
+    , selectedId : String
+    , generation : Int
+    , blockOffset : Int
+    }
+
+
 type alias FRender a =
-    Int -> Int -> String -> List String -> Parser.Element.Element -> Maybe Parser.SourceMap.SourceMap -> Element a
+    RenderArgs -> String -> List String -> Element -> Maybe SourceMap -> E.Element a
 
 
 type RenderFunction a
@@ -49,7 +57,7 @@ type DisplayMode
 
 
 textWidth =
-    Element.width (Element.px 200)
+    E.width (E.px 200)
 
 
 format =
@@ -60,40 +68,40 @@ format =
 -- TOP-LEVEL RENDERERS
 
 
-renderString : Int -> Int -> String -> Element Mark2Msg
-renderString generation blockOffset str =
-    Parser.Driver.parseLoop generation blockOffset str
+renderString : RenderArgs -> String -> E.Element Mark2Msg
+renderString renderArgs str =
+    Parser.Driver.parseLoop renderArgs.generation renderArgs.blockOffset str
         |> Parser.TextCursor.parseResult
-        |> renderList generation blockOffset
+        |> renderList renderArgs
 
 
-renderList : Int -> Int -> List Parser.Element.Element -> Element Mark2Msg
-renderList generation blockOffset list =
-    paragraph format (List.map (renderElement generation blockOffset) list)
+renderList : RenderArgs -> List Element -> E.Element Mark2Msg
+renderList renderArgs list =
+    paragraph format (List.map (renderElement renderArgs) list)
 
 
-renderElement : Int -> Int -> Parser.Element.Element -> Element Mark2Msg
-renderElement generation blockOffset element =
+renderElement : RenderArgs -> Element -> E.Element Mark2Msg
+renderElement renderArgs element =
     case element of
-        Parser.Element.Text str _ ->
+        Text str _ ->
             el [] (text str)
 
-        Parser.Element.Element name args body sm ->
-            renderWithDictionary generation blockOffset name args body sm
+        Element name args body sm ->
+            renderWithDictionary renderArgs name args body sm
 
-        Parser.Element.LX list _ ->
-            paragraph format (List.map (renderElement generation blockOffset) list)
+        LX list _ ->
+            paragraph format (List.map (renderElement renderArgs) list)
 
 
 theoremLikeElements =
     [ "theorem", "proposition", "proof", "definition", "example", "problem", "corollary", "lemma" ]
 
 
-renderWithDictionary generation blockOffset name args body sm =
+renderWithDictionary renderArgs name args body sm =
     case Dict.get name renderElementDict of
         Nothing ->
             if List.member name theoremLikeElements then
-                renderaAsTheoremLikeElement generation blockOffset name args body sm
+                renderaAsTheoremLikeElement renderArgs name args body sm
 
             else
                 paragraph []
@@ -107,10 +115,10 @@ renderWithDictionary generation blockOffset name args body sm =
         Just f ->
             case f of
                 I g ->
-                    g generation blockOffset name args body sm
+                    g renderArgs name args body sm
 
                 B g ->
-                    g generation blockOffset name args body sm
+                    g renderArgs name args body sm
 
 
 
@@ -133,10 +141,10 @@ renderElementDict =
         ]
 
 
-getText : Parser.Element.Element -> Maybe String
+getText : Element -> Maybe String
 getText element =
     case element of
-        Parser.Element.LX [ Parser.Element.Text content _ ] _ ->
+        LX [ Text content _ ] _ ->
             Just content
 
         _ ->
@@ -149,14 +157,14 @@ getText element =
 
 
 renderCode : FRender Mark2Msg
-renderCode generation blockOffset _ _ body sm =
+renderCode renderArgs _ _ body sm =
     let
         adjustedBody =
             getText body
                 |> Maybe.withDefault "(body)"
                 |> String.replace "\\[" "["
                 |> String.replace "\\]" "]"
-                |> (\text -> Parser.Element.Text text sm)
+                |> (\text -> Text text sm)
     in
     el
         [ Font.family
@@ -166,7 +174,7 @@ renderCode generation blockOffset _ _ body sm =
         , Font.size 14
         , Font.color codeColor
         ]
-        (renderElement generation blockOffset adjustedBody)
+        (renderElement renderArgs adjustedBody)
 
 
 
@@ -175,20 +183,20 @@ renderCode generation blockOffset _ _ body sm =
 
 
 link : FRender Mark2Msg
-link generation blockOffset name args body sm =
+link renderArgs name args body sm =
     case getArg_ 0 args of
         Nothing ->
             let
                 url_ =
                     getText body |> Maybe.withDefault "missing url"
             in
-            Element.newTabLink []
+            E.newTabLink []
                 { url = url_
                 , label = el [ Font.color linkColor, Font.italic ] (text url_)
                 }
 
         Just labelText ->
-            Element.newTabLink []
+            E.newTabLink []
                 { url = getText body |> Maybe.withDefault "missing url"
                 , label = el [ Font.color linkColor, Font.italic ] (text labelText)
                 }
@@ -214,7 +222,7 @@ pairFromList strings =
 
 
 image : FRender Mark2Msg
-image generation blockOffset name args body sm =
+image renderArgs name args body sm =
     let
         dict =
             keyValueDict args |> Debug.log "DICT"
@@ -225,65 +233,65 @@ image generation blockOffset name args body sm =
         caption =
             case Dict.get "caption" dict of
                 Nothing ->
-                    Element.none
+                    E.none
 
                 Just c ->
-                    row [ Element.centerX ] [ el [ Element.width Element.fill ] (text c) ]
+                    row [ E.centerX ] [ el [ E.width E.fill ] (text c) ]
 
         width =
             case Dict.get "width" dict of
                 Nothing ->
-                    Element.fill
+                    E.fill
 
                 Just w_ ->
                     case String.toInt w_ of
                         Nothing ->
-                            Element.fill
+                            E.fill
 
                         Just w ->
-                            Element.px w
+                            E.px w
 
         placement =
             case Dict.get "placement" dict of
                 Nothing ->
-                    Element.centerX
+                    E.centerX
 
                 Just "left" ->
-                    Element.alignLeft
+                    E.alignLeft
 
                 Just "right" ->
-                    Element.alignRight
+                    E.alignRight
 
                 Just "center" ->
-                    Element.centerX
+                    E.centerX
 
                 _ ->
-                    Element.centerX
+                    E.centerX
     in
-    Element.column [ spacing 8, placement, Element.width (Element.px 400) ]
-        [ Element.image [ Element.width width, placement ]
+    E.column [ spacing 8, placement, E.width (E.px 400) ]
+        [ E.image [ E.width width, placement ]
             { src = getText body |> Maybe.withDefault "no image url", description = description }
         , caption
         ]
 
 
 renderStrong : FRender Mark2Msg
-renderStrong generation blockOffset _ _ body sm =
-    el [ Font.bold ] (renderElement generation blockOffset body)
+renderStrong renderArgs _ _ body sm =
+    el [ Font.bold ] (renderElement renderArgs body)
 
 
 renderItalic : FRender Mark2Msg
-renderItalic generation blockOffset _ _ body sm =
-    el [ Font.italic ] (renderElement generation blockOffset body)
+renderItalic renderArgs _ _ body sm =
+    el [ Font.italic ] (renderElement renderArgs body)
 
 
 highlight : FRender Mark2Msg
-highlight generation blockOffset _ _ body sm =
-    el [ Background.color yellowColor, Element.paddingXY 4 2 ] (renderElement generation blockOffset body)
+highlight renderArgs _ _ body _ =
+    el [ Background.color yellowColor, E.paddingXY 4 2 ] (renderElement renderArgs body)
 
 
 highlightRGB : FRender Mark2Msg
-highlightRGB generation blockOffset _ args body sm =
+highlightRGB renderArgs _ args body sm =
     let
         r =
             getInt 0 args
@@ -294,11 +302,11 @@ highlightRGB generation blockOffset _ args body sm =
         b =
             getInt 2 args
     in
-    el [ Background.color (Element.rgb255 r g b), Element.paddingXY 4 2 ] (renderElement generation blockOffset body)
+    el [ Background.color (E.rgb255 r g b), E.paddingXY 4 2 ] (renderElement renderArgs body)
 
 
 fontRGB : FRender Mark2Msg
-fontRGB generation blockOffset _ args body sm =
+fontRGB renderArgs name args body sm =
     let
         r =
             getInt 0 args
@@ -309,7 +317,7 @@ fontRGB generation blockOffset _ args body sm =
         b =
             getInt 2 args
     in
-    el [ Font.color (Element.rgb255 r g b), Element.paddingXY 4 2 ] (renderElement generation blockOffset body)
+    el [ Font.color (E.rgb255 r g b), E.paddingXY 4 2 ] (renderElement renderArgs body)
 
 
 
@@ -317,7 +325,7 @@ fontRGB generation blockOffset _ args body sm =
 
 
 renderaAsTheoremLikeElement : FRender Mark2Msg
-renderaAsTheoremLikeElement generation blockOffset name args body sm =
+renderaAsTheoremLikeElement renderArgs name args body sm =
     let
         label_ =
             getArg_ 0 args
@@ -336,37 +344,40 @@ renderaAsTheoremLikeElement generation blockOffset name args body sm =
     in
     column [ spacing 3 ]
         [ heading
-        , el [] (renderElement generation blockOffset body)
+        , el [] (renderElement renderArgs body)
         ]
 
 
 renderMathDisplay : FRender Mark2Msg
-renderMathDisplay generation blockOffset name args body sm =
+renderMathDisplay rendArgs name args body sm =
     case getText body of
         Just content ->
-            mathText generation blockOffset DisplayMathMode "foobar" content sm
+            mathText rendArgs DisplayMathMode content sm
 
         Nothing ->
             el [ Font.color redColor ] (text "Error rendering math !!!")
 
 
 renderMath : FRender Mark2Msg
-renderMath generation blockOffset name args body sm =
+renderMath renderArgs name args body sm =
     case getText body of
         Just content ->
-            mathText generation blockOffset InlineMathMode "foobar" content sm
+            mathText renderArgs InlineMathMode content sm
 
         Nothing ->
             el [ Font.color redColor ] (text "Error rendering math !!!")
 
 
-mathText : Int -> b -> DisplayMode -> String -> String -> Maybe Parser.SourceMap.SourceMap -> Element Mark2Msg
-mathText generation blockOffset displayMode selectedId content sm =
-    Html.Keyed.node "span" [] [ ( String.fromInt generation, mathText_ displayMode selectedId content sm ) ]
-        |> Element.html
+mathText : RenderArgs -> DisplayMode -> String -> Maybe SourceMap -> E.Element Mark2Msg
+mathText renderArgs displayMode content sm =
+    Html.Keyed.node "span"
+        []
+        [ ( String.fromInt renderArgs.generation, mathText_ displayMode renderArgs.selectedId content sm )
+        ]
+        |> E.html
 
 
-mathText_ : DisplayMode -> String -> String -> Maybe Parser.SourceMap.SourceMap -> Html Mark2Msg
+mathText_ : DisplayMode -> String -> String -> Maybe SourceMap -> Html Mark2Msg
 mathText_ displayMode selectedId content sm =
     Html.node "math-text"
         -- active sm selectedId  ++
@@ -424,25 +435,25 @@ getArg k default stringList =
 
 
 linkColor =
-    Element.rgb 0 0 0.8
+    E.rgb 0 0 0.8
 
 
 redColor =
-    Element.rgb 0.7 0 0
+    E.rgb 0.7 0 0
 
 
 blueColor =
-    Element.rgb 0 0 0.8
+    E.rgb 0 0 0.8
 
 
 yellowColor =
-    Element.rgb 1.0 1.0 0
+    E.rgb 1.0 1.0 0
 
 
 violetColor =
-    Element.rgb 0.4 0 0.8
+    E.rgb 0.4 0 0.8
 
 
 codeColor =
-    -- Element.rgb 0.2 0.5 1.0
-    Element.rgb 0.4 0 0.8
+    -- E.rgb 0.2 0.5 1.0
+    E.rgb 0.4 0 0.8

@@ -223,22 +223,12 @@ outputDisplay_ model =
 -- TODO: Working on this now
 
 
-render2a : Int -> String -> Element Msg
-render2a k str =
-    Render.Elm.renderString k 0 str |> Element.map Mark2Msg
-
-
-
--- render2x : List String -> List (List Parser.Element)
--- render2x : List String -> List (List (Element Render.Elm.Mark2Msg))
-
-
 render2 : Int -> String -> Element Msg
 render2 k str =
     Parser.Document.runProcess k (String.lines str)
         |> Parser.Document.toParsed
         |> List.reverse
-        |> List.map (Render.Elm.renderList k 0)
+        |> List.map (Render.Elm.renderList { generation = k, blockOffset = 0, selectedId = "", width = 300 })
         |> column [ spacing 18 ]
         |> Element.map Mark2Msg
 
