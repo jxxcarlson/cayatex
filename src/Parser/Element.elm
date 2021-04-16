@@ -67,12 +67,12 @@ elementName =
 
 
 argsAndBody generation lineNumber =
-    Parser.inContext (CInline_ "argsAndBody") <|
+    Parser.inContext (CArgsAndBody) <|
         Parser.oneOf [ argsAndBody_ generation lineNumber, bodyOnly generation lineNumber ]
 
 
 elementArgs =
-    Parser.inContext (CInline_ "inlineArgs") <|
+    Parser.inContext (CArgs) <|
         T.between pipeSymbol innerElementArgs pipeSymbol
 
 
@@ -82,7 +82,7 @@ innerElementArgs =
 
 elementBody : Int -> Int -> Parser.Parser Context Problem Element
 elementBody generation lineNumber =
-    Parser.inContext (CInline_ "body") <|
+    Parser.inContext (CBody) <|
         Parser.lazy (\_ -> T.many (element generation lineNumber) |> Parser.map (\list -> LX list Nothing))
 
 

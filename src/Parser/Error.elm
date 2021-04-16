@@ -13,5 +13,7 @@ type Problem
 
 type Context
     = CElement
-    | CInline_ String
+    | CArgs
+    | CBody
+    | CArgsAndBody
     | TextExpression
