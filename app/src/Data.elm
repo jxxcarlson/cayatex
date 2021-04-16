@@ -1,8 +1,13 @@
 module Data exposing (text)
 
 
-tt =
-    "test"
+test =
+    """Begin
+
+[corollary |Euclid| There are infinitely many primes.
+
+End
+"""
 
 
 text =
@@ -29,11 +34,4 @@ the one in the previous example.
 [image |caption: Rotkehlchen aufgeplustert, width: 200, placement: center|https://i.pinimg.com/originals/d4/07/a4/d407a45bcf3ade18468ac7ba633244b9.jpg]
 
 [strong Errors] Look what happens here: [ital One more beer, please!]
-"""
-
-
-yyy =
-    """
-[strong Errors:] If a user mistypes an element name or tries to use one that is unimplemented, here
-is what happens: [foo this is a test].
 """
