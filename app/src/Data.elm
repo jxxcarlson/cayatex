@@ -6,10 +6,6 @@ test =
 
 
 text =
-    ""
-
-
-text1 =
     """Pythagoras says that [math a^2 + b^2 = c^2].  
 This is an [strong [italic extremely]] cool result. But just as cool is the below:
 [mathDisplay \\sum_1^\\infty 1/n = \\infty,]

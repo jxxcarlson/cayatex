@@ -38,6 +38,8 @@ type alias Model =
 type Msg
     = NoOp
     | InputText String
+    | ClearText
+    | GetText
     | SetMode Mode
     | Mark2Msg Render.Elm.Mark2Msg
 
@@ -87,6 +89,24 @@ update msg model =
 
         SetMode mode ->
             ( { model | mode = mode, count = model.count + 1 }, Cmd.none )
+
+        ClearText ->
+            ( { model
+                | input = ""
+                , renderedText = Render.String.renderString ""
+                , count = model.count + 1
+              }
+            , Cmd.none
+            )
+
+        GetText ->
+            ( { model
+                | input = Data.text
+                , renderedText = Render.String.renderString Data.text
+                , count = model.count + 1
+              }
+            , Cmd.none
+            )
 
         Mark2Msg _ ->
             ( model, Cmd.none )
@@ -153,11 +173,18 @@ mainColumn model =
         [ column [ spacing 48, width (px appWidth_), height (px appHeight_) ]
             [ title "CaYaTeX Test App"
             , column [ spacing 12 ]
-                [ row [ spacing 12 ] [ inputText model, outputDisplay model ]
+                [ row [ spacing 12 ] [ inputElement model, outputDisplay model ]
                 , parserDisplay model
                 ]
             , row [ Font.size 14, Font.color whiteColor ] []
             ]
+        ]
+
+
+inputElement model =
+    column [ spacing 8, moveUp 9 ]
+        [ row [ spacing 12 ] [ clearTextButton, getTextButton ]
+        , inputText model
         ]
 
 
@@ -225,10 +252,6 @@ outputDisplay_ model =
         )
 
 
-
--- TODO: Working on this now
-
-
 render2 : Int -> String -> Element Msg
 render2 k str =
     Parser.Document.runProcess k (String.lines str)
@@ -276,7 +299,9 @@ inputText model =
         { onChange = InputText
         , text = model.input
         , placeholder = Nothing
-        , label = Input.labelAbove [ fontGray 0.9 ] <| el [] (text "Source text")
+
+        --, label = Input.labelAbove [ fontGray 0.9 ] <| el [] (text "Source text")
+        , label = Input.labelHidden "Enter source text here"
         , spellcheck = False
         }
 
@@ -287,6 +312,22 @@ buttonColor buttonMode currentMode =
 
     else
         Element.rgb255 60 60 60
+
+
+clearTextButton : Element Msg
+clearTextButton =
+    Input.button buttonStyle2
+        { onPress = Just ClearText
+        , label = el [ centerX, centerY, Font.size 14 ] (text "Clear")
+        }
+
+
+getTextButton : Element Msg
+getTextButton =
+    Input.button buttonStyle2
+        { onPress = Just GetText
+        , label = el [ centerX, centerY, Font.size 14 ] (text "Demo text")
+        }
 
 
 rawModeButton : Mode -> Element Msg
@@ -325,6 +366,13 @@ mainColumnStyle =
 
 buttonStyle =
     [ Font.color (rgb255 255 255 255)
+    , paddingXY 15 8
+    ]
+
+
+buttonStyle2 =
+    [ Font.color (rgb255 255 255 255)
+    , bgGray 0.2
     , paddingXY 15 8
     ]
 
