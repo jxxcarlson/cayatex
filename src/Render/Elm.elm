@@ -76,8 +76,8 @@ renderString renderArgs str =
 
 
 renderList : RenderArgs -> List Element -> E.Element Mark2Msg
-renderList renderArgs list =
-    paragraph format (List.map (renderElement renderArgs) list)
+renderList renderArgs list_ =
+    paragraph format (List.map (renderElement renderArgs) list_)
 
 
 renderElement : RenderArgs -> Element -> E.Element Mark2Msg
@@ -89,8 +89,8 @@ renderElement renderArgs element =
         Element name args body sm ->
             renderWithDictionary renderArgs name args body sm
 
-        LX list _ ->
-            paragraph format (List.map (renderElement renderArgs) list)
+        LX list_ _ ->
+            paragraph format (List.map (renderElement renderArgs) list_)
 
 
 theoremLikeElements =
@@ -136,6 +136,8 @@ renderElementDict =
         , ( "code", I renderCode )
         , ( "section", I section )
         , ( "subsection", I subsection )
+        , ( "list", B list )
+        , ( "item", I item )
         , ( "link", I link )
         , ( "image", I image )
         , ( "math", I renderMath )
@@ -151,6 +153,26 @@ getText element =
 
         _ ->
             Nothing
+
+
+
+-- NEW
+-- LISTS
+
+
+list : FRender Mark2Msg
+list renderArgs name args_ body sm =
+    case body of
+        LX list_ _ ->
+            column [ spacing 4 ] (List.map (renderElement renderArgs) list_)
+
+        _ ->
+            el [ Font.color redColor ] (text "Malformed list")
+
+
+item : FRender Mark2Msg
+item renderArgs name args_ body sm =
+    el [ E.paddingEach { left = 18, right = 0, top = 0, bottom = 0 } ] (renderElement renderArgs body)
 
 
 

@@ -57,6 +57,7 @@ primitiveElement generation blockOffset =
             |. leftBracket
             |= elementName
             |= argsAndBody generation blockOffset
+            -- TODO: (fix) |. Parser.spaces
             |. rightBracket
             |= Parser.getOffset
             |= Parser.getSource
@@ -67,12 +68,12 @@ elementName =
 
 
 argsAndBody generation lineNumber =
-    Parser.inContext (CArgsAndBody) <|
+    Parser.inContext CArgsAndBody <|
         Parser.oneOf [ argsAndBody_ generation lineNumber, bodyOnly generation lineNumber ]
 
 
 elementArgs =
-    Parser.inContext (CArgs) <|
+    Parser.inContext CArgs <|
         T.between pipeSymbol innerElementArgs pipeSymbol
 
 
@@ -82,7 +83,7 @@ innerElementArgs =
 
 elementBody : Int -> Int -> Parser.Parser Context Problem Element
 elementBody generation lineNumber =
-    Parser.inContext (CBody) <|
+    Parser.inContext CBody <|
         Parser.lazy (\_ -> T.many (element generation lineNumber) |> Parser.map (\list -> LX list Nothing))
 
 
