@@ -259,7 +259,6 @@ render : Int -> String -> Element Msg
 render k str =
     Parser.Document.run k (String.lines str)
         |> Parser.Document.toParsed
-        |> List.reverse
         |> List.map (Render.Elm.renderList { generation = k, blockOffset = 0, selectedId = "", width = 300 })
         |> column [ spacing 18 ]
         |> Element.map Mark2Msg

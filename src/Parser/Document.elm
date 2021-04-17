@@ -102,7 +102,7 @@ run generation strList =
 -}
 toParsed : State -> List (List Element)
 toParsed state =
-    state.output |> List.map .parsed
+    state.output |> List.map .parsed |> List.reverse
 
 
 {-| Return a list of logical paragraphs (blocks(: ordinary paragraphs
