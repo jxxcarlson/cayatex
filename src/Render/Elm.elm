@@ -34,13 +34,8 @@ type alias FRender a =
     RenderArgs -> String -> List String -> Element -> Maybe SourceMap -> E.Element a
 
 
-type RenderFunction a
-    = I (FRender a)
-    | B (FRender a)
-
-
 type alias RenderElementDict a =
-    Dict String (RenderFunction a)
+    Dict String (FRender a)
 
 
 type Mark2Msg
@@ -113,12 +108,7 @@ renderWithDictionary renderArgs name args body sm =
                     ]
 
         Just f ->
-            case f of
-                I g ->
-                    g renderArgs name args body sm
-
-                B g ->
-                    g renderArgs name args body sm
+            f renderArgs name args body sm
 
 
 
@@ -128,21 +118,21 @@ renderWithDictionary renderArgs name args body sm =
 renderElementDict : RenderElementDict Mark2Msg
 renderElementDict =
     Dict.fromList
-        [ ( "Error", I error )
-        , ( "strong", I renderStrong )
-        , ( "italic", I renderItalic )
-        , ( "highlight", I highlight )
-        , ( "highlightRGB", I highlightRGB )
-        , ( "fontRGB", I fontRGB )
-        , ( "code", I renderCode )
-        , ( "section", I section )
-        , ( "subsection", I subsection )
-        , ( "list", B list )
-        , ( "item", I item )
-        , ( "link", I link )
-        , ( "image", I image )
-        , ( "math", I renderMath )
-        , ( "mathDisplay", B renderMathDisplay )
+        [ ( "Error", error )
+        , ( "strong", renderStrong )
+        , ( "italic", renderItalic )
+        , ( "highlight", highlight )
+        , ( "highlightRGB", highlightRGB )
+        , ( "fontRGB", fontRGB )
+        , ( "code", renderCode )
+        , ( "section", section )
+        , ( "subsection", subsection )
+        , ( "list", list )
+        , ( "item", item )
+        , ( "link", link )
+        , ( "image", image )
+        , ( "math", renderMath )
+        , ( "mathDisplay", renderMathDisplay )
         ]
 
 
