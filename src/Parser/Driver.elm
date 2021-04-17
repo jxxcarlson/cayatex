@@ -278,3 +278,14 @@ fakePipeSymbol =
 
 fakeRightBracket =
     String.fromChar '⁆'
+
+
+listExample =
+    """[list
+
+[item Raspberry jam]
+
+[item Sourdough bread]
+
+]
+"""

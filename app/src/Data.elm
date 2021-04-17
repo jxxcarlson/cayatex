@@ -6,6 +6,14 @@ test =
 
 
 text =
+    """[item 1] 
+
+[item 2]
+
+"""
+
+
+text2 =
     """[section CaYaTeX Test Document]
 
 Pythagoras says that [math a^2 + b^2 = c^2].

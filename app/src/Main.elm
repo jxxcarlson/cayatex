@@ -152,7 +152,7 @@ panelWidth_ =
 
 
 panelHeight_ =
-    500
+    900
 
 
 parserDisplayPanelHeight_ =
@@ -209,7 +209,14 @@ parsed model =
             text "Parse error"
 
         Ok pt ->
-            el [ alignTop ] (column [ width (px widePanelWidth_), height (px parserDisplayPanelHeight_), scrollbarY ] (List.map (\s -> Element.paragraph [] [ text s ]) (parsed_ pt)))
+            el [ alignTop ]
+                (column
+                    [ width (px widePanelWidth_)
+                    , height (px parserDisplayPanelHeight_)
+                    , scrollbarY
+                    ]
+                    (List.map (\s -> Element.paragraph [] [ text s ]) (parsed_ pt))
+                )
 
 
 parsed_ : a -> List String

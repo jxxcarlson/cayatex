@@ -1,7 +1,7 @@
 module Parser.Document exposing
     ( process, toParsed, toText
     , State, Block, BlockType(..), LineType(..)
-    , run
+    , classify, run
     )
 
 {-| The main function in this module is process, which takes as input
@@ -21,7 +21,7 @@ a value of type AST = List (List Expression).
 ##@ About blocks
 
 The block offset is the line number in the source text
-at wwhich a block begins. Recall that a block is a string (which may contain newlines) derived
+at which a block begins. Recall that a block is a string (which may contain newlines) derived
 from a set of contiguous lines. It represents a logical paragraph: either an ordinary paragraph or
 an outer begin-end pair. The offset describes the position of a string in the block. Thus, if
 the text "a\\nb\\nc" starts at line 100 of the source text and is preceded and followed by a blank line,
@@ -36,6 +36,7 @@ then the block offset is 100, the offset of "a" is 0, the offest of "b" is 2, an
 import Parser as P exposing ((|.), (|=))
 import Parser.Driver
 import Parser.Element exposing (Element)
+import Parser.Getters
 import Parser.TextCursor as TextCursor exposing (TextCursor)
 
 
@@ -70,8 +71,8 @@ type BlockType
 type LineType
     = LTBlank
     | LTTextBlock
-    | BeginElementBlock
-    | EndElementBlock
+    | LTBeginElement
+    | LTEndElement
 
 
 {-| Compute the syntax tree and LaTeXState of a string of source text.
@@ -129,6 +130,12 @@ init generation strList =
 
 nextState : State -> Step State State
 nextState state_ =
+    let
+        --_ =
+        --    Debug.log "(BT, ST, INP)" ( state_.blockType, state_.blockContents, state_.input )
+        _ =
+            Debug.log "--" "--------------------------------------"
+    in
     case List.head state_.input of
         Nothing ->
             Done (flush state_)
@@ -139,58 +146,91 @@ nextState state_ =
                     { state_ | input = List.drop 1 state_.input }
             in
             case ( state.blockType, classify currentLine ) of
+                -- START
                 ( Start, LTBlank ) ->
+                    let
+                        _ =
+                            Debug.log "(line, BT,LT)" ( currentLine, Start, LTBlank )
+                    in
                     Loop (start state)
 
-                ( Start, BeginElementBlock ) ->
+                ( Start, LTBeginElement ) ->
+                    let
+                        _ =
+                            Debug.log "(line, BT,LT)" ( currentLine, Start, LTBeginElement )
+                    in
                     Loop (pushBlockStack currentLine state)
 
-                ( Start, EndElementBlock ) ->
+                ( Start, LTEndElement ) ->
+                    let
+                        _ =
+                            Debug.log "(line, BT,LT)" ( currentLine, Start, LTEndElement )
+                    in
                     Loop (initBlock ErrorBlock currentLine state)
 
                 ( Start, LTTextBlock ) ->
+                    let
+                        _ =
+                            Debug.log "(line, BT,LT)" ( currentLine, Start, LTTextBlock )
+                    in
                     Loop (initBlock TextBlock currentLine state)
 
-                --
+                -- ERROR BLOCK
                 ( ErrorBlock, LTBlank ) ->
                     Loop { state | blockType = Start, blockContents = [] }
 
-                ( ErrorBlock, BeginElementBlock ) ->
+                ( ErrorBlock, LTBeginElement ) ->
                     Loop (initWithBlockType currentLine state)
 
-                ( ErrorBlock, EndElementBlock ) ->
+                ( ErrorBlock, LTEndElement ) ->
                     Loop (addToBlockContents currentLine state)
 
                 ( ErrorBlock, LTTextBlock ) ->
                     Loop (initWithBlockType currentLine state)
 
-                --
+                -- TEXTBLOCK
                 ( TextBlock, LTBlank ) ->
                     -- Then end of a text block has been reached. Create a string representing
                     -- this block, parse it using Parser.parseLoop to produce a TextCursor, and
                     -- add it to state.output.  Finally, update the laTeXState using Render.Reduce.latexState
                     Loop (pushBlock state)
 
-                ( TextBlock, BeginElementBlock ) ->
+                ( TextBlock, LTBeginElement ) ->
                     Loop (initWithBlockType currentLine state)
 
-                ( TextBlock, EndElementBlock ) ->
+                ( TextBlock, LTEndElement ) ->
                     Loop (addToBlockContents currentLine state)
 
                 ( TextBlock, LTTextBlock ) ->
                     Loop (addToBlockContents currentLine state)
 
-                ---
+                --- ELEMENT BLOCK
                 ( ElementBlock, LTBlank ) ->
+                    let
+                        _ =
+                            Debug.log "(line, BT,LT)" ( currentLine, ElementBlock, LTBlank )
+                    in
                     Loop state
 
-                ( ElementBlock, BeginElementBlock ) ->
+                ( ElementBlock, LTBeginElement ) ->
+                    let
+                        _ =
+                            Debug.log "(line, BT,LT)" ( currentLine, ElementBlock, LTBeginElement )
+                    in
                     Loop (pushBlockStack currentLine state)
 
-                ( ElementBlock, EndElementBlock ) ->
+                ( ElementBlock, LTEndElement ) ->
+                    let
+                        _ =
+                            Debug.log "(line, BT,LT)" ( currentLine, ElementBlock, LTEndElement )
+                    in
                     Loop (popBlockStack currentLine state)
 
                 ( ElementBlock, LTTextBlock ) ->
+                    let
+                        _ =
+                            Debug.log "(line, BT,LT)" ( currentLine, ElementBlock, LTTextBlock )
+                    in
                     Loop (addToBlockContents currentLine state)
 
 
@@ -360,21 +400,23 @@ classify str =
 
 
 lineTypeParser =
-    P.oneOf [ beginEnvLineParser, endEnvLineParser, textBlockParser, P.succeed LTBlank ]
+    P.oneOf [ beginElementParser, endElementParser, textBlockParser, P.succeed LTBlank ]
 
 
-beginEnvLineParser : P.Parser LineType
-beginEnvLineParser =
-    P.succeed (\s -> BeginElementBlock)
-        |. P.symbol "\\["
-        |= P.getChompedString (P.chompUntil "[")
+beginElementParser : P.Parser LineType
+beginElementParser =
+    P.succeed (\s -> LTBeginElement)
+        |= P.symbol "["
 
 
-endEnvLineParser : P.Parser LineType
-endEnvLineParser =
-    P.succeed (\s -> EndElementBlock)
-        |. P.symbol "\\]"
-        |= P.getChompedString (P.chompUntil "]")
+
+--|= P.getChompedString (P.chompUntil "[")
+
+
+endElementParser : P.Parser LineType
+endElementParser =
+    P.succeed (\s -> LTEndElement)
+        |= P.symbol "]"
 
 
 textBlockParser : P.Parser LineType
