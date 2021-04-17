@@ -128,7 +128,8 @@ renderWithDictionary renderArgs name args body sm =
 renderElementDict : RenderElementDict Mark2Msg
 renderElementDict =
     Dict.fromList
-        [ ( "strong", I renderStrong )
+        [ ( "Error", I error )
+        , ( "strong", I renderStrong )
         , ( "italic", I renderItalic )
         , ( "highlight", I highlight )
         , ( "highlightRGB", I highlightRGB )
@@ -173,6 +174,11 @@ list renderArgs name args_ body sm =
 item : FRender Mark2Msg
 item renderArgs name args_ body sm =
     el [ E.paddingEach { left = 18, right = 0, top = 0, bottom = 0 } ] (renderElement renderArgs body)
+
+
+error : FRender Mark2Msg
+error renderArgs name args_ body sm =
+    el [ Font.color violetColor ] (renderElement renderArgs body)
 
 
 

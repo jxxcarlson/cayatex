@@ -72,7 +72,7 @@ handleError tc_ e =
 
         problem : Problem
         problem =
-            mFirstError |> Maybe.map .problem |> Maybe.withDefault UnHandledError
+            mFirstError |> Maybe.map .problem |> Maybe.withDefault (UnHandledError 0)
 
         errorColumn =
             mFirstError |> Maybe.map .col |> Maybe.withDefault 0

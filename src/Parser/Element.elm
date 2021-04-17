@@ -57,7 +57,7 @@ primitiveElement generation blockOffset =
             |. leftBracket
             |= elementName
             |= argsAndBody generation blockOffset
-            -- TODO: (fix) |. Parser.spaces
+            |. Parser.spaces
             |. rightBracket
             |= Parser.getOffset
             |= Parser.getSource

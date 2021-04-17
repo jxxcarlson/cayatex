@@ -8,7 +8,7 @@ type Problem
     | ExpectingPipe
     | ExpectingEscape
     | EndOfInput
-    | UnHandledError
+    | UnHandledError Int
 
 
 type Context
