@@ -1,7 +1,7 @@
 module Parser.Document exposing
     ( process, toParsed, toText
     , State, Block, BlockType(..), LineType(..)
-    , runProcess
+    , run
     )
 
 {-| The main function in this module is process, which takes as input
@@ -78,7 +78,7 @@ type LineType
 -}
 process : Int -> List String -> State
 process generation =
-    runProcess generation
+    run generation
 
 
 
@@ -93,8 +93,8 @@ chunks of text, parses these using Parser.Parser.parseLoop,
 and prepends them to a list of TextCursor.
 
 -}
-runProcess : Int -> List String -> State
-runProcess generation strList =
+run : Int -> List String -> State
+run generation strList =
     loop (init generation strList) nextState
 
 

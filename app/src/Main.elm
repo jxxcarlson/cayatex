@@ -244,17 +244,20 @@ outputDisplay_ model =
         , Font.size 12
         ]
         (if model.mode == RenderedMode then
-            -- render model.count model.renderedText
-            [ render2 model.count model.input ]
+            [ render model.count model.input ]
 
          else
             List.map text (Paragraph.lines paragraphFormat model.renderedText)
         )
 
 
-render2 : Int -> String -> Element Msg
-render2 k str =
-    Parser.Document.runProcess k (String.lines str)
+
+-- RENDER STRING TO HTML MSG
+
+
+render : Int -> String -> Element Msg
+render k str =
+    Parser.Document.run k (String.lines str)
         |> Parser.Document.toParsed
         |> List.reverse
         |> List.map (Render.Elm.renderList { generation = k, blockOffset = 0, selectedId = "", width = 300 })
@@ -270,16 +273,6 @@ paragraphFormat2 =
     { maximumWidth = 160, optimalWidth = 150, stringWidth = String.length }
 
 
-render : Int -> String -> List (Element msg)
-render k data =
-    case Html.Parser.run data of
-        Err _ ->
-            [ text "Error converting to HTML" ]
-
-        Ok element ->
-            [ keyedNode k element ]
-
-
 keyedNode : Int -> List Html.Parser.Node -> Element msg
 keyedNode k element =
     Html.Parser.Util.toVirtualDom element
@@ -293,6 +286,10 @@ keyIt k list =
     List.indexedMap (\i e -> ( String.fromInt (i + k), e )) list
 
 
+
+-- INPUT
+
+
 inputText : Model -> Element Msg
 inputText model =
     Input.multiline [ height (px panelHeight_), width (px panelWidth_), Font.size 14 ]
@@ -304,6 +301,10 @@ inputText model =
         , label = Input.labelHidden "Enter source text here"
         , spellcheck = False
         }
+
+
+
+-- BUTTONS
 
 
 buttonColor buttonMode currentMode =
