@@ -6,7 +6,9 @@ test =
 
 
 text =
-    """Pythagoras says that [math a^2 + b^2 = c^2].  
+    """[section CaYaTeX Test Document]
+
+Pythagoras says that [math a^2 + b^2 = c^2].
 This is an [strong [italic extremely]] cool result. But just as cool is the below:
 [mathDisplay \\sum_1^\\infty 1/n = \\infty,]
 which goes back to the work of Nicole Oresme (1320–1382).  See the entry in the
@@ -28,5 +30,13 @@ the one in the previous example.
 
 [image |caption: Rotkehlchen aufgeplustert, width: 200, placement: center|https://i.pinimg.com/originals/d4/07/a4/d407a45bcf3ade18468ac7ba633244b9.jpg]
 
-[strong Errors] Look what happens here: [ital One more beer, please!]
+
+
+[subsection About Errors]
+
+Look what happens here:
+
+(1) [ital One more beer, please!]
+
+(2) [italic One more beer, please
 """

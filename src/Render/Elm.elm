@@ -1,7 +1,7 @@
 module Render.Elm exposing (Mark2Msg(..), renderElement, renderList, renderString)
 
 import Dict exposing (Dict)
-import Element as E exposing (column, el, paragraph, row, spacing, text)
+import Element as E exposing (column, el, paragraph, px, row, spacing, text)
 import Element.Background as Background
 import Element.Font as Font
 import Html exposing (Html)
@@ -134,6 +134,8 @@ renderElementDict =
         , ( "highlightRGB", I highlightRGB )
         , ( "fontRGB", I fontRGB )
         , ( "code", I renderCode )
+        , ( "section", I section )
+        , ( "subsection", I subsection )
         , ( "link", I link )
         , ( "image", I image )
         , ( "math", I renderMath )
@@ -180,6 +182,24 @@ renderCode renderArgs _ _ body sm =
 
 -- STYLE ELEMENTS
 -- NEW
+
+
+section : FRender Mark2Msg
+section renderArgs name args body sm =
+    paragraph [ Font.size sectionFontSize ] [ text (getText body |> Maybe.withDefault "no section name found") ]
+
+
+subsection : FRender Mark2Msg
+subsection renderArgs name args body sm =
+    paragraph [ Font.size subsectionFontSize ] [ text (getText body |> Maybe.withDefault "no subsection name found") ]
+
+
+sectionFontSize =
+    22
+
+
+subsectionFontSize =
+    18
 
 
 link : FRender Mark2Msg
