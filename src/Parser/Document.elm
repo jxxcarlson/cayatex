@@ -73,6 +73,7 @@ type LineType
     | LTTextBlock
     | LTBeginElement
     | LTEndElement
+    | LTComment
 
 
 {-| Compute the syntax tree and LaTeXState of a string of source text.
@@ -106,6 +107,10 @@ toParsed state =
     state.output |> List.map .parsed |> List.reverse
 
 
+
+-- |> List.reverse
+
+
 {-| Return a list of logical paragraphs (blocks(: ordinary paragraphs
 or outer begin-end blocks.
 -}
@@ -129,15 +134,7 @@ init generation strList =
 
 
 debug =
-    False
-
-
-report debug_ line state =
-    if debug_ then
-        Debug.log "X" Debug.toString { line = line, classif = classify line, blockType = state.blockType, blockLevel = state.blockLevel, blockContents = state.blockContents }
-
-    else
-        Debug.log "" ""
+    True
 
 
 nextState : State -> Step State State
@@ -152,62 +149,34 @@ nextState state_ =
                     { state_ | input = List.drop 1 state_.input }
             in
             case ( state.blockType, classify currentLine ) of
+                -- COMMMENT
+                ( _, LTComment ) ->
+                    Loop { state | input = List.drop 1 state.input }
+
                 -- START
                 ( Start, LTBlank ) ->
-                    let
-                        _ =
-                            report debug currentLine state_
-                    in
                     Loop (start state)
 
                 ( Start, LTBeginElement ) ->
-                    let
-                        _ =
-                            report debug currentLine state_
-                    in
                     Loop (pushBlockStack currentLine { state | blockType = ElementBlock })
 
                 ( Start, LTEndElement ) ->
-                    let
-                        _ =
-                            report debug currentLine state_
-                    in
                     Loop (initBlock ErrorBlock currentLine state)
 
                 ( Start, LTTextBlock ) ->
-                    let
-                        _ =
-                            report debug currentLine state_
-                    in
                     Loop (initBlock TextBlock currentLine state)
 
                 -- ERROR BLOCK
                 ( ErrorBlock, LTBlank ) ->
-                    let
-                        _ =
-                            report debug currentLine state_
-                    in
                     Loop { state | blockType = Start, blockContents = [] }
 
                 ( ErrorBlock, LTBeginElement ) ->
-                    let
-                        _ =
-                            report debug currentLine state_
-                    in
                     Loop (initWithBlockType currentLine state)
 
                 ( ErrorBlock, LTEndElement ) ->
-                    let
-                        _ =
-                            report debug currentLine state_
-                    in
                     Loop (addToBlockContents currentLine state)
 
                 ( ErrorBlock, LTTextBlock ) ->
-                    let
-                        _ =
-                            report debug currentLine state_
-                    in
                     Loop (initWithBlockType currentLine state)
 
                 -- TEXTBLOCK
@@ -215,60 +184,28 @@ nextState state_ =
                     -- Then end of a text block has been reached. Create a string representing
                     -- this block, parse it using Parser.parseLoop to produce a TextCursor, and
                     -- add it to state.output.  Finally, update the laTeXState using Render.Reduce.latexState
-                    let
-                        _ =
-                            report debug currentLine state_
-                    in
                     Loop (pushBlock state)
 
                 ( TextBlock, LTBeginElement ) ->
-                    let
-                        _ =
-                            report debug currentLine state_
-                    in
                     Loop (initWithBlockType currentLine state)
 
                 ( TextBlock, LTEndElement ) ->
-                    let
-                        _ =
-                            report debug currentLine state_
-                    in
                     Loop (addToBlockContents currentLine state)
 
                 ( TextBlock, LTTextBlock ) ->
-                    let
-                        _ =
-                            report debug currentLine state_
-                    in
                     Loop (addToBlockContents currentLine state)
 
                 --- ELEMENT BLOCK
                 ( ElementBlock, LTBlank ) ->
-                    let
-                        _ =
-                            report debug currentLine state_
-                    in
                     Loop state
 
                 ( ElementBlock, LTBeginElement ) ->
-                    let
-                        _ =
-                            report debug currentLine state_
-                    in
                     Loop (pushBlockStack currentLine state)
 
                 ( ElementBlock, LTEndElement ) ->
-                    let
-                        _ =
-                            report debug currentLine state_
-                    in
                     Loop (popBlockStack currentLine state)
 
                 ( ElementBlock, LTTextBlock ) ->
-                    let
-                        _ =
-                            report debug currentLine state_
-                    in
                     Loop (addToBlockContents currentLine state)
 
 
@@ -350,9 +287,12 @@ pushBlock state =
 pushBlock_ : String -> State -> State
 pushBlock_ line state =
     let
+        str =
+            line ++ String.join "\n" (List.reverse state.blockContents) |> Debug.log "PUSH"
+
         tc : TextCursor Element
         tc =
-            Parser.Driver.parseLoop state.generation state.lineNumber (line ++ String.join "\n" (List.reverse state.blockContents))
+            Parser.Driver.parseLoop state.generation state.lineNumber str
     in
     { state
         | blockType = Start
@@ -424,7 +364,8 @@ flush state =
                 in
                 { state
                     | -- laTeXState = laTeXState
-                      output = List.reverse (tc :: state.output)
+                      -- output = List.reverse (tc :: state.output)
+                      output = tc :: state.output
                 }
     in
     newState
@@ -441,6 +382,10 @@ countLines list =
 
 loop : State -> (State -> Step State State) -> State
 loop s nextState_ =
+    let
+        _ =
+            Debug.log (String.fromInt s.lineNumber) { inp = s.input, bt = s.blockType, bl = s.blockLevel, bc = s.blockContents }
+    in
     case nextState_ s of
         Loop s_ ->
             loop s_ nextState_
@@ -469,13 +414,19 @@ classify str =
 
 
 lineTypeParser =
-    P.oneOf [ beginElementParser, endElementParser, textBlockParser, P.succeed LTBlank ]
+    P.oneOf [ commentParser, beginElementParser, endElementParser, textBlockParser, P.succeed LTBlank ]
 
 
 beginElementParser : P.Parser LineType
 beginElementParser =
     P.succeed (\s -> LTBeginElement)
         |= P.symbol "["
+
+
+commentParser : P.Parser LineType
+commentParser =
+    P.succeed (\s -> LTComment)
+        |= P.symbol "%"
 
 
 

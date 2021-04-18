@@ -158,29 +158,41 @@ listPadding =
 
 getPrefixSymbol : List String -> String
 getPrefixSymbol args_ =
-    let
-        option =
-            getArg 0 "_xxxx_" args_
-    in
-    case option of
-        "bullet" ->
+    case List.head (Utility.entities args_) of
+        Nothing ->
             "•"
 
-        "none" ->
+        Just "bullet" ->
+            "•"
+
+        Just "none" ->
             ""
 
-        "_xxxx_" ->
-            ""
+        Just str ->
+            str
 
-        _ ->
-            option
+
+listTitle args_ =
+    let
+        dict =
+            Utility.keyValueDict args_
+
+        title =
+            Dict.get "title" dict
+    in
+    case title of
+        Nothing ->
+            E.none
+
+        Just title_ ->
+            el [ Font.bold ] (text title_)
 
 
 list : FRender Mark2Msg
 list renderArgs name args_ body sm =
     case body of
         LX list_ _ ->
-            column [ spacing 4, listPadding ] (List.map (renderListItem (getPrefixSymbol args_) renderArgs) list_)
+            column [ spacing 4, listPadding ] (listTitle args_ :: List.map (renderListItem (getPrefixSymbol args_) renderArgs) list_)
 
         _ ->
             el [ Font.color redColor ] (text "Malformed list")
@@ -204,7 +216,7 @@ renderListItem prefixSymbol renderArgs elt =
         Element "list" args body _ ->
             case body of
                 LX list_ _ ->
-                    column [ spacing 4, listPadding ] (List.map (renderListItem prefixSymbol renderArgs) list_)
+                    column [ spacing 4, listPadding ] (listTitle args :: List.map (renderListItem (getPrefixSymbol args) renderArgs) list_)
 
                 _ ->
                     el [ Font.color redColor ] (text "Malformed list")

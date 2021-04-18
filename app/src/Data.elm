@@ -2,22 +2,24 @@ module Data exposing (test, text)
 
 
 test =
-    """[list |bullet|
+    """[section A]
 
-[item 1]
+One, two. Three four..
 
-[item 2]
-
-[list [item A] [item B]]
-
-]
-
-
+[subsection B]
 """
 
 
 text =
     """[section CaYaTeX Test Document]
+
+[italic [fontRGB |12, 140, 176| The present document demonstrates some of the
+progress towards specifiying CaYaTeX and implementing it in Elm. The work
+here is incomplete, and there are many bugs in the implementation. But it
+is a start.]]
+
+[subsection Math and other things]
+
 
 Pythagoras says that [math a^2 + b^2 = c^2].
 This is an [strong [italic extremely]] cool result. But just as cool is the below:
@@ -43,21 +45,36 @@ the one in the previous example.
 
 [subsection Lists, etc.]
 
-[strong Errands]
+Note that lists can be nested and can be given a title if desired.  The symbol for "bulleted" lists is • by default, but can be specified by the user.
 
-[list |bullet|
+[list |title:Errands and other stuff|
 
-  [item Bread, milk, O-juice]
+    [item Bread, milk, O-juice]
 
-  [item Sand paper, white paint]
+    [item Sand paper, white paint]
 
-]
+    [list |none|
 
-[subsection About Errors]
+        [item A]
 
-Look what happens here:
+        [item B]
 
-(1) [ital One more beer, please!]
+        [list |§, title:Greek symbols|
 
-(2) [italic One more beer, please
+            [item [math \\alpha]]
+
+            [item  [math \\beta]]
+
+]]]
+
+Notice the a leading percent sign makes a line into a comment.
+
+%
+%[subsection About Errors]
+%
+%Look what happens here:
+%
+%(1) [ital One more beer, please!]
+%
+%(2) [italic One more beer, please
 """
