@@ -243,9 +243,19 @@ outputDisplay model =
             , moveUp 9
             , Font.size 14
             ]
-            [ rawModeButton model.mode, renderedModeButton model.mode, text ("Count: " ++ String.fromInt model.count) ]
+            [ rawModeButton model.mode, renderedModeButton model.mode, text ("generation: " ++ String.fromInt model.count), wordCountElement model.input ]
         , outputDisplay_ model
         ]
+
+
+wordCount : String -> Int
+wordCount str =
+    str |> String.words |> List.length
+
+
+wordCountElement : String -> Element Msg
+wordCountElement str =
+    row [ spacing 8 ] [ el [] (text <| "words:"), el [] (text <| String.fromInt <| wordCount <| str) ]
 
 
 outputDisplay_ : Model -> Element Msg
