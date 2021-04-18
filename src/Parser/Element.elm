@@ -1,4 +1,4 @@
-module Parser.Element exposing (Element(..), element, elementList, parse, parseList, rawStringPrefix)
+module Parser.Element exposing (Element(..), element, elementList, parse, parseList, rawString)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
@@ -149,19 +149,6 @@ rawText_ stopChars =
         |= Parser.getSource
 
 
-
--- rawString : String -> Parser { start : Int, length : Int, content : String }
---rawString : String -> Parser (Int -> String -> { start : Int, length : Int, content : String })
---rawString str =
---    Parser.succeed (\begin end content -> { start = begin, length = end - begin, content = String.slice begin end content })
---        |= Parser.getOffset
---        |. rawStringBegin
---        |. Parser.chompWhile (\c -> /= '#')
---        |. rawStringEnd
---        |= Parser.getOffset
---        |= Parser.getSource
-
-
 rawStringPrefix : Parser Int
 rawStringPrefix =
     Parser.succeed (\begin end -> end - begin - 3)
@@ -171,11 +158,62 @@ rawStringPrefix =
         |= Parser.getOffset
 
 
+type alias LoopState =
+    { hashCount : Int, content : String }
 
---
---rawStringLoop : Int-> (Int -> Parser (Parser.Step Int String)) -> Parser String
---rawStringLoop hashes =
--- SYMBOLS
+
+type alias NumberOfHashes =
+    Int
+
+
+{-|
+
+    > A.run rawString "raw##a #[b],[m]# c##ho ho ho"
+    Ok ("a #[b],[m]# c")
+
+-}
+rawString : Parser String
+rawString =
+    rawStringPrefix
+        |> Parser.andThen (\maxHashes -> rawStringLoop maxHashes |> Parser.map (\ls -> ls.content |> String.dropRight maxHashes))
+
+
+rawStringLoop : Int -> Parser LoopState
+rawStringLoop hashes =
+    Parser.loop { hashCount = 0, content = "" } (rawStringHelp hashes)
+
+
+rawStringHelp : Int -> LoopState -> Parser (Parser.Step LoopState LoopState)
+rawStringHelp hashes state =
+    if state.hashCount >= hashes then
+        Parser.succeed (Parser.Done state)
+
+    else
+        T.oneChar |> Parser.map (\c -> updateState hashes c state)
+
+
+updateState : Int -> String -> LoopState -> Parser.Step LoopState LoopState
+updateState maxHashes c state =
+    if c == "#" then
+        if String.right 1 state.content == "#" then
+            if state.hashCount + 1 > state.hashCount + 1 then
+                Parser.Done { hashCount = state.hashCount + 1, content = state.content ++ c }
+                -- |> Debug.log "A"
+
+            else
+                Parser.Loop { hashCount = state.hashCount + 1, content = state.content ++ c }
+            -- |> Debug.log "B"
+
+        else
+            Parser.Loop { hashCount = 1, content = state.content ++ c }
+        -- |> Debug.log "C"
+
+    else
+        Parser.Loop { hashCount = 0, content = state.content ++ c }
+
+
+
+-- |> Debug.log "D"
 
 
 comma_ =
