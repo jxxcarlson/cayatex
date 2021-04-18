@@ -2,14 +2,16 @@ module Data exposing (test, text)
 
 
 test =
-    """[subsection A
+    """before
+
+[subsection A
 
 [strong B]
 [strong C]
 [strong D]
 [strong E]
 
-F
+after
 """
 
 
@@ -35,7 +37,8 @@ C [strong D]"""
 
 
 text =
-    """[section CaYaTeX Test Document]
+    """
+[section CaYaTeX Test Document]
 
 %Notice the a leading percent sign makes a line into a comment.
 
@@ -44,7 +47,10 @@ progress towards specifiying CaYaTeX and implementing it in Elm. The work
 here is incomplete, and there are bugs. But it
 is a start.]]
 
-[subsection Math and other things]
+[italic [fontRGB |12, 140, 176|  One of the most important issues to address is providing robust error handling
+that gives the user real-time, informative feedback on what has gone wrong and how to fix it.]]
+
+[subsection Mathematics]
 
 
 Pythagoras says that [math a^2 + b^2 = c^2].
@@ -58,20 +64,27 @@ You can also consult [link https://en.wikipedia.org/wiki/Nicole_Oresme].
 
 [corollary |Euclid| There are infinitely many primes.]
 
+
+[subsection Code]
+
 Time for some code: [code col :: Int -> Matrix a -> \\[a\\]].
 Do you recognize the language (ha ha)?
 [italic [highlight And can we do something about the awkwardness of escaping brackets inside code elements?]]
+
+[subsection Color]
 
 Example:  [highlightRGB |214, 93, 32| [fontRGB |169, 232, 245| What color is this?]]
 
 [strong Note:] We need to implement a macro facility so that users can abbreviate constructs like
 the one in the previous example.
 
+[subsection Images]
+
 [image |caption: Rotkehlchen aufgeplustert, width: 200, placement: center|https://i.pinimg.com/originals/d4/07/a4/d407a45bcf3ade18468ac7ba633244b9.jpg]
 
-[subsection Lists, etc.]
+[subsection Lists]
 
-Note that lists can be nested and can be given a title if desired.  The symbol for "bulleted" lists is • by default, but can be specified by the user.
+Note that lists can be nested and can be given a title if desired.  The symbol for "bulleted" lists is • by default, but can be specified by the user.  We have not yet implemented numbered lists.
 
 [list |title:Errands and other stuff|
 
@@ -87,13 +100,11 @@ Note that lists can be nested and can be given a title if desired.  The symbol f
 
         [list |§, title:Greek symbols|
 
-            [item [math \\alpha]]
+            [item [math \\alpha = 0.123]]
 
-            [item  [math \\beta]]
+            [item  [math \\beta = 4.567]]
 
 ]]]
-
-
 """
 
 

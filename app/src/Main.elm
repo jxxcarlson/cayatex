@@ -55,7 +55,7 @@ type alias Flags =
 
 
 initialText =
-    Data.test
+    Data.text
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -162,7 +162,7 @@ panelWidth_ =
 
 
 panelHeight_ =
-    800
+    500
 
 
 parserDisplayPanelHeight_ =

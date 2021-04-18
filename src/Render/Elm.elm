@@ -281,7 +281,7 @@ sectionFontSize =
 
 
 subsectionFontSize =
-    18
+    16
 
 
 link : FRender Mark2Msg
