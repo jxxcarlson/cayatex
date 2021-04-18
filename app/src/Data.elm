@@ -40,16 +40,25 @@ text =
     """
 [section CaYaTeX Test Document]
 
-[italic By James Carlson and Nicholas Yang]
+By James Carlson and Nicholas Yang
 
 %Notice the a leading percent sign makes a line into a comment.
 
-[italic [fontRGB |12, 140, 176| The present document demonstrates some of the
-progress towards specifiying CaYaTeX and implementing it in Elm. The work
-here is incomplete, and there are bugs. But it
-is a start.]]
+[fontRGB |12, 140, 176| CaYaTeX is a simple yet powerful markup language that
+compiles to both LaTeX and Html.]
 
-[subsection Goals]
+[fontRGB |12, 140, 176| The present document, written in CaYaTeX,
+lays out our design goals and demonstrates some of the
+progress we have made towards specifiying the language and implementing it in Elm. While our work
+is incomplete, it
+is a start.]
+
+% [fontRGB |12, 140, 176| We are also working on implementations in Rust. This will,
+% among other things, help us to cross-validate both implementations of the
+% specification.]
+
+
+[subsection Design Goals]
 
 The goals of the CaYaTeX project are for the language to be
 
