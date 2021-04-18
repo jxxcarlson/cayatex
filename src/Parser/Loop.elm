@@ -54,10 +54,10 @@ operated by parseLoop is updated:
 -}
 nextCursor : Packet a -> TextCursor a -> ParserTool.Step (TextCursor a) (TextCursor a)
 nextCursor packet tc =
-    let
-        _ =
-            Debug.log "tc COUNT" tc.count
-    in
+    --let
+    --    _ =
+    --        Debug.log "tc COUNT" tc.count
+    --in
     if tc.text == "" || tc.count > 10 then
         -- TODO: that usage of count needs to be removed after bug is fixed
         ParserTool.Done { tc | parsed = List.reverse tc.parsed }

@@ -1,19 +1,27 @@
-module Data exposing (text)
+module Data exposing (test, text)
 
 
 test =
-    "Begin\n\n[corollary |Euclid| There are infinitely many primes.\n\nEnd"
+    """[strong Errands]
 
+[list |bullet|
 
-text =
-    """[item 1] 
+[item Bread, milk, O-juice]
 
-[item 2]
+[item Sand paper, white paint]
+
+[item A]
+
+[item B]
+
+]
+
+]
 
 """
 
 
-text2 =
+text =
     """[section CaYaTeX Test Document]
 
 Pythagoras says that [math a^2 + b^2 = c^2].
@@ -38,7 +46,17 @@ the one in the previous example.
 
 [image |caption: Rotkehlchen aufgeplustert, width: 200, placement: center|https://i.pinimg.com/originals/d4/07/a4/d407a45bcf3ade18468ac7ba633244b9.jpg]
 
+[subsection Lists, etc.]
 
+[strong Errands]
+
+[list |bullet|
+
+  [item Bread, milk, O-juice]
+
+  [item Sand paper, white paint]
+
+]
 
 [subsection About Errors]
 

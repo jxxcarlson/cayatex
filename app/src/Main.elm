@@ -40,6 +40,7 @@ type Msg
     | InputText String
     | ClearText
     | GetText
+    | GetTest
     | SetMode Mode
     | Mark2Msg Render.Elm.Mark2Msg
 
@@ -103,6 +104,15 @@ update msg model =
             ( { model
                 | input = Data.text
                 , renderedText = Render.String.renderString Data.text
+                , count = model.count + 1
+              }
+            , Cmd.none
+            )
+
+        GetTest ->
+            ( { model
+                | input = Data.test
+                , renderedText = Render.String.renderString Data.test
                 , count = model.count + 1
               }
             , Cmd.none
@@ -183,7 +193,7 @@ mainColumn model =
 
 inputElement model =
     column [ spacing 8, moveUp 9 ]
-        [ row [ spacing 12 ] [ clearTextButton, getTextButton ]
+        [ row [ spacing 12 ] [ clearTextButton, getTextButton, getTestButton ]
         , inputText model
         ]
 
@@ -334,6 +344,14 @@ getTextButton =
     Input.button buttonStyle2
         { onPress = Just GetText
         , label = el [ centerX, centerY, Font.size 14 ] (text "Demo text")
+        }
+
+
+getTestButton : Element Msg
+getTestButton =
+    Input.button buttonStyle2
+        { onPress = Just GetTest
+        , label = el [ centerX, centerY, Font.size 14 ] (text "Test")
         }
 
 

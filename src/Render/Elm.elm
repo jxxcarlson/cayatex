@@ -151,19 +151,68 @@ getText element =
 -- LISTS
 
 
+listPadding =
+    E.paddingEach { left = 18, right = 0, top = 0, bottom = 0 }
+
+
 list : FRender Mark2Msg
 list renderArgs name args_ body sm =
+    let
+        option =
+            getArg 0 "xxxx" args_
+
+        prefixSymbol =
+            case option of
+                "bullet" ->
+                    "•"
+
+                "none" ->
+                    ""
+
+                "_xxxx_" ->
+                    ""
+
+                _ ->
+                    option
+    in
     case body of
         LX list_ _ ->
-            column [ spacing 4 ] (List.map (renderElement renderArgs) list_)
+            column [ spacing 4, listPadding ] (List.map (renderListItem1 prefixSymbol renderArgs) list_)
 
         _ ->
             el [ Font.color redColor ] (text "Malformed list")
 
 
+renderListItem : RenderArgs -> Element -> E.Element Mark2Msg
+renderListItem renderArgs list_ =
+    renderElement renderArgs list_
+
+
+renderListItem1 : String -> RenderArgs -> Element -> E.Element Mark2Msg
+renderListItem1 prefixSymbol renderArgs elt =
+    case elt of
+        Element "item" _ body _ ->
+            let
+                prefix =
+                    case prefixSymbol of
+                        "bullet" ->
+                            el [ Font.size 16 ] (text prefixSymbol)
+
+                        _ ->
+                            el [ Font.size 16 ] (text prefixSymbol)
+            in
+            row [ spacing 8 ] [ prefix, renderElement renderArgs elt ]
+
+        Element "list" _ body _ ->
+            renderElement renderArgs body
+
+        _ ->
+            E.none
+
+
 item : FRender Mark2Msg
 item renderArgs name args_ body sm =
-    el [ E.paddingEach { left = 18, right = 0, top = 0, bottom = 0 } ] (renderElement renderArgs body)
+    paragraph [] [ renderElement renderArgs body ]
 
 
 error : FRender Mark2Msg
@@ -474,6 +523,10 @@ getArg k default stringList =
 
 linkColor =
     E.rgb 0 0 0.8
+
+
+blackColor =
+    E.rgb 0 0 0
 
 
 redColor =
