@@ -1,7 +1,7 @@
 module Parser.Document exposing
     ( process, toParsed, toText
     , State, Block, BlockType(..), LineType(..)
-    , classify, differentialBlockLevel, run
+    , Step(..), applyNextState, classify, differentialBlockLevel, getParseResult, init, nextState, run
     )
 
 {-| The main function in this module is process, which takes as input
@@ -134,6 +134,26 @@ init generation strList =
 
 debug =
     True
+
+
+getParseResult : Step State State -> List (List Element)
+getParseResult stepState =
+    case stepState of
+        Loop state ->
+            state.output |> List.map .parsed |> List.map (List.map Parser.Getters.strip)
+
+        Done state ->
+            state.output |> List.map .parsed |> List.map (List.map Parser.Getters.strip)
+
+
+applyNextState : Step State State -> Step State State
+applyNextState stepState =
+    case stepState of
+        Loop state ->
+            nextState state
+
+        Done state ->
+            Done state
 
 
 nextState : State -> Step State State
