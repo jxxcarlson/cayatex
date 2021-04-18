@@ -2,11 +2,8 @@ module Data exposing (test, text)
 
 
 test =
-    """[section A]
-
-One, two. Three four..
-
-[subsection B]
+    """[strong Note:] We need to implement a macro facility so that users can abbreviate constructs like
+the one in the previous example.
 """
 
 
@@ -67,7 +64,7 @@ Note that lists can be nested and can be given a title if desired.  The symbol f
 
 ]]]
 
-Notice the a leading percent sign makes a line into a comment.
+% Notice the a leading percent sign makes a line into a comment.
 
 %
 %[subsection About Errors]
