@@ -308,7 +308,7 @@ image : FRender Mark2Msg
 image renderArgs name args body sm =
     let
         dict =
-            Utility.keyValueDict args |> Debug.log "DICT"
+            Utility.keyValueDict args
 
         description =
             Dict.get "caption" dict |> Maybe.withDefault ""
