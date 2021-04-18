@@ -40,15 +40,14 @@ text =
     """
 [section CaYaTeX Test Document]
 
+[italic By James Carlson and Nicholas Yang]
+
 %Notice the a leading percent sign makes a line into a comment.
 
 [italic [fontRGB |12, 140, 176| The present document demonstrates some of the
 progress towards specifiying CaYaTeX and implementing it in Elm. The work
 here is incomplete, and there are bugs. But it
 is a start.]]
-
-[italic [fontRGB |12, 140, 176|  One of the most important issues to address is providing robust error handling
-that gives the user real-time, informative feedback on what has gone wrong and how to fix it.]]
 
 [subsection Goals]
 
