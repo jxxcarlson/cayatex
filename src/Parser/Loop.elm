@@ -84,6 +84,7 @@ nextCursor packet tc =
                         ParserTool.Loop { tc | count = tc.count + 1 }
 
                     Just he ->
+                        -- Continue loop with the text cursor that the error handler returns
                         ParserTool.Loop (he tc e)
 
 
