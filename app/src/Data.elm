@@ -2,17 +2,41 @@ module Data exposing (test, text)
 
 
 test =
-    """A
-[highlight B]
+    """[strong A]
+[strong B]
+C
 """
+
+
+test2 =
+    """A
+           
+[strong C]
+D [strong E]"""
+
+
+test3 =
+    """[strong A]
+[strong B]
+C
+
+[strong A]
+[strong B]
+[strong D]
+
+[strong A]
+[strong B]
+C [strong D]"""
 
 
 text =
     """[section CaYaTeX Test Document]
 
+%Notice the a leading percent sign makes a line into a comment.
+
 [italic [fontRGB |12, 140, 176| The present document demonstrates some of the
 progress towards specifiying CaYaTeX and implementing it in Elm. The work
-here is incomplete, and there are many bugs in the implementation. But it
+here is incomplete, and there are bugs. But it
 is a start.]]
 
 [subsection Math and other things]
@@ -64,8 +88,12 @@ Note that lists can be nested and can be given a title if desired.  The symbol f
 
 ]]]
 
-% Notice the a leading percent sign makes a line into a comment.
 
+"""
+
+
+stuff =
+    """% Notice the a leading percent sign makes a line into a comment.           
 %
 %[subsection About Errors]
 %
@@ -74,4 +102,4 @@ Note that lists can be nested and can be given a title if desired.  The symbol f
 %(1) [ital One more beer, please!]
 %
 %(2) [italic One more beer, please
-"""
+           """
