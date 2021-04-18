@@ -260,14 +260,29 @@ initWithBlockType currentLine_ state =
 
 addToBlockContents : String -> State -> State
 addToBlockContents currentLine_ state =
-    { state | blockContents = currentLine_ :: state.blockContents }
+    -- TODO: work on this
+    let
+        deltaBlockLevel =
+            differentialBlockLevel currentLine_
+
+        newBlockLevel =
+            state.blockLevel + deltaBlockLevel
+    in
+    if newBlockLevel == 0 && deltaBlockLevel < 0 then
+        pushBlock_ ("\n" ++ currentLine_) state
+
+    else
+        { state | blockContents = currentLine_ :: state.blockContents }
 
 
 pushBlockStack : String -> State -> State
 pushBlockStack currentLine_ state =
     let
+        deltaBlockLevel =
+            differentialBlockLevel currentLine_
+
         newBlockLevel =
-            state.blockLevel + differentialBlockLevel currentLine_
+            state.blockLevel + deltaBlockLevel
     in
     if newBlockLevel == 0 then
         pushBlock_ ("\n" ++ currentLine_) state
@@ -288,7 +303,9 @@ pushBlock_ : String -> State -> State
 pushBlock_ line state =
     let
         str =
-            line ++ String.join "\n" (List.reverse state.blockContents) |> Debug.log "PUSH"
+            -- TODO: Danger!!
+            -- line ++ String.join "\n" (List.reverse state.blockContents) |> Debug.log "PUSH"
+            String.join "\n" (List.reverse state.blockContents) ++ "\n" ++ line |> Debug.log "PUSH"
 
         tc : TextCursor Element
         tc =
