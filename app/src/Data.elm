@@ -50,6 +50,27 @@ is a start.]]
 [italic [fontRGB |12, 140, 176|  One of the most important issues to address is providing robust error handling
 that gives the user real-time, informative feedback on what has gone wrong and how to fix it.]]
 
+[subsection Goals]
+
+The goals of the CaYaTeX project are for the language to be
+
+[list
+
+[item [strong Small], hence easy to learn. [italic To this end there are just two constructs: ordinary text and [code elements]].]
+
+[item [strong Powerful].  [italic To this end, we borrow ideas from functional programming.  Elements have a Lisp-like syntax. An element has a name, an argument list, and a body (which is also an argument). The partial element [code name args] is a function [code Element -> Element]. Such functions can be composed, as in mathematics or as in languages such as Haskell and Elm.]]
+
+[item [strong Extensible]. [italic Via a macro facility].]
+
+[item [strong Multiple inputs and outputs.] Documents written in CaYaTeX can be compiled to LaTeX, Markdown, and HTML. Markdown documents can be compiled to CaYaTeX.]
+
+[item [strong Web-ready]. CaYaTeX has a differential compiler that makes it suitable for real-time editing, e.g.,  in a web app. ]
+
+[item [strong Kind and Helpful]. Displays friendly and informative error messages in real time in the rendered text; has hooks for highlighting the corresponding source text in a suitable IDE/editor.]
+
+[item [strong Modern]. Unicode compatible.]]
+
+
 [subsection Mathematics]
 
 

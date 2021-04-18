@@ -206,10 +206,10 @@ renderListItem prefixSymbol renderArgs elt =
                 prefix =
                     case prefixSymbol of
                         "bullet" ->
-                            el [ Font.size 16 ] (text prefixSymbol)
+                            el [ Font.size 16, E.alignTop ] (text prefixSymbol)
 
                         _ ->
-                            el [ Font.size 16 ] (text prefixSymbol)
+                            el [ Font.size 16, E.alignTop ] (text prefixSymbol)
             in
             row [ spacing 8 ] [ prefix, renderElement renderArgs elt ]
 
