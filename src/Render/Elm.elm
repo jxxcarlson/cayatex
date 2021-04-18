@@ -156,41 +156,38 @@ listPadding =
     E.paddingEach { left = 18, right = 0, top = 0, bottom = 0 }
 
 
-list : FRender Mark2Msg
-list renderArgs name args_ body sm =
+getPrefixSymbol : List String -> String
+getPrefixSymbol args_ =
     let
         option =
-            getArg 0 "xxxx" args_
-
-        prefixSymbol =
-            case option of
-                "bullet" ->
-                    "•"
-
-                "none" ->
-                    ""
-
-                "_xxxx_" ->
-                    ""
-
-                _ ->
-                    option
+            getArg 0 "_xxxx_" args_
     in
+    case option of
+        "bullet" ->
+            "•"
+
+        "none" ->
+            ""
+
+        "_xxxx_" ->
+            ""
+
+        _ ->
+            option
+
+
+list : FRender Mark2Msg
+list renderArgs name args_ body sm =
     case body of
         LX list_ _ ->
-            column [ spacing 4, listPadding ] (List.map (renderListItem1 prefixSymbol renderArgs) list_)
+            column [ spacing 4, listPadding ] (List.map (renderListItem (getPrefixSymbol args_) renderArgs) list_)
 
         _ ->
             el [ Font.color redColor ] (text "Malformed list")
 
 
-renderListItem : RenderArgs -> Element -> E.Element Mark2Msg
-renderListItem renderArgs list_ =
-    renderElement renderArgs list_
-
-
-renderListItem1 : String -> RenderArgs -> Element -> E.Element Mark2Msg
-renderListItem1 prefixSymbol renderArgs elt =
+renderListItem : String -> RenderArgs -> Element -> E.Element Mark2Msg
+renderListItem prefixSymbol renderArgs elt =
     case elt of
         Element "item" _ body _ ->
             let
@@ -204,8 +201,13 @@ renderListItem1 prefixSymbol renderArgs elt =
             in
             row [ spacing 8 ] [ prefix, renderElement renderArgs elt ]
 
-        Element "list" _ body _ ->
-            renderElement renderArgs body
+        Element "list" args body _ ->
+            case body of
+                LX list_ _ ->
+                    column [ spacing 4, listPadding ] (List.map (renderListItem prefixSymbol renderArgs) list_)
+
+                _ ->
+                    el [ Font.color redColor ] (text "Malformed list")
 
         _ ->
             E.none

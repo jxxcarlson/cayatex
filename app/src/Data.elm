@@ -2,21 +2,16 @@ module Data exposing (test, text)
 
 
 test =
-    """[strong Errands]
+    """[list |bullet|
 
-[list |bullet|
+[item 1]
 
-[item Bread, milk, O-juice]
+[item 2]
 
-[item Sand paper, white paint]
-
-[item A]
-
-[item B]
+[list [item A] [item B]]
 
 ]
 
-]
 
 """
 
