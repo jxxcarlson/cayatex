@@ -2,9 +2,14 @@ module Data exposing (test, text)
 
 
 test =
-    """[strong A]
+    """[subsection A
+
 [strong B]
-C
+[strong C]
+[strong D]
+[strong E]
+
+F
 """
 
 
