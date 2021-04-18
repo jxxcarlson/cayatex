@@ -66,7 +66,7 @@ handleError tc_ e =
     let
         mFirstError =
             e
-                |> Debug.log "handle ERR"
+                --|> Debug.log "handle ERR"
                 |> List.head
                 |> Debug.log "FIRST ERR"
 
