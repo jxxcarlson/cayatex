@@ -2,8 +2,8 @@ module Data exposing (test, text)
 
 
 test =
-    """[strong Note:] We need to implement a macro facility so that users can abbreviate constructs like
-the one in the previous example.
+    """A
+[highlight B]
 """
 
 

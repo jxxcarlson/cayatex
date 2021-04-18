@@ -158,7 +158,9 @@ nextState state_ =
                     Loop (start state)
 
                 ( Start, LTBeginElement ) ->
-                    Loop (pushBlockStack currentLine { state | blockType = ElementBlock })
+                    -- TODO: correct this transition
+                    -- Loop (pushBlockStack currentLine { state | blockType = ElementBlock })
+                    Loop (startBlock currentLine { state | blockType = ElementBlock })
 
                 ( Start, LTEndElement ) ->
                     Loop (initBlock ErrorBlock currentLine state)
@@ -197,7 +199,9 @@ nextState state_ =
 
                 --- ELEMENT BLOCK
                 ( ElementBlock, LTBlank ) ->
-                    Loop state
+                    --Loop state
+                    -- TODO: is this the correct transition?
+                    Loop (pushBlockStack currentLine state)
 
                 ( ElementBlock, LTBeginElement ) ->
                     Loop (pushBlockStack currentLine state)
@@ -250,7 +254,8 @@ initWithBlockType currentLine_ state =
         --    Reduce.laTeXState newTC.parsed state.laTeXState
     in
     { state
-        | blockContents = [ currentLine_ ]
+        | -- blockContents = [ currentLine_ ]
+          blockContents = []
         , lineNumber = state.lineNumber + countLines state.blockContents
 
         --, laTeXState = laTeXState
@@ -294,6 +299,26 @@ pushBlockStack currentLine_ state =
         }
 
 
+startBlock : String -> State -> State
+startBlock currentLine_ state =
+    let
+        deltaBlockLevel =
+            differentialBlockLevel currentLine_
+
+        newBlockLevel =
+            state.blockLevel + deltaBlockLevel
+    in
+    --if newBlockLevel == 0 then
+    --    pushBlock_ ("\n" ++ currentLine_) state
+    --
+    --else
+    { state
+        | blockContents = [ currentLine_ ]
+        , blockLevel = newBlockLevel
+        , blockType = ElementBlock
+    }
+
+
 pushBlock : State -> State
 pushBlock state =
     pushBlock_ "" state
@@ -303,8 +328,6 @@ pushBlock_ : String -> State -> State
 pushBlock_ line state =
     let
         str =
-            -- TODO: Danger!!
-            -- line ++ String.join "\n" (List.reverse state.blockContents) |> Debug.log "PUSH"
             String.join "\n" (List.reverse state.blockContents) ++ "\n" ++ line |> Debug.log "PUSH"
 
         tc : TextCursor Element
@@ -399,6 +422,7 @@ countLines list =
 
 loop : State -> (State -> Step State State) -> State
 loop s nextState_ =
+    -- TODO: Uncomment for debugging
     let
         _ =
             Debug.log (String.fromInt s.lineNumber) { inp = s.input, cl = Maybe.map classify (List.head s.input), bt = s.blockType, bl = s.blockLevel, bc = s.blockContents }
