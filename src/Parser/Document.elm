@@ -384,7 +384,7 @@ loop : State -> (State -> Step State State) -> State
 loop s nextState_ =
     let
         _ =
-            Debug.log (String.fromInt s.lineNumber) { inp = s.input, bt = s.blockType, bl = s.blockLevel, bc = s.blockContents }
+            Debug.log (String.fromInt s.lineNumber) { inp = s.input, cl = Maybe.map classify (List.head s.input), bt = s.blockType, bl = s.blockLevel, bc = s.blockContents }
     in
     case nextState_ s of
         Loop s_ ->
