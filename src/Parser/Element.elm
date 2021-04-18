@@ -1,4 +1,4 @@
-module Parser.Element exposing (Element(..), element, elementList, parse, parseList)
+module Parser.Element exposing (Element(..), element, elementList, parse, parseList, rawStringPrefix)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
@@ -150,6 +150,31 @@ rawText_ stopChars =
 
 
 
+-- rawString : String -> Parser { start : Int, length : Int, content : String }
+--rawString : String -> Parser (Int -> String -> { start : Int, length : Int, content : String })
+--rawString str =
+--    Parser.succeed (\begin end content -> { start = begin, length = end - begin, content = String.slice begin end content })
+--        |= Parser.getOffset
+--        |. rawStringBegin
+--        |. Parser.chompWhile (\c -> /= '#')
+--        |. rawStringEnd
+--        |= Parser.getOffset
+--        |= Parser.getSource
+
+
+rawStringPrefix : Parser Int
+rawStringPrefix =
+    Parser.succeed (\begin end -> end - begin - 3)
+        |= Parser.getOffset
+        |. Parser.symbol (Parser.Token "raw#" ExpectingRawPrefix)
+        |. Parser.chompWhile (\c -> c == '#')
+        |= Parser.getOffset
+
+
+
+--
+--rawStringLoop : Int-> (Int -> Parser (Parser.Step Int String)) -> Parser String
+--rawStringLoop hashes =
 -- SYMBOLS
 
 
@@ -159,6 +184,14 @@ comma_ =
 
 comma =
     T.first comma_ Parser.spaces
+
+
+rawStringBegin =
+    Parser.symbol (Parser.Token "r##" ExpectingRawStringBegin)
+
+
+rawStringEnd =
+    Parser.symbol (Parser.Token "##" ExpectingRawStringEnd)
 
 
 pipeSymbol =

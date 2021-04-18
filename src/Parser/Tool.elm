@@ -8,6 +8,7 @@ module Parser.Tool exposing
     , manyNonEmpty
     , manySeparatedBy
     , maybe
+    , oneChar
     , optional
     , optionalList
     , second
@@ -143,11 +144,11 @@ recognizes lines that start with an alphabetic character.
 
 -}
 text : (Char -> Bool) -> (Char -> Bool) -> Parser { start : Int, finish : Int, content : String }
-text prefixTest suffixTest =
+text prefixTest predicate =
     Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
         |= Parser.getOffset
         |. Parser.chompIf (\c -> prefixTest c) (UnHandledError 2)
-        |. Parser.chompWhile (\c -> suffixTest c)
+        |. Parser.chompWhile (\c -> predicate c)
         |= Parser.getOffset
         |= Parser.getSource
 
@@ -157,6 +158,15 @@ char prefixTest =
     Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
         |= Parser.getOffset
         |. Parser.chompIf (\c -> prefixTest c) (UnHandledError 3)
+        |= Parser.getOffset
+        |= Parser.getSource
+
+
+oneChar : Parser String
+oneChar =
+    Parser.succeed (\begin end data -> String.slice begin end data)
+        |= Parser.getOffset
+        |. Parser.chompIf (\c -> True) (UnHandledError 4)
         |= Parser.getOffset
         |= Parser.getSource
 
