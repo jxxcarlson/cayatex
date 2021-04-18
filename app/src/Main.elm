@@ -162,7 +162,7 @@ panelWidth_ =
 
 
 panelHeight_ =
-    900
+    500
 
 
 parserDisplayPanelHeight_ =

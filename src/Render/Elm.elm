@@ -16,6 +16,7 @@ import Parser.Getters
 import Parser.SourceMap exposing (SourceMap)
 import Parser.TextCursor
 import String.Extra
+import Utility
 
 
 
@@ -289,30 +290,11 @@ link renderArgs name args body sm =
                 }
 
 
-keyValueDict : List String -> Dict String String
-keyValueDict strings =
-    List.map (String.split ":") strings
-        |> List.map (List.map String.trim)
-        |> List.map pairFromList
-        |> Maybe.Extra.values
-        |> Dict.fromList
-
-
-pairFromList : List String -> Maybe ( String, String )
-pairFromList strings =
-    case strings of
-        [ x, y ] ->
-            Just ( x, y )
-
-        _ ->
-            Nothing
-
-
 image : FRender Mark2Msg
 image renderArgs name args body sm =
     let
         dict =
-            keyValueDict args |> Debug.log "DICT"
+            Utility.keyValueDict args |> Debug.log "DICT"
 
         description =
             Dict.get "caption" dict |> Maybe.withDefault ""
