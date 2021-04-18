@@ -64,7 +64,6 @@ type BlockType
     = Start
     | TextBlock
     | ElementBlock
-    | ErrorBlock
 
 
 {-| -}
@@ -162,23 +161,10 @@ nextState state_ =
                     Loop (startBlock currentLine { state | blockType = ElementBlock })
 
                 ( Start, LTEndElement ) ->
-                    Loop (initBlock ErrorBlock currentLine state)
+                    Loop (initBlock TextBlock ("Error: " ++ currentLine) state)
 
                 ( Start, LTTextBlock ) ->
                     Loop (initBlock TextBlock currentLine state)
-
-                -- ERROR BLOCK
-                ( ErrorBlock, LTBlank ) ->
-                    Loop { state | blockType = Start, blockContents = [] }
-
-                ( ErrorBlock, LTBeginElement ) ->
-                    Loop (initWithBlockType currentLine state)
-
-                ( ErrorBlock, LTEndElement ) ->
-                    Loop (addToBlockContents currentLine state)
-
-                ( ErrorBlock, LTTextBlock ) ->
-                    Loop (initWithBlockType currentLine state)
 
                 -- TEXTBLOCK
                 ( TextBlock, LTBlank ) ->
