@@ -15,6 +15,7 @@ import Parser.Document
 import Parser.Element as Parser
 import Parser.Getters
 import Render.Elm
+import Render.State
 import Render.String
 
 
@@ -282,11 +283,20 @@ outputDisplay_ model =
 -- RENDER STRING TO HTML MSG
 
 
+initState k =
+    { generation = k
+    , blockOffset = 0
+    , selectedId = ""
+    , width = 300
+    , renderState = Render.State.init Render.State.defaultConfig
+    }
+
+
 render : Int -> String -> Element Msg
 render k str =
     Parser.Document.run k (String.lines str)
         |> Parser.Document.toParsed
-        |> List.map (Render.Elm.renderList { generation = k, blockOffset = 0, selectedId = "", width = 300 })
+        |> List.map (Render.Elm.renderList (initState k))
         |> column [ spacing 18 ]
         |> Element.map Mark2Msg
 
