@@ -109,6 +109,10 @@ unhandledError tc_ mFirstError errorColumn mRecoveryData lxError errorText =
     }
 
 
+
+-- The handlers below will be rationalized and simplified.  Still in an experimental state.
+
+
 handleRightBracketError : TextCursor Element -> Maybe (PA.DeadEnd Context Problem) -> Int -> Maybe RecoveryData -> TextCursor Element
 handleRightBracketError tc_ mFirstError errorColumn mRecoveryData =
     let
@@ -157,11 +161,11 @@ handleRightBracketError tc_ mFirstError errorColumn mRecoveryData =
             Debug.log "x, he, parsed" tc_.parsed
     in
     { text = newText
-    , block = "?? TO DO" -- TODO ???
-    , blockIndex = tc_.blockIndex -- TODO ???
-    , parsed = List.drop 1 tc_.parsed -- throw away the erroneous parsand parse__ (String.join "\n" errorLines) -- TODO EXPERIMENT -- TODO ???
-    , stack = [] --newStack tc_ errorText mRecoveryData -- TODO ???
-    , offset = newOffset tc_ errorColumn mRecoveryData |> Debug.log "RBEH, offset" -- TODO ???
+    , block = "?? TO DO" --
+    , blockIndex = tc_.blockIndex --
+    , parsed = List.drop 1 tc_.parsed -- throw away the erroneous parsand
+    , stack = [] -- not used
+    , offset = newOffset tc_ errorColumn mRecoveryData |> Debug.log "RBEH, offset"
     , count = tc_.count
     , generation = tc_.generation
     }
