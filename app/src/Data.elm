@@ -53,10 +53,11 @@ progress we have made towards specifiying the language and implementing it in El
 is incomplete, it
 is a start.]
 
-% [fontRGB |12, 140, 176| We are also working on implementations in Rust. This will,
-% among other things, help us to cross-validate both implementations of the
-% specification.]
 
+[fontRGB |12, 140, 176| We are also working on an implementation in Rust. This will,
+among other things, help us to cross-validate the specification.]
+
+The project is open source: [link https://github.com/jxxcarlson/cayatex]
 
 [subsection Design Goals]
 
