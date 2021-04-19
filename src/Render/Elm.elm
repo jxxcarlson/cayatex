@@ -144,7 +144,7 @@ renderElementDict =
         , ( "link", link )
         , ( "image", image )
         , ( "math", renderMath )
-        , ( "mathDisplay", renderMathDisplay )
+        , ( "mathdisplay", renderMathDisplay )
         ]
 
 
