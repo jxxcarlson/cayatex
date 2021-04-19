@@ -1,4 +1,4 @@
-module Utility exposing (entities, keyValueDict)
+module Utility exposing (entities, keyValueDict, liftToMaybe)
 
 import Dict exposing (Dict)
 import Maybe.Extra
@@ -30,3 +30,14 @@ pairFromList strings =
 
         _ ->
             Nothing
+
+
+liftToMaybe : (a -> b) -> (Maybe a -> Maybe b)
+liftToMaybe f =
+    \a ->
+        case a of
+            Nothing ->
+                Nothing
+
+            Just a_ ->
+                Just (f a_)
