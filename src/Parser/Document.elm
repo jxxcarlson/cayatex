@@ -33,11 +33,13 @@ then the block offset is 100, the offset of "a" is 0, the offest of "b" is 2, an
 --import Render.LaTeXState as LaTeXState exposing (LaTeXState)
 --import Render.Reduce as Reduce
 
+import Dict exposing (Dict)
 import Parser as P exposing ((|.), (|=))
 import Parser.Driver
 import Parser.Element exposing (Element)
 import Parser.Getters
 import Parser.TextCursor as TextCursor exposing (TextCursor)
+import Render.State
 
 
 {-| -}
@@ -49,8 +51,7 @@ type alias State =
     , blockContents : List String
     , blockLevel : Int
     , output : List (TextCursor Element)
-
-    --, laTeXState : LaTeXState
+    , renderState : Render.State.State
     }
 
 
@@ -127,8 +128,7 @@ init generation strList =
     , blockContents = []
     , blockLevel = 0
     , output = []
-
-    --  , laTeXState = LaTeXState.init
+    , renderState = Render.State.init Render.State.defaultConfig
     }
 
 
