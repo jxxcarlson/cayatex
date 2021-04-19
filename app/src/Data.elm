@@ -96,9 +96,10 @@ You can also consult [link https://en.wikipedia.org/wiki/Nicole_Oresme].
 
 [subsection Code]
 
-Time for some code: [code col :: Int -> Matrix a -> \\[a\\]].
+Time for some code: [code raw##col :: Int -> Matrix a -> [a]##].
 Do you recognize the language (ha ha)?
-[italic [highlight And can we do something about the awkwardness of escaping brackets inside code elements?]]
+
+[italic [highlight Note the use of Rust-like raw strings here to avoid escaping the brackets.]]
 
 [subsection Color]
 

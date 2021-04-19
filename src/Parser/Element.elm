@@ -106,6 +106,19 @@ bodyOnly generation lineNumber =
 
 text : Int -> Int -> Parser Element
 text generation lineNumber =
+    Parser.oneOf [ rawString generation lineNumber, plainText generation lineNumber ]
+
+
+rawString : Int -> Int -> Parser Element
+rawString generation lineNumber =
+    Parser.succeed (\start source finish -> Text source (Just { blockOffset = lineNumber, offset = start, length = finish - start, generation = generation }))
+        |= Parser.getOffset
+        |= RawString.parser
+        |= Parser.getOffset
+
+
+plainText : Int -> Int -> Parser Element
+plainText generation lineNumber =
     Parser.inContext TextExpression <|
         (XString.textWithPredicate XString.isNonLanguageChar
             |> Parser.map (\data -> Text data.content (Just { blockOffset = lineNumber, offset = data.start, length = data.finish - data.start, generation = generation }))
