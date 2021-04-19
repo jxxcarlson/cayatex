@@ -1,7 +1,7 @@
 module Parser.Document exposing
     ( process, toParsed, toText
     , State, Block, BlockType(..), LineType(..)
-    , Step(..), applyNextState, classify, differentialBlockLevel, getParseResult, init, nextState, run
+    , Step(..), applyNextState, classify, differentialBlockLevel, getParseResult, init, nextState, runloop
     )
 
 {-| The main function in this module is process, which takes as input
@@ -80,7 +80,7 @@ type LineType
 -}
 process : Int -> List String -> State
 process generation =
-    run generation
+    runloop generation
 
 
 
@@ -90,13 +90,19 @@ process generation =
 {-| Compute the final State of a string of source text.
 The output field of State holds the AST of the source text.
 
-Function process operates a state machine which identifies logical
-chunks of text, parses these using Parser.Parser.parseLoop,
-and prepends them to a list of TextCursor.
+Function 'process' operates a loop for a state machine which
+identifies logical chunks of text, parses these using
+Parser.Driverx.parseLoop, and prepends them to a list of TextCursor.
+The parsed text is held the field 'parsed' of TextCursor.
+
+Each time a loop is completed, the value of Render.State.State
+is updated. The final value will be used in Render.Elm to
+furnish section numbering, cross references, a table of contents,
+etc.
 
 -}
-run : Int -> List String -> State
-run generation strList =
+runloop : Int -> List String -> State
+runloop generation strList =
     loop (init generation strList) nextState
 
 

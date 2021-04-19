@@ -294,7 +294,7 @@ initState k =
 
 render : Int -> String -> Element Msg
 render k str =
-    Parser.Document.run k (String.lines str)
+    Parser.Document.runloop k (String.lines str)
         |> Parser.Document.toParsed
         |> List.map (Render.Elm.renderList (initState k))
         |> column [ spacing 18 ]
