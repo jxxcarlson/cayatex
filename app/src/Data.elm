@@ -66,7 +66,15 @@ The goals of the CaYaTeX project are for the language to be
 
 [item [strong Small], hence easy to learn. [italic To this end there are just two constructs: ordinary text and [code elements]].]
 
-[item [strong Powerful].  [italic To this end, we borrow ideas from functional programming.  Elements have a Lisp-like syntax. An element has a name, an argument list, and a body (which is also an argument). The partial element [code name args] is a function [code Element -> Element]. Such functions can be composed, as in mathematics or as in languages such as Haskell and Elm.]]
+[item [strong Powerful].  We borrow ideas from functional programming.
+Elements have a Lisp-like syntax with brackets in place of parentheses.
+An element has the form [code raw##[name |argument-list| body]##] or simply  [code raw##[name body]##]
+The argument list is a comma-delimited sequence of
+strings.  The body is an element.
+The partial element [code name args] is a function [code Element -> Element].
+Such functions can be composed, as in mathematics or as in languages such as Haskell and Elm.
+]
+
 
 [item [strong Extensible]. [italic Via a macro facility].]
 
