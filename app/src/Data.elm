@@ -113,7 +113,7 @@ that attracts so many people to the subject:
 
 [mathDisplay \\int_0^1 x^n dx = \\frac{1}{n+1}]
 
-And of course, we can do theorems:
+And of course, we can also do theorems:
 
 [theorem There are infinitely many primes [math p \\equiv 1 \\text{ mod } 4.]]
 
