@@ -15,12 +15,6 @@ type alias Data =
     }
 
 
-
---init : Int -> State
---init k =
---    initConfig k
-
-
 init : Config -> Data
 init config =
     { counters = initialCounters
@@ -62,11 +56,6 @@ defaultConfig =
     , blueColor = "#00c"
     , highlightColor = "#fAA"
     }
-
-
-emptyDict : Dict.Dict k v
-emptyDict =
-    Dict.empty
 
 
 {-| -}
