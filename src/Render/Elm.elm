@@ -14,8 +14,8 @@ import Parser.Driver
 import Parser.Element exposing (Element(..))
 import Parser.Getters
 import Parser.SourceMap exposing (SourceMap)
+import Parser.State
 import Parser.TextCursor
-import Render.State
 import Render.Utility
 import String.Extra
 import Utility
@@ -30,7 +30,7 @@ type alias RenderArgs =
     , selectedId : String
     , generation : Int
     , blockOffset : Int
-    , renderState : Render.State.Data
+    , renderState : Parser.State.Data
     }
 
 

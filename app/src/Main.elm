@@ -14,8 +14,8 @@ import Paragraph
 import Parser.Document
 import Parser.Element as Parser
 import Parser.Getters
+import Parser.State
 import Render.Elm
-import Render.State
 import Render.String
 
 
@@ -288,7 +288,7 @@ initState k =
     , blockOffset = 0
     , selectedId = ""
     , width = 300
-    , renderState = Render.State.init Render.State.defaultConfig
+    , renderState = Parser.State.init Parser.State.defaultConfig
     }
 
 

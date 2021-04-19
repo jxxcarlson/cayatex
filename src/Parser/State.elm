@@ -1,4 +1,4 @@
-module Render.State exposing (Data, defaultConfig, init)
+module Parser.State exposing (Data, defaultConfig, init)
 
 import Dict exposing (Dict)
 import Html exposing (Attribute)

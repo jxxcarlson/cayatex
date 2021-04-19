@@ -2,7 +2,7 @@ module DocLoopTests exposing (..)
 
 import Expect
 import Parser.Advanced exposing (run)
-import Parser.Document as Document exposing (BlockType(..), State, Step(..), applyNextState, getParseResult, nextState)
+import Parser.Document as Document exposing (BlockStatus(..), State, Step(..), applyNextState, getParseResult, nextState)
 import Parser.Element exposing (..)
 import Parser.Tool as T
 import Test exposing (describe, fuzz, test)
@@ -29,13 +29,13 @@ suite =
                 \_ ->
                     Expect.equal
                         (nextState <| { blockContents = [], blockLevel = 0, blockType = Start, generation = 0, input = [ "[strong stuff]" ], lineNumber = 0, output = [] })
-                        (Loop { blockContents = [ "[strong stuff]" ], blockLevel = 0, blockType = ElementBlock, generation = 0, input = [], lineNumber = 0, output = [] })
+                        (Loop { blockContents = [ "[strong stuff]" ], blockLevel = 0, blockType = InElementBlock, generation = 0, input = [], lineNumber = 0, output = [] })
             , Test.skip <|
                 test "start-end-element" <|
                     \_ ->
                         Expect.equal
                             (nextState <| { blockContents = [], blockLevel = 0, blockType = Start, generation = 0, input = [ "strong stuff]" ], lineNumber = 0, output = [] })
-                            (Loop { blockContents = [ "Error (missingLeftBracket): strong  _RIGHTBRACKET" ], blockLevel = 0, blockType = TextBlock, generation = 0, input = [], lineNumber = 0, output = [] })
+                            (Loop { blockContents = [ "Error (missingLeftBracket): strong  _RIGHTBRACKET" ], blockLevel = 0, blockType = InTextBlock, generation = 0, input = [], lineNumber = 0, output = [] })
             ]
         , describe "loop"
             [ test "simple element" <|
