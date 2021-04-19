@@ -51,7 +51,7 @@ type alias State =
     , blockContents : List String
     , blockLevel : Int
     , output : List (TextCursor Element)
-    , renderState : Render.State.State
+    , renderState : Render.State.Data
     }
 
 

@@ -30,7 +30,7 @@ type alias RenderArgs =
     , selectedId : String
     , generation : Int
     , blockOffset : Int
-    , renderState : Render.State.State
+    , renderState : Render.State.Data
     }
 
 

@@ -1,4 +1,4 @@
-module Render.State exposing (..)
+module Render.State exposing (Data, defaultConfig, init)
 
 import Dict exposing (Dict)
 import Html exposing (Attribute)
@@ -6,7 +6,7 @@ import Html.Attributes as HA
 import Parser.Element as Element
 
 
-type alias State =
+type alias Data =
     { counters : IntegerDict
     , crossReferences : Dictionary
     , tableOfContents : List TocEntry
@@ -21,7 +21,7 @@ type alias State =
 --    initConfig k
 
 
-init : Config -> State
+init : Config -> Data
 init config =
     { counters = initialCounters
     , crossReferences = Dict.empty
@@ -70,7 +70,7 @@ emptyDict =
 
 
 {-| -}
-addSection : String -> String -> Int -> State -> State
+addSection : String -> String -> Int -> Data -> Data
 addSection sectionName label level state =
     let
         newEntry =
@@ -84,7 +84,7 @@ addSection sectionName label level state =
 
 {-| Return the value of a named counter from the LaTeXSTate
 -}
-getCounter : String -> State -> Int
+getCounter : String -> Data -> Int
 getCounter name state =
     case Dict.get name state.counters of
         Just k ->
@@ -95,7 +95,7 @@ getCounter name state =
 
 
 {-| -}
-getCrossReference : String -> State -> String
+getCrossReference : String -> Data -> String
 getCrossReference label state =
     case Dict.get label state.crossReferences of
         Just ref ->
@@ -106,7 +106,7 @@ getCrossReference label state =
 
 
 {-| -}
-getDictionaryItem : String -> State -> String
+getDictionaryItem : String -> Data -> String
 getDictionaryItem key state =
     case Dict.get key state.dictionary of
         Just value ->
@@ -117,7 +117,7 @@ getDictionaryItem key state =
 
 
 {-| -}
-setDictionaryItem : String -> String -> State -> State
+setDictionaryItem : String -> String -> Data -> Data
 setDictionaryItem key value state =
     let
         dictionary =
@@ -130,7 +130,7 @@ setDictionaryItem key value state =
 
 
 {-| -}
-insertCounter : String -> Int -> State -> State
+insertCounter : String -> Int -> Data -> Data
 insertCounter name value state =
     let
         maybeInc =
@@ -143,7 +143,7 @@ insertCounter name value state =
 
 
 {-| -}
-incrementCounter : String -> State -> State
+incrementCounter : String -> Data -> Data
 incrementCounter name state =
     let
         maybeInc =
@@ -156,7 +156,7 @@ incrementCounter name state =
 
 
 {-| -}
-setCounter : String -> Int -> State -> State
+setCounter : String -> Int -> Data -> Data
 setCounter name value state =
     let
         maybeSet =
@@ -169,7 +169,7 @@ setCounter name value state =
 
 
 {-| -}
-setCrossReference : String -> String -> State -> State
+setCrossReference : String -> String -> Data -> Data
 setCrossReference label value state =
     let
         crossReferences =
