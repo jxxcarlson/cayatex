@@ -15,6 +15,7 @@ import Parser.Element exposing (Element(..))
 import Parser.Getters
 import Parser.SourceMap exposing (SourceMap)
 import Parser.TextCursor
+import Render.Utility
 import String.Extra
 import Utility
 
@@ -80,6 +81,7 @@ renderElement : RenderArgs -> Element -> E.Element Mark2Msg
 renderElement renderArgs element =
     case element of
         Text str _ ->
+            -- TODO
             el [] (text str)
 
         Element name args body sm ->
@@ -131,6 +133,8 @@ renderElementDict =
         , ( "highlightRGB", highlightRGB )
         , ( "fontRGB", fontRGB )
         , ( "code", renderCode )
+        , ( "codeblock", renderCodeBlock )
+        , ( "poetry", poetry )
         , ( "section", section )
         , ( "subsection", subsection )
         , ( "list", list )
@@ -146,6 +150,26 @@ getText : Element -> Maybe String
 getText element =
     case element of
         LX [ Text content _ ] _ ->
+            Just content
+
+        _ ->
+            Nothing
+
+
+getText2 : Element -> String
+getText2 element =
+    case element of
+        LX list_ _ ->
+            List.map extractText list_ |> Maybe.Extra.values |> String.join "\n"
+
+        _ ->
+            ""
+
+
+extractText : Element -> Maybe String
+extractText element =
+    case element of
+        Text content _ ->
             Just content
 
         _ ->
@@ -264,6 +288,72 @@ renderCode renderArgs _ _ body sm =
         , Font.color codeColor
         ]
         (renderElement renderArgs adjustedBody)
+
+
+getLXText : Element -> String
+getLXText element =
+    case element of
+        LX list_ _ ->
+            List.map (getText >> Maybe.withDefault "") list_ |> String.join "\n"
+
+        _ ->
+            ""
+
+
+poetry : FRender Mark2Msg
+poetry renderArgs _ _ body sm =
+    let
+        _ =
+            Debug.log "BODY" (getLines (getText2 body |> String.trim))
+    in
+    column
+        [ Font.size 14
+        , Render.Utility.htmlAttribute "white-space" "pre"
+        , indentation
+        , spacing 4
+        ]
+        (List.map text (getLines (getText2 body |> String.trim)))
+
+
+renderCodeBlock : FRender Mark2Msg
+renderCodeBlock renderArgs _ _ body sm =
+    let
+        _ =
+            Debug.log "BODY" (getLines (getText2 body |> String.trim))
+    in
+    column
+        [ Font.family
+            [ Font.typeface "Inconsolata"
+            , Font.monospace
+            ]
+        , Font.size 14
+        , Font.color codeColor
+        , Render.Utility.htmlAttribute "white-space" "pre"
+        , indentation
+        ]
+        (List.map text (getLines (getText2 body |> String.trim)))
+
+
+indentation =
+    E.paddingEach { left = 18, right = 0, top = 0, bottom = 0 }
+
+
+getLines : String -> List String
+getLines str =
+    let
+        nonBreakingSpace =
+            String.fromChar '\u{00A0}'
+    in
+    str
+        |> String.lines
+        |> List.map
+            (\s ->
+                if s == "" then
+                    nonBreakingSpace
+
+                else
+                    String.replace " " nonBreakingSpace s
+            )
 
 
 

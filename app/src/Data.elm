@@ -2,16 +2,26 @@ module Data exposing (test, text)
 
 
 test =
-    """before
+    """
 
-[subsection A
 
-[strong B]
-[strong C]
-[strong D]
-[strong E]
 
-after
+[codeblock raw##
+# Sudoku 3x3 subsquare function
+
+rowSlice :: Int -> Int -> Matrix a -> Matrix a
+rowSlice i j m =
+   [m !! k | k <- [i..j]]
+
+colSlice :: Int -> Int -> Matrix a -> Matrix a
+colSlice i j m =
+   [col k m | k <- [i..j]]
+
+subSquare :: Int -> Int -> Matrix a -> Matrix a
+subSquare r c m =
+    colSlice (3*c) (3*c + 2) $ rowSlice (3*r) (3*r + 2) m
+
+##]
 """
 
 
@@ -98,17 +108,51 @@ which goes back to the work of Nicole Oresme (1320–1382).  See the entry in th
 [link |Stanford Encyclopedia of Philosophy| https://plato.stanford.edu/entries/nicole-oresme/].
 You can also consult [link https://en.wikipedia.org/wiki/Nicole_Oresme].
 
-[theorem There are infinitely many primes [math p \\equiv 1 (4).]]
+We can also do some high-school math, with that beautifully curved integral sign
+that attracts so many people to the subject:
+
+[mathDisplay \\int_0^1 x^n dx = \\frac{1}{n+1}]
+
+And of course, we can do theorems:
+
+[theorem There are infinitely many primes [math p \\equiv 1 \\text{ mod } 4.]]
 
 [corollary |Euclid| There are infinitely many primes.]
 
+[subsection Unicode]
+
+You can freely use unicode characters:
+
+[poetry
+А я иду, где ничего не надо,
+Где самый милый спутник — только тень,
+И веет ветер из глухого сада,
+А под ногой могильная ступень.
+
+— Анна Ахматова
+]
 
 [subsection Code]
 
 Time for some code: [code raw##col :: Int -> Matrix a -> [a]##].
 Do you recognize the language (ha ha)?
 
-[italic [highlight Note the use of Rust-like raw strings here to avoid escaping the brackets.]]
+We can also do code blocks.  Syntax highlighting coming later.
+
+[codeblock raw##
+# For Sudoku 3x3 subsquare function
+
+col :: Int -> Matrix a -> [a]
+col k = fmap ( !! k)
+
+cols :: Matrix a -> Matrix a
+cols m =
+    fmap (\\k -> col k m) [0..n]
+       where n = length m - 1
+##]
+
+
+[italic [highlight Note the use of Rust-like raw strings in the source text to avoid escaping all the brackets.]]
 
 [subsection Color]
 

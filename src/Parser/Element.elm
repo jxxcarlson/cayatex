@@ -1,4 +1,4 @@
-module Parser.Element exposing (Element(..), element, elementList, parse, parseList)
+module Parser.Element exposing (Element(..), element, elementList, fubar, parse, parseList)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
@@ -62,6 +62,17 @@ primitiveElement generation blockOffset =
             |. rightBracket
             |= Parser.getOffset
             |= Parser.getSource
+
+
+fubar : Parser { start : Int, finish : Int, content : String }
+fubar =
+    Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
+        |= Parser.getOffset
+        |. leftBracket
+        |. Parser.chompWhile (\c -> c /= ']')
+        |. rightBracket
+        |= Parser.getOffset
+        |= Parser.getSource
 
 
 elementName =
