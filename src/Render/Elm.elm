@@ -152,6 +152,7 @@ renderElementDict =
         , ( "average", average )
         , ( "stdev", stdev )
         , ( "bargraph", bargraph )
+        , ( "linegraph", linegraph )
         ]
 
 
@@ -178,6 +179,24 @@ getTextList element =
         --  |> Maybe.Extra.values
         _ ->
             []
+
+
+getCSV : Element -> List (List String)
+getCSV element =
+    case element of
+        LX list_ _ ->
+            case List.map extractText list_ of
+                [ Just data ] ->
+                    data
+                        |> String.split "\n"
+                        |> List.map (String.split ",")
+                        |> List.map (List.map String.trim)
+
+                _ ->
+                    [ [] ]
+
+        _ ->
+            [ [] ]
 
 
 getText2 : Element -> String
@@ -748,6 +767,53 @@ bargraph renderArgs name args body sm =
             }
     in
     column [] [ barChart barGraphAttributes numbers |> E.html ]
+
+
+linegraph : FRender Mark2Msg
+linegraph renderArgs name args body sm =
+    let
+        numbers_ : List (List String)
+        numbers_ =
+            getCSV body
+
+        makePair : List Float -> Maybe ( Float, Float )
+        makePair ns =
+            case ns of
+                [ x, y ] ->
+                    Just ( x, y )
+
+                _ ->
+                    Nothing
+
+        points : List ( Float, Float )
+        points =
+            List.map (List.map String.toFloat) numbers_
+                |> List.map Maybe.Extra.values
+                |> List.map makePair
+                |> Maybe.Extra.values
+
+        n =
+            List.length points |> toFloat
+
+        graphHeight =
+            100.0
+
+        graphWidth =
+            250.0
+
+        deltaX =
+            graphWidth / n
+
+        options =
+            [ Color "rgb(0,0,200)", DeltaX deltaX, YTickmarks 6, XTickmarks (round (n + 1)), Scale 1.0 1.0 ]
+
+        lineGraphAttributes =
+            { graphHeight = graphHeight
+            , graphWidth = graphWidth
+            , options = options
+            }
+    in
+    column [] [ lineChart lineGraphAttributes points |> E.html ]
 
 
 

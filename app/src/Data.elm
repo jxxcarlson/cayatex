@@ -109,16 +109,9 @@ And of course, we can also do theorems:
 
 [corollary |Euclid| There are infinitely many primes.]
 
-
 [subsection Data]
 
-One can design elements which manipulate data (computations, visualization). In the examples below, the precision of the result has a default value of 2.  This can be changed, as one sees in the source of the third example, e.g. you can have
-
-[codeblock raw##[stdev | 1.2, 2, 3.4, 4]## ]
-
-or
-
-[codeblock raw##[stdev |precision:3| 1.2, 2, 3.4, 4]## ]
+One can design elements which manipulate data (numerical computations, visualization).  Here are some data computations:
 
 [sum 1.2, 2, 3.4, 4]
 
@@ -126,16 +119,47 @@ or
 
 [stdev |precision:3| 1.2, 2, 3.4, 4]
 
-We need to rethink the rendering rules so as to make these data functions have better composability
-properties. Quite bad right now.  In any, case, below is a simple POC for data visualization
-in CaYaTeX.  Much more to be done here aside from fixing a few rendering bugs: make all the options
-configurable as optional key-value pairs, add line graphs, etc.
+In the numerical examples, the precision of the result has a default value of 2.  This can be changed, as one sees in the source of the third example, e.g., you can have
+
+[codeblock raw##[stdev | 1.2, 2, 3.4, 4]## ]
+
+or
+
+[codeblock raw##[stdev |precision:3| 1.2, 2, 3.4, 4]## ]
+
+
+[subsection Graphs]
+
+Below are two simple data visualizations. We plan more, and more configurability of what you see here.
 
 [bargraph 1, 1.2, 3,  1, 2, 4,  3,  2, 1, 2, 3, 5, 3, 7, 3, 2, 9, 8, 7, 0, 0]
 
-Here is the bargraph code:
+The bargraph code:
 
 [codeblock raw##[bargraph 1, 1.2, 3, 1, ... ]## ]
+
+[linegraph 0, 0
+1, 10
+2, 5
+3, 3
+4, 9
+5, 11
+6, 4
+7, 6
+8, 10
+9, 1
+]
+
+The linegraph code (CSV format):
+
+[codeblock raw##[linegraph
+0, 0
+1, 10
+...
+8, 10
+9, 1
+]
+##]
 
 [subsection Unicode]
 
