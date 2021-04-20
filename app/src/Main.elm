@@ -159,7 +159,7 @@ widePanelWidth_ =
 
 
 panelWidth_ =
-    440
+    480
 
 
 panelHeight_ =
@@ -265,7 +265,7 @@ outputDisplay_ model =
     column
         [ spacing 8
         , Background.color (Element.rgb 1.0 1.0 1.0)
-        , paddingXY 8 12
+        , paddingXY 24 36
         , width (px panelWidth_)
         , height (px panelHeight_)
         , scrollbarY
