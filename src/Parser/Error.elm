@@ -8,7 +8,10 @@ type Problem
     | ExpectingPipe
     | ExpectingEscape
     | EndOfInput
-    | UnHandledError
+    | ExpectingRawStringBegin
+    | ExpectingRawStringEnd
+    | ExpectingRawPrefix
+    | UnHandledError Int
 
 
 type Context

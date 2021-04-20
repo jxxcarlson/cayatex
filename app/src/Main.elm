@@ -14,6 +14,7 @@ import Paragraph
 import Parser.Document
 import Parser.Element as Parser
 import Parser.Getters
+import Parser.State
 import Render.Elm
 import Render.String
 
@@ -40,6 +41,7 @@ type Msg
     | InputText String
     | ClearText
     | GetText
+    | GetTest
     | SetMode Mode
     | Mark2Msg Render.Elm.Mark2Msg
 
@@ -108,6 +110,15 @@ update msg model =
             , Cmd.none
             )
 
+        GetTest ->
+            ( { model
+                | input = Data.test
+                , renderedText = Render.String.renderString Data.test
+                , count = model.count + 1
+              }
+            , Cmd.none
+            )
+
         Mark2Msg _ ->
             ( model, Cmd.none )
 
@@ -152,11 +163,11 @@ panelWidth_ =
 
 
 panelHeight_ =
-    500
+    800
 
 
 parserDisplayPanelHeight_ =
-    100
+    101
 
 
 appHeight_ =
@@ -183,7 +194,7 @@ mainColumn model =
 
 inputElement model =
     column [ spacing 8, moveUp 9 ]
-        [ row [ spacing 12 ] [ clearTextButton, getTextButton ]
+        [ row [ spacing 12 ] [ clearTextButton, getTextButton, getTestButton ]
         , inputText model
         ]
 
@@ -209,7 +220,14 @@ parsed model =
             text "Parse error"
 
         Ok pt ->
-            el [ alignTop ] (column [ width (px widePanelWidth_), height (px parserDisplayPanelHeight_), scrollbarY ] (List.map (\s -> Element.paragraph [] [ text s ]) (parsed_ pt)))
+            el [ alignTop ]
+                (column
+                    [ width (px widePanelWidth_)
+                    , height (px parserDisplayPanelHeight_)
+                    , scrollbarY
+                    ]
+                    (List.map (\s -> Element.paragraph [] [ text s ]) (parsed_ pt))
+                )
 
 
 parsed_ : a -> List String
@@ -226,9 +244,19 @@ outputDisplay model =
             , moveUp 9
             , Font.size 14
             ]
-            [ rawModeButton model.mode, renderedModeButton model.mode, text ("Count: " ++ String.fromInt model.count) ]
+            [ rawModeButton model.mode, renderedModeButton model.mode, text ("generation: " ++ String.fromInt model.count), wordCountElement model.input ]
         , outputDisplay_ model
         ]
+
+
+wordCount : String -> Int
+wordCount str =
+    str |> String.words |> List.length
+
+
+wordCountElement : String -> Element Msg
+wordCountElement str =
+    row [ spacing 8 ] [ el [] (text <| "words:"), el [] (text <| String.fromInt <| wordCount <| str) ]
 
 
 outputDisplay_ : Model -> Element Msg
@@ -244,20 +272,31 @@ outputDisplay_ model =
         , Font.size 12
         ]
         (if model.mode == RenderedMode then
-            -- render model.count model.renderedText
-            [ render2 model.count model.input ]
+            [ render model.count model.input ]
 
          else
             List.map text (Paragraph.lines paragraphFormat model.renderedText)
         )
 
 
-render2 : Int -> String -> Element Msg
-render2 k str =
-    Parser.Document.runProcess k (String.lines str)
+
+-- RENDER STRING TO HTML MSG
+
+
+initState k =
+    { generation = k
+    , blockOffset = 0
+    , selectedId = ""
+    , width = 300
+    , renderState = Parser.State.init Parser.State.defaultConfig
+    }
+
+
+render : Int -> String -> Element Msg
+render k str =
+    Parser.Document.runloop k (String.lines str)
         |> Parser.Document.toParsed
-        |> List.reverse
-        |> List.map (Render.Elm.renderList { generation = k, blockOffset = 0, selectedId = "", width = 300 })
+        |> List.map (Render.Elm.renderList (initState k))
         |> column [ spacing 18 ]
         |> Element.map Mark2Msg
 
@@ -268,16 +307,6 @@ paragraphFormat =
 
 paragraphFormat2 =
     { maximumWidth = 160, optimalWidth = 150, stringWidth = String.length }
-
-
-render : Int -> String -> List (Element msg)
-render k data =
-    case Html.Parser.run data of
-        Err _ ->
-            [ text "Error converting to HTML" ]
-
-        Ok element ->
-            [ keyedNode k element ]
 
 
 keyedNode : Int -> List Html.Parser.Node -> Element msg
@@ -293,6 +322,10 @@ keyIt k list =
     List.indexedMap (\i e -> ( String.fromInt (i + k), e )) list
 
 
+
+-- INPUT
+
+
 inputText : Model -> Element Msg
 inputText model =
     Input.multiline [ height (px panelHeight_), width (px panelWidth_), Font.size 14 ]
@@ -304,6 +337,10 @@ inputText model =
         , label = Input.labelHidden "Enter source text here"
         , spellcheck = False
         }
+
+
+
+-- BUTTONS
 
 
 buttonColor buttonMode currentMode =
@@ -327,6 +364,14 @@ getTextButton =
     Input.button buttonStyle2
         { onPress = Just GetText
         , label = el [ centerX, centerY, Font.size 14 ] (text "Demo text")
+        }
+
+
+getTestButton : Element Msg
+getTestButton =
+    Input.button buttonStyle2
+        { onPress = Just GetTest
+        , label = el [ centerX, centerY, Font.size 14 ] (text "Test")
         }
 
 

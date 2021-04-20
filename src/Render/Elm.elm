@@ -1,7 +1,7 @@
 module Render.Elm exposing (Mark2Msg(..), renderElement, renderList, renderString)
 
 import Dict exposing (Dict)
-import Element as E exposing (column, el, paragraph, row, spacing, text)
+import Element as E exposing (column, el, paragraph, px, row, spacing, text)
 import Element.Background as Background
 import Element.Font as Font
 import Html exposing (Html)
@@ -14,8 +14,11 @@ import Parser.Driver
 import Parser.Element exposing (Element(..))
 import Parser.Getters
 import Parser.SourceMap exposing (SourceMap)
+import Parser.State
 import Parser.TextCursor
+import Render.Utility
 import String.Extra
+import Utility
 
 
 
@@ -27,6 +30,7 @@ type alias RenderArgs =
     , selectedId : String
     , generation : Int
     , blockOffset : Int
+    , renderState : Parser.State.Data
     }
 
 
@@ -34,13 +38,8 @@ type alias FRender a =
     RenderArgs -> String -> List String -> Element -> Maybe SourceMap -> E.Element a
 
 
-type RenderFunction a
-    = I (FRender a)
-    | B (FRender a)
-
-
 type alias RenderElementDict a =
-    Dict String (RenderFunction a)
+    Dict String (FRender a)
 
 
 type Mark2Msg
@@ -76,21 +75,22 @@ renderString renderArgs str =
 
 
 renderList : RenderArgs -> List Element -> E.Element Mark2Msg
-renderList renderArgs list =
-    paragraph format (List.map (renderElement renderArgs) list)
+renderList renderArgs list_ =
+    paragraph format (List.map (renderElement renderArgs) list_)
 
 
 renderElement : RenderArgs -> Element -> E.Element Mark2Msg
 renderElement renderArgs element =
     case element of
         Text str _ ->
+            -- TODO
             el [] (text str)
 
         Element name args body sm ->
             renderWithDictionary renderArgs name args body sm
 
-        LX list _ ->
-            paragraph format (List.map (renderElement renderArgs) list)
+        LX list_ _ ->
+            paragraph format (List.map (renderElement renderArgs) list_)
 
 
 theoremLikeElements =
@@ -104,21 +104,21 @@ renderWithDictionary renderArgs name args body sm =
                 renderaAsTheoremLikeElement renderArgs name args body sm
 
             else
-                paragraph []
-                    [ el [ Font.bold ] (text "[")
-                    , el [ Font.color blueColor, Font.bold ] (text (name ++ " "))
-                    , el [ Font.color violetColor ] (text (getText body |> Maybe.withDefault ""))
-                    , el [ Font.color redColor ] (text " << element misstyped or unimplemented")
-                    , el [ Font.bold ] (text "]")
-                    ]
+                renderMissingElement name body
 
         Just f ->
-            case f of
-                I g ->
-                    g renderArgs name args body sm
+            f renderArgs name args body sm
 
-                B g ->
-                    g renderArgs name args body sm
+
+renderMissingElement : String -> Element -> E.Element Mark2Msg
+renderMissingElement name body =
+    paragraph []
+        [ el [ Font.bold ] (text "[")
+        , el [ Font.color blueColor, Font.bold ] (text (name ++ " "))
+        , el [ Font.color violetColor ] (text (getText body |> Maybe.withDefault ""))
+        , el [ Font.color redColor ] (text " << element misstyped or unimplemented")
+        , el [ Font.bold ] (text "]")
+        ]
 
 
 
@@ -128,16 +128,23 @@ renderWithDictionary renderArgs name args body sm =
 renderElementDict : RenderElementDict Mark2Msg
 renderElementDict =
     Dict.fromList
-        [ ( "strong", I renderStrong )
-        , ( "italic", I renderItalic )
-        , ( "highlight", I highlight )
-        , ( "highlightRGB", I highlightRGB )
-        , ( "fontRGB", I fontRGB )
-        , ( "code", I renderCode )
-        , ( "link", I link )
-        , ( "image", I image )
-        , ( "math", I renderMath )
-        , ( "mathDisplay", B renderMathDisplay )
+        [ ( "Error", error )
+        , ( "strong", renderStrong )
+        , ( "italic", renderItalic )
+        , ( "highlight", highlight )
+        , ( "highlightRGB", highlightRGB )
+        , ( "fontRGB", fontRGB )
+        , ( "code", renderCode )
+        , ( "codeblock", renderCodeBlock )
+        , ( "poetry", poetry )
+        , ( "section", section )
+        , ( "subsection", subsection )
+        , ( "list", list )
+        , ( "item", item )
+        , ( "link", link )
+        , ( "image", image )
+        , ( "math", renderMath )
+        , ( "mathdisplay", renderMathDisplay )
         ]
 
 
@@ -149,6 +156,114 @@ getText element =
 
         _ ->
             Nothing
+
+
+getText2 : Element -> String
+getText2 element =
+    case element of
+        LX list_ _ ->
+            List.map extractText list_ |> Maybe.Extra.values |> String.join "\n"
+
+        _ ->
+            ""
+
+
+extractText : Element -> Maybe String
+extractText element =
+    case element of
+        Text content _ ->
+            Just content
+
+        _ ->
+            Nothing
+
+
+
+-- NEW
+-- LISTS
+
+
+listPadding =
+    E.paddingEach { left = 18, right = 0, top = 0, bottom = 0 }
+
+
+getPrefixSymbol : List String -> String
+getPrefixSymbol args_ =
+    case List.head (Utility.entities args_) of
+        Nothing ->
+            "•"
+
+        Just "bullet" ->
+            "•"
+
+        Just "none" ->
+            ""
+
+        Just str ->
+            str
+
+
+listTitle args_ =
+    let
+        dict =
+            Utility.keyValueDict args_
+
+        title =
+            Dict.get "title" dict
+    in
+    case title of
+        Nothing ->
+            E.none
+
+        Just title_ ->
+            el [ Font.bold ] (text title_)
+
+
+list : FRender Mark2Msg
+list renderArgs name args_ body sm =
+    case body of
+        LX list_ _ ->
+            column [ spacing 4, listPadding ] (listTitle args_ :: List.map (renderListItem (getPrefixSymbol args_) renderArgs) list_)
+
+        _ ->
+            el [ Font.color redColor ] (text "Malformed list")
+
+
+renderListItem : String -> RenderArgs -> Element -> E.Element Mark2Msg
+renderListItem prefixSymbol renderArgs elt =
+    case elt of
+        Element "item" _ body _ ->
+            let
+                prefix =
+                    case prefixSymbol of
+                        "bullet" ->
+                            el [ Font.size 16, E.alignTop ] (text prefixSymbol)
+
+                        _ ->
+                            el [ Font.size 16, E.alignTop ] (text prefixSymbol)
+            in
+            row [ spacing 8 ] [ prefix, renderElement renderArgs elt ]
+
+        Element "list" args body _ ->
+            case body of
+                LX list_ _ ->
+                    column [ spacing 4, listPadding ] (listTitle args :: List.map (renderListItem (getPrefixSymbol args) renderArgs) list_)
+
+                _ ->
+                    el [ Font.color redColor ] (text "Malformed list")
+
+        _ ->
+            E.none
+
+
+item : FRender Mark2Msg
+item renderArgs name args_ body sm =
+    paragraph [] [ renderElement renderArgs body ]
+
+
+error : FRender Mark2Msg
+error renderArgs name args_ body sm =
+    el [ Font.color violetColor ] (renderElement renderArgs body)
 
 
 
@@ -177,9 +292,93 @@ renderCode renderArgs _ _ body sm =
         (renderElement renderArgs adjustedBody)
 
 
+getLXText : Element -> String
+getLXText element =
+    case element of
+        LX list_ _ ->
+            List.map (getText >> Maybe.withDefault "") list_ |> String.join "\n"
+
+        _ ->
+            ""
+
+
+poetry : FRender Mark2Msg
+poetry renderArgs _ _ body sm =
+    let
+        _ =
+            Debug.log "BODY" (getLines (getText2 body |> String.trim))
+    in
+    column
+        [ Font.size 14
+        , Render.Utility.htmlAttribute "white-space" "pre"
+        , indentation
+        , spacing 4
+        ]
+        (List.map text (getLines (getText2 body |> String.trim)))
+
+
+renderCodeBlock : FRender Mark2Msg
+renderCodeBlock renderArgs _ _ body sm =
+    let
+        _ =
+            Debug.log "BODY" (getLines (getText2 body |> String.trim))
+    in
+    column
+        [ Font.family
+            [ Font.typeface "Inconsolata"
+            , Font.monospace
+            ]
+        , Font.size 14
+        , Font.color codeColor
+        , Render.Utility.htmlAttribute "white-space" "pre"
+        , indentation
+        ]
+        (List.map text (getLines (getText2 body |> String.trim)))
+
+
+indentation =
+    E.paddingEach { left = 18, right = 0, top = 0, bottom = 0 }
+
+
+getLines : String -> List String
+getLines str =
+    let
+        nonBreakingSpace =
+            String.fromChar '\u{00A0}'
+    in
+    str
+        |> String.lines
+        |> List.map
+            (\s ->
+                if s == "" then
+                    nonBreakingSpace
+
+                else
+                    String.replace " " nonBreakingSpace s
+            )
+
+
 
 -- STYLE ELEMENTS
 -- NEW
+
+
+section : FRender Mark2Msg
+section renderArgs name args body sm =
+    paragraph [ Font.size sectionFontSize ] [ text (getText body |> Maybe.withDefault "no section name found") ]
+
+
+subsection : FRender Mark2Msg
+subsection renderArgs name args body sm =
+    paragraph [ Font.size subsectionFontSize ] [ text (getText body |> Maybe.withDefault "no subsection name found") ]
+
+
+sectionFontSize =
+    22
+
+
+subsectionFontSize =
+    16
 
 
 link : FRender Mark2Msg
@@ -202,30 +401,11 @@ link renderArgs name args body sm =
                 }
 
 
-keyValueDict : List String -> Dict String String
-keyValueDict strings =
-    List.map (String.split ":") strings
-        |> List.map (List.map String.trim)
-        |> List.map pairFromList
-        |> Maybe.Extra.values
-        |> Dict.fromList
-
-
-pairFromList : List String -> Maybe ( String, String )
-pairFromList strings =
-    case strings of
-        [ x, y ] ->
-            Just ( x, y )
-
-        _ ->
-            Nothing
-
-
 image : FRender Mark2Msg
 image renderArgs name args body sm =
     let
         dict =
-            keyValueDict args |> Debug.log "DICT"
+            Utility.keyValueDict args
 
         description =
             Dict.get "caption" dict |> Maybe.withDefault ""
@@ -436,6 +616,10 @@ getArg k default stringList =
 
 linkColor =
     E.rgb 0 0 0.8
+
+
+blackColor =
+    E.rgb 0 0 0
 
 
 redColor =

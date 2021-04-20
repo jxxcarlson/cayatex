@@ -8,6 +8,7 @@ module Parser.Tool exposing
     , manyNonEmpty
     , manySeparatedBy
     , maybe
+    , oneChar
     , optional
     , optionalList
     , second
@@ -126,7 +127,7 @@ textPS : (Char -> Bool) -> List Char -> Parser { start : Int, finish : Int, cont
 textPS prefixTest stopChars =
     Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
         |= Parser.getOffset
-        |. Parser.chompIf (\c -> prefixTest c) UnHandledError
+        |. Parser.chompIf (\c -> prefixTest c) (UnHandledError 1)
         |. Parser.chompWhile (\c -> not (List.member c stopChars))
         |= Parser.getOffset
         |= Parser.getSource
@@ -143,11 +144,11 @@ recognizes lines that start with an alphabetic character.
 
 -}
 text : (Char -> Bool) -> (Char -> Bool) -> Parser { start : Int, finish : Int, content : String }
-text prefixTest suffixTest =
+text prefixTest predicate =
     Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
         |= Parser.getOffset
-        |. Parser.chompIf (\c -> prefixTest c) UnHandledError
-        |. Parser.chompWhile (\c -> suffixTest c)
+        |. Parser.chompIf (\c -> prefixTest c) (UnHandledError 2)
+        |. Parser.chompWhile (\c -> predicate c)
         |= Parser.getOffset
         |= Parser.getSource
 
@@ -156,7 +157,16 @@ char : (Char -> Bool) -> Parser { start : Int, finish : Int, content : String }
 char prefixTest =
     Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
         |= Parser.getOffset
-        |. Parser.chompIf (\c -> prefixTest c) UnHandledError
+        |. Parser.chompIf (\c -> prefixTest c) (UnHandledError 3)
+        |= Parser.getOffset
+        |= Parser.getSource
+
+
+oneChar : Parser String
+oneChar =
+    Parser.succeed (\begin end data -> String.slice begin end data)
+        |= Parser.getOffset
+        |. Parser.chompIf (\c -> True) (UnHandledError 4)
         |= Parser.getOffset
         |= Parser.getSource
 

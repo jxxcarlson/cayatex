@@ -1,4 +1,4 @@
-# Mark2: an Experimental Markup Language (Draft!)
+# CaYaTeX: an Experimental Markup Language (Draft!)
 
 by James Carlson and Nicholas Yang
 

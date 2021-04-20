@@ -1,4 +1,4 @@
-module ExpressionTests exposing (..)
+module ElementTests exposing (..)
 
 import Expect
 import Parser.Advanced exposing (run)

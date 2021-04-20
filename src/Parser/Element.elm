@@ -1,7 +1,8 @@
-module Parser.Element exposing (Element(..), element, elementList, parse, parseList)
+module Parser.Element exposing (Element(..), element, elementList, fubar, parse, parseList)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
+import Parser.RawString as RawString
 import Parser.Tool as T
 import Parser.XString as XString
 
@@ -10,6 +11,10 @@ type Element
     = Text String (Maybe SourceMap)
     | Element String (List String) Element (Maybe SourceMap)
     | LX (List Element) (Maybe SourceMap)
+
+
+type alias Parser a =
+    Parser.Parser Context Problem a
 
 
 
@@ -24,10 +29,6 @@ parse generation lineNumber str =
 parseList : Int -> Int -> String -> Result (List (Parser.DeadEnd Context Problem)) (List Element)
 parseList generation lineNumber str =
     Parser.run (elementList generation lineNumber) str
-
-
-type alias Parser a =
-    Parser.Parser Context Problem a
 
 
 elementList : Int -> Int -> Parser (List Element)
@@ -57,9 +58,21 @@ primitiveElement generation blockOffset =
             |. leftBracket
             |= elementName
             |= argsAndBody generation blockOffset
+            |. Parser.spaces
             |. rightBracket
             |= Parser.getOffset
             |= Parser.getSource
+
+
+fubar : Parser { start : Int, finish : Int, content : String }
+fubar =
+    Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
+        |= Parser.getOffset
+        |. leftBracket
+        |. Parser.chompWhile (\c -> c /= ']')
+        |. rightBracket
+        |= Parser.getOffset
+        |= Parser.getSource
 
 
 elementName =
@@ -67,12 +80,12 @@ elementName =
 
 
 argsAndBody generation lineNumber =
-    Parser.inContext (CArgsAndBody) <|
+    Parser.inContext CArgsAndBody <|
         Parser.oneOf [ argsAndBody_ generation lineNumber, bodyOnly generation lineNumber ]
 
 
 elementArgs =
-    Parser.inContext (CArgs) <|
+    Parser.inContext CArgs <|
         T.between pipeSymbol innerElementArgs pipeSymbol
 
 
@@ -82,7 +95,7 @@ innerElementArgs =
 
 elementBody : Int -> Int -> Parser.Parser Context Problem Element
 elementBody generation lineNumber =
-    Parser.inContext (CBody) <|
+    Parser.inContext CBody <|
         Parser.lazy (\_ -> T.many (element generation lineNumber) |> Parser.map (\list -> LX list Nothing))
 
 
@@ -104,6 +117,19 @@ bodyOnly generation lineNumber =
 
 text : Int -> Int -> Parser Element
 text generation lineNumber =
+    Parser.oneOf [ rawString generation lineNumber, plainText generation lineNumber ]
+
+
+rawString : Int -> Int -> Parser Element
+rawString generation lineNumber =
+    Parser.succeed (\start source finish -> Text source (Just { blockOffset = lineNumber, offset = start, length = finish - start, generation = generation }))
+        |= Parser.getOffset
+        |= RawString.parser
+        |= Parser.getOffset
+
+
+plainText : Int -> Int -> Parser Element
+plainText generation lineNumber =
     Parser.inContext TextExpression <|
         (XString.textWithPredicate XString.isNonLanguageChar
             |> Parser.map (\data -> Text data.content (Just { blockOffset = lineNumber, offset = data.start, length = data.finish - data.start, generation = generation }))
@@ -149,7 +175,7 @@ rawText_ stopChars =
 
 
 
--- SYMBOLS
+-- |> Debug.log "D"
 
 
 comma_ =
@@ -158,6 +184,14 @@ comma_ =
 
 comma =
     T.first comma_ Parser.spaces
+
+
+rawStringBegin =
+    Parser.symbol (Parser.Token "r##" ExpectingRawStringBegin)
+
+
+rawStringEnd =
+    Parser.symbol (Parser.Token "##" ExpectingRawStringEnd)
 
 
 pipeSymbol =
