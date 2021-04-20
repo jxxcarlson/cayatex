@@ -146,7 +146,7 @@ or
 
 [section2 Graphs]
 
-Below are two simple data visualizations. We plan more, and more configurability of what you see here.
+Below are three simple data visualizations. We plan more, and more configurability of what you see here.
 
 [section3 Bar graphs]
 
