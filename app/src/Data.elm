@@ -50,7 +50,7 @@ is incomplete, it
 is a start.]
 
 [italic We are also working on an implementation in Rust. This will,
-among other things, help us sto cross-validate the specification.]
+among other things, help us to cross-validate the specification.]
 
 The project is open source: [link https://github.com/jxxcarlson/cayatex]
 
