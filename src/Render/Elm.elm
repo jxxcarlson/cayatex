@@ -139,7 +139,8 @@ renderElementDict =
         , ( "codeblock", renderCodeBlock )
         , ( "poetry", poetry )
         , ( "section", section )
-        , ( "subsection", subsection )
+        , ( "section2", section2 )
+        , ( "section3", section3 )
         , ( "list", list )
         , ( "item", item )
         , ( "link", link )
@@ -417,19 +418,32 @@ getLines str =
 
 section : FRender Mark2Msg
 section renderArgs name args body sm =
-    paragraph [ Font.size sectionFontSize ] [ text (getText body |> Maybe.withDefault "no section name found") ]
+    paragraph [ Font.size sectionFontSize, paddingAbove sectionFontSize ] [ text (getText body |> Maybe.withDefault "no section name found") ]
 
 
-subsection : FRender Mark2Msg
-subsection renderArgs name args body sm =
-    paragraph [ Font.size subsectionFontSize ] [ text (getText body |> Maybe.withDefault "no subsection name found") ]
+section2 : FRender Mark2Msg
+section2 renderArgs name args body sm =
+    paragraph [ Font.size section2FontSize, paddingAbove section2FontSize ] [ text (getText body |> Maybe.withDefault "no subsection name found") ]
+
+
+section3 : FRender Mark2Msg
+section3 renderArgs name args body sm =
+    paragraph [ Font.size section3FontSize, paddingAbove section3FontSize ] [ text (getText body |> Maybe.withDefault "no subsubsection name found") ]
+
+
+paddingAbove k =
+    E.paddingEach { top = k, bottom = 0, left = 0, right = 0 }
 
 
 sectionFontSize =
     22
 
 
-subsectionFontSize =
+section2FontSize =
+    16
+
+
+section3FontSize =
     16
 
 

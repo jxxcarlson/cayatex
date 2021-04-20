@@ -50,12 +50,12 @@ is incomplete, it
 is a start.]
 
 [italic We are also working on an implementation in Rust. This will,
-among other things, help us to cross-validate the specification.]
+among other things, help us sto cross-validate the specification.]
 
 The project is open source: [link https://github.com/jxxcarlson/cayatex]
 
 
-[subsection Design Goals]
+[section2 Design Goals]
 
 The goals of the CaYaTeX project are for the language to be
 
@@ -86,7 +86,7 @@ Such functions can be composed, as in mathematics or as in languages such as Has
 [strong Note.] [fontRGB |50, 0, 200| At the moment  we have not yet implemented differential compilation, which greatly
 speeds up compilation during editing.  All in due time!]
 
-[subsection Mathematics]
+[section2 Mathematics]
 
 
 Pythagoras says that [math a^2 + b^2 = c^2].
@@ -109,7 +109,19 @@ And of course, we can also do theorems:
 
 [corollary |Euclid| There are infinitely many primes.]
 
-[subsection Data]
+
+
+[section2 Color]
+
+Example:  [highlightRGB |252, 178, 50| [fontRGB |23, 57, 156| [strong What color is this?]]]
+
+[code raw###[highlightRGB |252, 178, 50| [fontRGB |23, 57, 156| [strong What color is this?]]]###]
+
+
+Note the nesting of elements, aka function composition. When we have our macro facility up and running,  users can abbreviate constructs like
+this one, e.g., just say [code raw##[myhighlight| What color is this?]##]
+
+[section2 Data]
 
 One can design elements which manipulate data (numerical computations, visualization).  Here are some data computations:
 
@@ -128,15 +140,19 @@ or
 [codeblock raw##[stdev |precision:3| 1.2, 2, 3.4, 4]## ]
 
 
-[subsection Graphs]
+[section2 Graphs]
 
 Below are two simple data visualizations. We plan more, and more configurability of what you see here.
+
+[section3 Bar graphs]
 
 [bargraph 1, 1.2, 3,  1, 2, 4,  3,  2, 1, 2, 3, 5, 3, 7, 3, 2, 9, 8, 7, 0, 0]
 
 The bargraph code:
 
 [codeblock raw##[bargraph 1, 1.2, 3, 1, ... ]## ]
+
+[section3 Line graphs]
 
 [linegraph 0, 0
 1, 10
@@ -161,7 +177,7 @@ The linegraph code (CSV format):
 ]
 ##]
 
-[subsection Unicode]
+[section2 Unicode]
 
 You can freely use unicode characters, as in this poetry element:
 
@@ -174,7 +190,7 @@ You can freely use unicode characters, as in this poetry element:
 — Анна Ахматова
 ]
 
-[subsection Code]
+[section2 Code]
 
 Time for some code: [code raw##col :: Int -> Matrix a -> [a]##].
 Do you recognize the language (ha ha)?
@@ -198,21 +214,17 @@ cols m =
 
 
 
-[subsection Color]
 
-Example:  [highlightRGB |214, 93, 32| [fontRGB |169, 232, 245| What color is this?]]
-
-[strong Note:] We need to implement a macro facility so that users can abbreviate constructs like
-the one in the previous example.
-
-[subsection Images]
+[section2 Images]
 
 [image |caption: Rotkehlchen aufgeplustert, width: 200, placement: center|https://i.pinimg.com/originals/d4/07/a4/d407a45bcf3ade18468ac7ba633244b9.jpg]
 
-[subsection Lists]
+[code raw##[image |caption: Rotkehlchen aufgeplustert, width: 200, placement: center| https://..jpg]##]
+
+[section2 Lists]
 
 Note that lists can be nested and can be given a title if desired.  The symbol for "bulleted" lists is • by default, but can be specified by the user.
-A numberd list has "numbered" as its first argument, as in the example below.
+A numbered list has "numbered" as its first argument, as in the example below.
 
 [list |numbered, title:Errands and other stuff|
 
@@ -239,7 +251,7 @@ A numberd list has "numbered" as its first argument, as in the example below.
 stuff =
     """% Notice the a leading percent sign makes a line into a comment.           
 %
-%[subsection About Errors]
+%[section2 About Errors]
 %
 %Look what happens here:
 %
