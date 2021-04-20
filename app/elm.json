@@ -18,12 +18,14 @@
             "elm-community/string-extra": "4.0.1",
             "folkertdev/elm-paragraph": "1.0.0",
             "hecrj/html-parser": "2.4.0",
+            "jxxcarlson/elm-graph": "3.0.0",
             "mdgriffith/elm-ui": "1.1.8"
         },
         "indirect": {
             "elm/bytes": "1.0.8",
             "elm/file": "1.0.5",
             "elm/regex": "1.0.0",
+            "elm/svg": "1.0.1",
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
             "elm/virtual-dom": "1.0.2",

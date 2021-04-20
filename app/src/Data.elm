@@ -3,25 +3,11 @@ module Data exposing (test, text)
 
 test =
     """
-
-
-
-[codeblock raw##
-# Sudoku 3x3 subsquare function
-
-rowSlice :: Int -> Int -> Matrix a -> Matrix a
-rowSlice i j m =
-   [m !! k | k <- [i..j]]
-
-colSlice :: Int -> Int -> Matrix a -> Matrix a
-colSlice i j m =
-   [col k m | k <- [i..j]]
-
-subSquare :: Int -> Int -> Matrix a -> Matrix a
-subSquare r c m =
-    colSlice (3*c) (3*c + 2) $ rowSlice (3*r) (3*r + 2) m
-
-##]
+ [strong Chart]
+ 
+ [bargraph 0, 1, 2, 4,  3,  2, 1]
+ 
+ This is a chart
 """
 
 
@@ -126,11 +112,8 @@ And of course, we can also do theorems:
 
 [subsection Data]
 
-One can design elements which manipulate data.  Below is a very simple example, nothing more
-that a proof of concept.  One could work with tables, for example, and one can produce
-graphical output using existing elm libraries or by rolling ones own using SVG,
-which Elm also supports. In the examples below, the precision of the result has a default value
-of 2.  This can be changed, as one sees in the source of the third example, e.g. you can have
+
+One can design elements which manipulate data.  Below is a very simple example, nothing more than a proof of concept.  One could work with tables, for example. In the examples below, the precision of the result has a default value of 2.  This can be changed, as one sees in the source of the third example, e.g. you can have
 
 [codeblock raw##[stdev | 1.2, 2, 3.4, 4]## ]
 
@@ -144,8 +127,16 @@ or
 
 [stdev |precision:3| 1.2, 2, 3.4, 4]
 
+[bargraph 1, 1.2, 3,  1, 2, 4,  3,  2, 1, 2, 3, 5, 3, 7, 3, 2, 9, 8, 7, 0, 0]
+
+Here is the bargraph code:
+
+[codeblock raw##[bargraph 1, 1.2, 3,  1, ... ]## ]
+
 We need to rethink the rendering rules so as to make these data functions have better composability
-properties. Quite bad right now.
+properties. Quite bad right now.  In any, case, below is a simple POC for data visualization
+in CaYaTeX.  Much more to be done here aside from a few rendering bugs: make all the options
+configurable as optional key-value pairs, add line graphs, etc.
 
 [subsection Unicode]
 

@@ -17,6 +17,7 @@ import Parser.Getters
 import Parser.SourceMap exposing (SourceMap)
 import Parser.TextCursor
 import Render.Utility
+import SimpleGraph exposing (Option(..), barChart, lineChart)
 import String.Extra
 import Utility
 
@@ -150,6 +151,7 @@ renderElementDict =
         , ( "sum", sum )
         , ( "average", average )
         , ( "stdev", stdev )
+        , ( "bargraph", bargraph )
         ]
 
 
@@ -663,6 +665,7 @@ stdev renderArgs name args body sm =
         numbers_ =
             getTextList body
 
+        numbers : List Float
         numbers =
             List.map String.toFloat numbers_ |> Maybe.Extra.values
 
@@ -711,6 +714,40 @@ roundTo k x =
             10.0 ^ toFloat k
     in
     toFloat (round (factor * x)) / factor
+
+
+bargraph : FRender Mark2Msg
+bargraph renderArgs name args body sm =
+    let
+        numbers_ =
+            getTextList body
+
+        numbers : List Float
+        numbers =
+            List.map String.toFloat numbers_ |> Maybe.Extra.values
+
+        n =
+            List.length numbers |> toFloat
+
+        graphHeight =
+            100.0
+
+        graphWidth =
+            250.0
+
+        deltaX =
+            graphWidth / n
+
+        options =
+            [ Color "rgb(200,0,0)", DeltaX deltaX, YTickmarks 6, XTickmarks (round (n + 1)), Scale 1.0 1.0 ]
+
+        barGraphAttributes =
+            { graphHeight = graphHeight
+            , graphWidth = graphWidth
+            , options = options
+            }
+    in
+    column [] [ barChart barGraphAttributes numbers |> E.html ]
 
 
 
