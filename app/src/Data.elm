@@ -163,7 +163,7 @@ The linegraph code (CSV format):
 
 [subsection Unicode]
 
-You can freely use unicode characters:
+You can freely use unicode characters, as in this poetry element:
 
 [poetry
 А я иду, где ничего не надо,
