@@ -112,8 +112,7 @@ And of course, we can also do theorems:
 
 [subsection Data]
 
-
-One can design elements which manipulate data.  Below is a very simple example, nothing more than a proof of concept.  One could work with tables, for example. In the examples below, the precision of the result has a default value of 2.  This can be changed, as one sees in the source of the third example, e.g. you can have
+One can design elements which manipulate data (computations, visualization). In the examples below, the precision of the result has a default value of 2.  This can be changed, as one sees in the source of the third example, e.g. you can have
 
 [codeblock raw##[stdev | 1.2, 2, 3.4, 4]## ]
 
@@ -127,16 +126,16 @@ or
 
 [stdev |precision:3| 1.2, 2, 3.4, 4]
 
+We need to rethink the rendering rules so as to make these data functions have better composability
+properties. Quite bad right now.  In any, case, below is a simple POC for data visualization
+in CaYaTeX.  Much more to be done here aside from fixing a few rendering bugs: make all the options
+configurable as optional key-value pairs, add line graphs, etc.
+
 [bargraph 1, 1.2, 3,  1, 2, 4,  3,  2, 1, 2, 3, 5, 3, 7, 3, 2, 9, 8, 7, 0, 0]
 
 Here is the bargraph code:
 
-[codeblock raw##[bargraph 1, 1.2, 3,  1, ... ]## ]
-
-We need to rethink the rendering rules so as to make these data functions have better composability
-properties. Quite bad right now.  In any, case, below is a simple POC for data visualization
-in CaYaTeX.  Much more to be done here aside from a few rendering bugs: make all the options
-configurable as optional key-value pairs, add line graphs, etc.
+[codeblock raw##[bargraph 1, 1.2, 3, 1, ... ]## ]
 
 [subsection Unicode]
 
