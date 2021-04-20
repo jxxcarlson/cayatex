@@ -38,7 +38,7 @@ import Parser as P exposing ((|.), (|=))
 import Parser.Driver
 import Parser.Element exposing (Element)
 import Parser.Getters
-import Parser.State
+import Parser.Data
 import Parser.TextCursor as TextCursor exposing (TextCursor)
 
 
@@ -51,7 +51,7 @@ type alias State =
     , blockContents : List String
     , blockLevel : Int
     , output : List (TextCursor Element)
-    , renderState : Parser.State.Data
+    , parserData : Parser.Data.Data
     }
 
 
@@ -95,7 +95,7 @@ identifies logical chunks of text, parses these using
 Parser.Driverx.parseLoop, and prepends them to a list of TextCursor.
 The parsed text is held the field 'parsed' of TextCursor.
 
-Each time a loop is completed, the value of Parser.State.Data
+Each time a loop is completed, the value of Parser.Data.Data
 is updated. The final value will be used in Render.Elm to
 furnish section numbering, cross references, a table of contents,
 etc.
@@ -134,7 +134,7 @@ init generation strList =
     , blockContents = []
     , blockLevel = 0
     , output = []
-    , renderState = Parser.State.init Parser.State.defaultConfig
+    , parserData = Parser.Data.init Parser.Data.defaultConfig
     }
 
 
@@ -259,7 +259,7 @@ initWithBlockType currentLine_ state =
         newTC =
             Parser.Driver.parseLoop state.generation state.lineNumber (String.join "\n" (List.reverse (currentLine_ :: state.blockContents)))
 
-        -- TODO (1_: wire up Parser.State.Data
+        -- TODO (1_: wire up Parser.Data.Data
         --laTeXState =
         --    Reduce.laTeXState newTC.parsed state.laTeXState
     in
@@ -347,7 +347,7 @@ pushBlock_ line state =
         tc =
             Parser.Driver.parseLoop state.generation state.lineNumber str
 
-        -- TODO (2): wire up Parser.State.Data
+        -- TODO (2): wire up Parser.Data.Data
     in
     { state
         | blockType = Start
@@ -374,7 +374,7 @@ popBlockStack currentLine_ state =
             tc_ =
                 Parser.Driver.parseLoop state.generation state.lineNumber input_
 
-            -- TODO (3): wire up Parser.State.Data
+            -- TODO (3): wire up Parser.Data.Data
             tc =
                 { tc_ | text = input_ }
         in
@@ -412,7 +412,7 @@ flush state =
                     tc_ =
                         Parser.Driver.parseLoop state.generation state.lineNumber input
 
-                    -- TODO (4):: wire up Parser.State.Data
+                    -- TODO (4):: wire up Parser.Data.Data
                     tc =
                         { tc_ | text = input }
 

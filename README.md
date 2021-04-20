@@ -24,7 +24,7 @@ individual args are strings without commas, (c) the body is an Element.
 1. The function `strong` takes a single argument, the body, which
 is the string "whiskey and other liquor".
 
-2. Blocks can be nested.
+2. Elements can be nested.
 
 3. Example three uses TeX/LaTeX-style mathematical notation.
 
@@ -150,6 +150,10 @@ In shorthand, this becomes
 
 We intend the use of shorthand to be quite limited, perhaps just to the above examples.
 
+**Question.** Should the shorthand be handled by preprocessor that maps the source text
+to standard, no-shorthand CaYaTeX?  What impact would this have on performance in an
+interactive editing scenario?
+
 ## Parser Architecture
 
 ### Types
@@ -165,9 +169,9 @@ type Element
 
 The SourceMap locates the parsed expression in the source text.
 We assume that the text is a list of strings that defines
-a list of text blocks (not Blocks!).  A text block is either
+a list of text blocks.  A text block is either
 an ordinary paragraph (non-blank lines bordered by blank lines)
-or an outer Block.  Here is an example:
+or an outer block.  Here is an example:
 
 	0 This is a test.
 	1 Ho ho ho!
