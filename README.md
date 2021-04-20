@@ -3,7 +3,7 @@
 by James Carlson and Nicholas Yang
 
 
-Mark2 is an experimental markup language that compiles to LaTeX, Html, ahd PDF. 
+CaYaTeX is an experimental markup language that compiles to LaTeX, Html, ahd (indirectly) PDF. 
 
 There are two constructs in the language: _text_ and _elements_. Below are
 some elements.  They have the form `[name |args| body]` where (a) `|args|` may be

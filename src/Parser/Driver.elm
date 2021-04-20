@@ -1,4 +1,4 @@
-    module Parser.Driver exposing (..)
+module Parser.Driver exposing (..)
 
 import List.Extra
 import Parser.Advanced as PA

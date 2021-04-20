@@ -183,7 +183,7 @@ nextState state_ =
                     Loop (start state)
 
                 ( Start, LTBeginElement ) ->
-                    -- TODO: correct this transition
+
                     Loop (startBlock currentLine { state | blockType = InElementBlock })
 
                 ( Start, LTEndElement ) ->
@@ -200,8 +200,6 @@ nextState state_ =
                     Loop (pushBlock state)
 
                 ( InTextBlock, LTBeginElement ) ->
-                    -- TODO: is this transition correct?
-                    -- Loop (initWithBlockType currentLine state)
                     Loop (startBlock currentLine state)
 
                 ( InTextBlock, LTEndElement ) ->
@@ -212,12 +210,9 @@ nextState state_ =
 
                 --- ELEMENT BLOCK
                 ( InElementBlock, LTBlank ) ->
-                    -- TODO: is this the correct transition? (I think it is OK)
                     Loop (pushBlockStack currentLine state)
 
                 ( InElementBlock, LTBeginElement ) ->
-                    -- TODO: is this the correct transition? (I think it is NOT OK)
-                    -- Loop (pushBlockStack currentLine state)
                     Loop (startBlock currentLine state)
 
                 ( InElementBlock, LTEndElement ) ->
@@ -280,7 +275,6 @@ initWithBlockType currentLine_ state =
 
 addToBlockContents : String -> State -> State
 addToBlockContents currentLine_ state =
-    -- TODO: work on this
     let
         deltaBlockLevel =
             differentialBlockLevel currentLine_
