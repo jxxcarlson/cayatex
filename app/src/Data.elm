@@ -54,20 +54,20 @@ By James Carlson and Nicholas Yang
 
 %Notice the a leading percent sign makes a line into a comment.
 
-[fontRGB |12, 140, 176| CaYaTeX is a simple yet powerful markup language that
+[italic CaYaTeX is a simple yet powerful markup language that
 compiles to both LaTeX and Html.]
 
-[fontRGB |12, 140, 176| The present document, written in CaYaTeX,
+[italic The present document, written entirely in CaYaTeX,
 lays out our design goals and demonstrates some of the
 progress we have made towards specifiying the language and implementing it in Elm. While our work
 is incomplete, it
 is a start.]
 
-
-[fontRGB |12, 140, 176| We are also working on an implementation in Rust. This will,
+[italic We are also working on an implementation in Rust. This will,
 among other things, help us to cross-validate the specification.]
 
 The project is open source: [link https://github.com/jxxcarlson/cayatex]
+
 
 [subsection Design Goals]
 
@@ -97,6 +97,8 @@ Such functions can be composed, as in mathematics or as in languages such as Has
 
 [item [strong Modern]. Unicode compatible.]]
 
+[strong Note.] [fontRGB |50, 0, 200| At the moment  we have not yet implemented differential compilation, which greatly
+speeds up compilation during editing.  All in due time!]
 
 [subsection Mathematics]
 
@@ -120,6 +122,26 @@ And of course, we can also do theorems:
 [theorem There are infinitely many primes [math p \\equiv 1 \\text{ mod } 4.]]
 
 [corollary |Euclid| There are infinitely many primes.]
+
+
+[subsection Data]
+
+One can design elements which manipulate data.  Below is a very simple example, nothing more
+that a proof of concept.  One could work with tables, for example, and one can produce
+graphical output using existing elm libraries or by rolling ones own using SVG,
+which Elm also supports. In the examples below, the precision of the result has a default value
+of 2.  This can be changed, as one sees in the source of the third example, e.g.,
+
+[codeblock raw##[stdev |precision:3| 1.2, 2, 3.4, 4]## ]
+
+[sum 1.2, 2, 3.4, 4]
+
+[average 1.2, 2, 3.4, 4]
+
+[stdev |precision:3| 1.2, 2, 3.4, 4]
+
+We need to rethink the rendering rules so as to make these data functions have better composability
+properties. Quite bad right now.
 
 [subsection Unicode]
 
@@ -155,6 +177,8 @@ cols m =
 
 
 [italic [highlight Note the use of Rust-like raw strings in the source text to avoid escaping all the brackets.]]
+
+
 
 [subsection Color]
 

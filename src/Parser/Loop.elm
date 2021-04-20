@@ -55,11 +55,11 @@ operated by parseLoop is updated:
 -}
 nextCursor : Packet a -> TextCursor a -> ParserTool.Step (TextCursor a) (TextCursor a)
 nextCursor packet tc =
-    let
-        _ =
-            -- Debug.log "xxx tc;  (count, le)" ( tc.count, tc.parsed )
-            Debug.log "xxx tc;  count" tc.count
-    in
+    --let
+    --    --_ =
+    --        -- Debug.log "xxx tc;  (count, le)" ( tc.count, tc.parsed )
+    --       --  Debug.log "xxx tc;  count" tc.count
+    --in
     if tc.text == "" || tc.count > 100 then
         -- TODO: that usage of count needs to be removed after bug is fixed
         ParserTool.Done { tc | parsed = List.reverse tc.parsed }
@@ -87,10 +87,10 @@ nextCursor packet tc =
 
                     Just he ->
                         -- Continue loop with the text cursor that the error handler returns
-                        let
-                            _ =
-                                Debug.log "x, he tc e in LOOP" (he tc e)
-                        in
+                        --let
+                        --    _ =
+                        --        Debug.log "x, he tc e in LOOP" (he tc e)
+                        --in
                         ParserTool.Loop (he tc e)
 
 

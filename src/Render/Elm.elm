@@ -145,6 +145,11 @@ renderElementDict =
         , ( "image", image )
         , ( "math", renderMath )
         , ( "mathdisplay", renderMathDisplay )
+
+        -- COMPUTATIONS
+        , ( "sum", sum )
+        , ( "average", average )
+        , ( "stdev", stdev )
         ]
 
 
@@ -158,6 +163,21 @@ getText element =
             Nothing
 
 
+getTextList : Element -> List String
+getTextList element =
+    case element of
+        LX list_ _ ->
+            List.map extractText list_
+                |> List.map (Maybe.withDefault "")
+                |> List.map (String.split ",")
+                |> List.map (List.map String.trim)
+                |> List.concat
+
+        --  |> Maybe.Extra.values
+        _ ->
+            []
+
+
 getText2 : Element -> String
 getText2 element =
     case element of
@@ -166,6 +186,15 @@ getText2 element =
 
         _ ->
             ""
+
+
+
+--case element of
+--    LX list_ _ ->
+--        List.map extractText list_ |> Maybe.Extra.values |> String.join "\n"
+--
+--    _ ->
+--        ""
 
 
 extractText : Element -> Maybe String
@@ -227,31 +256,37 @@ list renderArgs name args_ body sm =
     case body of
         LX list_ _ ->
             column [ spacing 4, listPadding ]
-                (listTitle args_ :: List.indexedMap (\k item_ -> renderListItem (getPrefixSymbol k args_) renderArgs item_) list_)
+                (listTitle args_ :: List.indexedMap (\k item_ -> renderListItem (getPrefixSymbol k args_) renderArgs item_) (filterOutBlankItems list_))
 
         _ ->
             el [ Font.color redColor ] (text "Malformed list")
+
+
+filterOutBlankItems : List Element -> List Element
+filterOutBlankItems list_ =
+    List.filter (\item_ -> not (isBlankItem item_)) list_
+
+
+isBlankItem : Element -> Bool
+isBlankItem el =
+    case el of
+        Text str _ ->
+            String.trim str == ""
+
+        _ ->
+            False
 
 
 renderListItem : E.Element Mark2Msg -> RenderArgs -> Element -> E.Element Mark2Msg
 renderListItem prefixSymbol renderArgs elt =
     case elt of
         Element "item" _ body _ ->
-            --let
-            --    prefix =
-            --        case prefixSymbol of
-            --            "bullet" ->
-            --                prefixSymbol
-            --
-            --            _ ->
-            --                prefixSymbol
-            --in
             row [ spacing 8 ] [ prefixSymbol, renderElement renderArgs elt ]
 
         Element "list" args body _ ->
             case body of
                 LX list_ _ ->
-                    column [ spacing 4, listPadding ] (listTitle args :: List.indexedMap (\k item_ -> renderListItem (getPrefixSymbol k args) renderArgs item_) list_)
+                    column [ spacing 4, listPadding ] (listTitle args :: List.indexedMap (\k item_ -> renderListItem (getPrefixSymbol k args) renderArgs item_) (filterOutBlankItems list_))
 
                 _ ->
                     el [ Font.color redColor ] (text "Malformed list")
@@ -308,10 +343,6 @@ getLXText element =
 
 poetry : FRender Mark2Msg
 poetry renderArgs _ _ body sm =
-    let
-        _ =
-            Debug.log "BODY" (getLines (getText2 body |> String.trim))
-    in
     column
         [ Font.size 14
         , Render.Utility.htmlAttribute "white-space" "pre"
@@ -323,10 +354,6 @@ poetry renderArgs _ _ body sm =
 
 renderCodeBlock : FRender Mark2Msg
 renderCodeBlock renderArgs _ _ body sm =
-    let
-        _ =
-            Debug.log "BODY" (getLines (getText2 body |> String.trim))
-    in
     column
         [ Font.family
             [ Font.typeface "Inconsolata"
@@ -582,6 +609,108 @@ isDisplayMathMode displayMode =
 
         DisplayMathMode ->
             True
+
+
+
+-- MATH
+
+
+sum : FRender Mark2Msg
+sum renderArgs name args body sm =
+    let
+        numbers_ =
+            getTextList body
+
+        numbers =
+            List.map String.toFloat numbers_ |> Maybe.Extra.values
+
+        sum_ =
+            List.sum numbers
+
+        precision =
+            getPrecisionWithDefault 2 args
+    in
+    row [ spacing 8 ] (text "sum" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (roundTo precision sum_)) ])
+
+
+average : FRender Mark2Msg
+average renderArgs name args body sm =
+    let
+        numbers_ =
+            getTextList body
+
+        numbers =
+            List.map String.toFloat numbers_ |> Maybe.Extra.values
+
+        n =
+            toFloat (List.length numbers)
+
+        sum_ =
+            List.sum numbers
+
+        average_ =
+            sum_ / n
+
+        precision =
+            getPrecisionWithDefault 2 args
+    in
+    row [ spacing 8 ] (text "average" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (roundTo precision average_)) ])
+
+
+stdev : FRender Mark2Msg
+stdev renderArgs name args body sm =
+    let
+        numbers_ =
+            getTextList body
+
+        numbers =
+            List.map String.toFloat numbers_ |> Maybe.Extra.values
+
+        n =
+            toFloat (List.length numbers)
+
+        sum_ =
+            List.sum numbers
+
+        average_ =
+            sum_ / n
+
+        deltas =
+            List.map (\x -> x - average_) numbers
+
+        sumOfDeltasSquared =
+            List.map2 (*) deltas deltas |> List.sum
+
+        stdev_ =
+            sqrt sumOfDeltasSquared / (n - 1)
+
+        precision =
+            getPrecisionWithDefault 2 args
+    in
+    row [ spacing 8 ] (text "stdev" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (roundTo precision stdev_)) ])
+
+
+getPrecisionWithDefault : Int -> List String -> Int
+getPrecisionWithDefault default args =
+    getPrecision args |> Maybe.withDefault default
+
+
+getPrecision : List String -> Maybe Int
+getPrecision args =
+    let
+        dict =
+            Utility.keyValueDict args
+    in
+    Dict.get "precision" dict |> Maybe.andThen String.toInt
+
+
+roundTo : Int -> Float -> Float
+roundTo k x =
+    let
+        factor =
+            10.0 ^ toFloat k
+    in
+    toFloat (round (factor * x)) / factor
 
 
 

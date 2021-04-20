@@ -67,8 +67,8 @@ handleError tc_ e =
         mFirstError =
             e
                 |> List.head
-                |> Debug.log "FIRST ERR"
 
+        -- |> Debug.log "FIRST ERR"
         problem : Problem
         problem =
             mFirstError |> Maybe.map .problem |> Maybe.withDefault (UnHandledError 0)
@@ -118,54 +118,56 @@ handleRightBracketError tc_ mFirstError errorColumn mRecoveryData =
     let
         textLines =
             String.lines tc_.text
-                |> Debug.log "handle TXT LINES"
 
+        -- |> Debug.log "handle TXT LINES"
         badText =
-            (case List.head textLines of
+            case List.head textLines of
                 Nothing ->
                     "Oops, couldn't find your error text"
 
                 Just str ->
                     str
-            )
-                |> Debug.log "BAD TEXT"
 
+        -- |> Debug.log "BAD TEXT"
         correctedText =
             badText
                 |> String.replace "[" fakeLeftBracket
                 |> String.replace "|" fakePipeSymbol
                 |> (\s -> s ++ " ?? " ++ fakeRightBracket)
-                |> Debug.log "RBE, corrected"
 
+        -- |> Debug.log "RBE, corrected"
         errorRow =
-            Maybe.map .row mFirstError |> Maybe.withDefault 0 |> Debug.log "errorRow"
+            Maybe.map .row mFirstError |> Maybe.withDefault 0
 
+        -- |> Debug.log "errorRow"
         errorLines : List String
         errorLines =
             List.take errorRow textLines
-                |> Debug.log "handle ERR LINES"
 
+        --  |> Debug.log "handle ERR LINES"
         replacementText =
             "[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]"
 
         newTextLines =
             -- ("[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]") :: List.drop errorRow textLines
-            List.Extra.setIf (\t -> t == badText) replacementText errorLines |> List.reverse |> Debug.log "NEW TEXT"
+            List.Extra.setIf (\t -> t == badText) replacementText errorLines |> List.reverse
 
+        -- |> Debug.log "NEW TEXT"
         newText =
-            String.join "\n" (List.reverse newTextLines) |> Debug.log "NT"
+            String.join "\n" (List.reverse newTextLines)
 
+        -- |> Debug.log "NT"
         --sourceMapLength =
         --       packet.getSource expr |> Maybe.map .length |> Maybe.withDefault 0
-        _ =
-            Debug.log "x, he, parsed" tc_.parsed
+        --_ =
+        --    Debug.log "x, he, parsed" tc_.parsed
     in
     { text = newText
     , block = "?? TO DO" --
     , blockIndex = tc_.blockIndex --
     , parsed = List.drop 1 tc_.parsed -- throw away the erroneous parsand
     , stack = [] -- not used
-    , offset = newOffset tc_ errorColumn mRecoveryData |> Debug.log "RBEH, offset"
+    , offset = newOffset tc_ errorColumn mRecoveryData -- |> Debug.log "RBEH, offset"
     , count = tc_.count
     , generation = tc_.generation
     }
@@ -177,19 +179,18 @@ handlePipeError tc_ mFirstError errorColumn mRecoveryData =
         textLines : List String
         textLines =
             String.lines tc_.text
-                |> Debug.log "(pipe) handle TXT LINES"
 
+        --|> Debug.log "(pipe) handle TXT LINES"
         badText : String
         badText =
-            (case List.head textLines of
+            case List.head textLines of
                 Nothing ->
                     "Oops, couldn't find your error text"
 
                 Just str ->
                     str
-            )
-                |> Debug.log "BAD TEXT"
 
+        -- |> Debug.log "BAD TEXT"
         correctedText : String
         correctedText =
             badText
@@ -204,8 +205,8 @@ handlePipeError tc_ mFirstError errorColumn mRecoveryData =
         errorLines : List String
         errorLines =
             List.take (errorRow - 1) textLines
-                |> Debug.log "handle ERR LINES"
 
+        --  |> Debug.log "handle ERR LINES"
         replacementText : String
         replacementText =
             "[highlightRGB |255, 130, 130| missing trailing pipe symbol in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]"

@@ -11,10 +11,10 @@ import Html.Keyed
 import Html.Parser
 import Html.Parser.Util
 import Paragraph
+import Parser.Data
 import Parser.Document
 import Parser.Element as Parser
 import Parser.Getters
-import Parser.Data
 import Render.Elm
 import Render.String
 
@@ -232,7 +232,8 @@ parsed model =
 
 parsed_ : a -> List String
 parsed_ pt =
-    Paragraph.lines paragraphFormat2 (Debug.toString pt)
+    -- Paragraph.lines paragraphFormat2 (Debug.toString pt)
+    []
 
 
 outputDisplay : Model -> Element Msg

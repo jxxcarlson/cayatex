@@ -35,10 +35,10 @@ then the block offset is 100, the offset of "a" is 0, the offest of "b" is 2, an
 
 import Dict exposing (Dict)
 import Parser as P exposing ((|.), (|=))
+import Parser.Data
 import Parser.Driver
 import Parser.Element exposing (Element)
 import Parser.Getters
-import Parser.Data
 import Parser.TextCursor as TextCursor exposing (TextCursor)
 
 
@@ -183,7 +183,6 @@ nextState state_ =
                     Loop (start state)
 
                 ( Start, LTBeginElement ) ->
-
                     Loop (startBlock currentLine { state | blockType = InElementBlock })
 
                 ( Start, LTEndElement ) ->
@@ -282,8 +281,8 @@ addToBlockContents currentLine_ state =
         newBlockLevel =
             state.blockLevel + deltaBlockLevel
 
-        _ =
-            Debug.log "(BL, Delta)" ( state.blockLevel, deltaBlockLevel )
+        --_ =
+        --    Debug.log "(BL, Delta)" ( state.blockLevel, deltaBlockLevel )
     in
     if newBlockLevel == 0 && deltaBlockLevel < 0 then
         pushBlock_ ("\n" ++ currentLine_) state
