@@ -17,7 +17,7 @@ import Parser.Getters
 import Parser.SourceMap exposing (SourceMap)
 import Parser.TextCursor
 import Render.Utility
-import SimpleGraph exposing (Option(..), barChart, lineChart)
+import SimpleGraph exposing (Option(..), barChart, lineChart, scatterPlot)
 import String.Extra
 import Utility
 
@@ -154,6 +154,7 @@ renderElementDict =
         , ( "stdev", stdev )
         , ( "bargraph", bargraph )
         , ( "linegraph", linegraph )
+        , ( "scatterplot", scatterplot )
         ]
 
 
@@ -418,17 +419,17 @@ getLines str =
 
 section : FRender Mark2Msg
 section renderArgs name args body sm =
-    paragraph [ Font.size sectionFontSize, paddingAbove sectionFontSize ] [ text (getText body |> Maybe.withDefault "no section name found") ]
+    column [ Font.size sectionFontSize, paddingAbove (round <| 0.8 * sectionFontSize) ] [ text (getText body |> Maybe.withDefault "no section name found") ]
 
 
 section2 : FRender Mark2Msg
 section2 renderArgs name args body sm =
-    paragraph [ Font.size section2FontSize, paddingAbove section2FontSize ] [ text (getText body |> Maybe.withDefault "no subsection name found") ]
+    column [ Font.size section2FontSize, paddingAbove (round <| 0.8 * section2FontSize) ] [ text (getText body |> Maybe.withDefault "no subsection name found") ]
 
 
 section3 : FRender Mark2Msg
 section3 renderArgs name args body sm =
-    paragraph [ Font.size section3FontSize, paddingAbove section3FontSize ] [ text (getText body |> Maybe.withDefault "no subsubsection name found") ]
+    column [ Font.size section3FontSize, paddingAbove (round <| 0.8 * section3FontSize) ] [ text (getText body |> Maybe.withDefault "no subsubsection name found") ]
 
 
 paddingAbove k =
@@ -436,11 +437,11 @@ paddingAbove k =
 
 
 sectionFontSize =
-    22
+    24
 
 
 section2FontSize =
-    16
+    18
 
 
 section3FontSize =
@@ -828,6 +829,53 @@ linegraph renderArgs name args body sm =
             }
     in
     column [] [ lineChart lineGraphAttributes points |> E.html ]
+
+
+scatterplot : FRender Mark2Msg
+scatterplot renderArgs name args body sm =
+    let
+        numbers_ : List (List String)
+        numbers_ =
+            getCSV body
+
+        makePair : List Float -> Maybe ( Float, Float )
+        makePair ns =
+            case ns of
+                [ x, y ] ->
+                    Just ( x, y )
+
+                _ ->
+                    Nothing
+
+        points : List ( Float, Float )
+        points =
+            List.map (List.map String.toFloat) numbers_
+                |> List.map Maybe.Extra.values
+                |> List.map makePair
+                |> Maybe.Extra.values
+
+        n =
+            List.length points |> toFloat
+
+        graphHeight =
+            250.0
+
+        graphWidth =
+            250.0
+
+        deltaX =
+            graphWidth / n
+
+        options =
+            [ Color "rgb(0,0,200)", DeltaX deltaX, YTickmarks 6, XTickmarks (round (n + 1)), Scale 1.0 1.0 ]
+
+        lineGraphAttributes =
+            { graphHeight = graphHeight
+            , graphWidth = graphWidth
+            , options = options
+            }
+    in
+    column [] [ scatterPlot lineGraphAttributes points |> E.html ]
 
 
 

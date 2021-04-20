@@ -2,12 +2,16 @@ module Data exposing (test, text)
 
 
 test =
-    """
- [strong Chart]
- 
- [bargraph 0, 1, 2, 4,  3,  2, 1]
- 
- This is a chart
+    """[list |numbered|
+
+    [item A]
+
+    [list |none|
+
+        [item X]
+]]
+
+TEST 2
 """
 
 
@@ -177,6 +181,23 @@ The linegraph code (CSV format):
 ]
 ##]
 
+[section3 Scatter plots]
+
+Use the same syntax as before, but with "scatterplot" in place of "linegraph."
+
+[scatterplot 0, 0
+1, 10
+2, 5
+3, 3
+4, 9
+5, 11
+6, 4
+7, 6
+8, 10
+9, 1
+]
+
+
 [section2 Unicode]
 
 You can freely use unicode characters, as in this poetry element:
@@ -245,6 +266,44 @@ A numbered list has "numbered" as its first argument, as in the example below.
             [item  [math \\beta = 4.567]]
 
 ]]]
+
+
+[section2 Appendix: Technical Stuff]
+
+Because CaYaTeX is so simple, the type of the AST is very small:
+
+[codeblock
+
+raw##type Element
+    = Text String (Maybe SourceMap)
+    | Element
+        String
+        (List String)
+        Element (Maybe SourceMap)
+    | LX (List Element) (Maybe SourceMap)
+##
+]
+
+
+"""
+
+
+appendix =
+    """
+[section2 Appendix: Technical Stuff]
+
+Here is the type of the AST:
+
+[codeblock
+
+raw##type Element
+    = Text String (Maybe SourceMap)
+    | Element
+        String
+        (List String)
+        Element (Maybe SourceMap)
+    | LX (List Element) (Maybe SourceMap
+##
 """
 
 

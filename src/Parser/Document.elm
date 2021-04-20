@@ -281,14 +281,19 @@ addToBlockContents currentLine_ state =
         newBlockLevel =
             state.blockLevel + deltaBlockLevel
 
+        -- |> Debug.log "ATB, newBlockLevel"
         --_ =
         --    Debug.log "(BL, Delta)" ( state.blockLevel, deltaBlockLevel )
     in
     if newBlockLevel == 0 && deltaBlockLevel < 0 then
+        --let
+        --    _ =
+        --        Debug.log "FUNNY PATH"
+        --in
         pushBlock_ ("\n" ++ currentLine_) state
 
     else
-        { state | blockContents = currentLine_ :: state.blockContents }
+        { state | blockLevel = newBlockLevel, blockContents = currentLine_ :: state.blockContents }
 
 
 pushBlockStack : String -> State -> State
@@ -297,8 +302,12 @@ pushBlockStack currentLine_ state =
         deltaBlockLevel =
             differentialBlockLevel currentLine_
 
+        -- |> Debug.log "PBS, Delta BL"
         newBlockLevel =
+            -- TODO: the trouble is somewhere in newBlockLevel
             state.blockLevel + deltaBlockLevel
+
+        --  |> Debug.log "PBS, newBlockLevel"
     in
     if newBlockLevel == 0 then
         pushBlock_ ("\n" ++ currentLine_) state
@@ -339,7 +348,9 @@ pushBlock_ : String -> State -> State
 pushBlock_ line state =
     let
         str =
-            String.join "\n" (List.reverse state.blockContents) ++ "\n" ++ line
+            String.join "\n" (List.reverse state.blockContents)
+                ++ "\n"
+                ++ line
 
         -- |> Debug.log "PUSH"
         tc : TextCursor Element

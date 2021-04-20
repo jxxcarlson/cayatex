@@ -18,7 +18,7 @@
             "elm-community/string-extra": "4.0.1",
             "folkertdev/elm-paragraph": "1.0.0",
             "hecrj/html-parser": "2.4.0",
-            "jxxcarlson/elm-graph": "3.0.0",
+            "jxxcarlson/elm-graph": "3.1.0",
             "mdgriffith/elm-ui": "1.1.8"
         },
         "indirect": {
