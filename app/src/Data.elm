@@ -73,7 +73,7 @@ The project is open source: [link https://github.com/jxxcarlson/cayatex]
 
 The goals of the CaYaTeX project are for the language to be
 
-[list
+[list |numbered|
 
 [item [strong Small], hence easy to learn. [italic To this end there are just two constructs: ordinary text and [code elements]].]
 
@@ -169,9 +169,10 @@ the one in the previous example.
 
 [subsection Lists]
 
-Note that lists can be nested and can be given a title if desired.  The symbol for "bulleted" lists is • by default, but can be specified by the user.  We have not yet implemented numbered lists.
+Note that lists can be nested and can be given a title if desired.  The symbol for "bulleted" lists is • by default, but can be specified by the user.
+A numberd list has "numbered" as its first argument, as in the example below.
 
-[list |title:Errands and other stuff|
+[list |numbered, title:Errands and other stuff|
 
     [item Bread, milk, O-juice]
 

@@ -10,11 +10,11 @@ import Html.Keyed
 import Json.Encode
 import List.Extra
 import Maybe.Extra
+import Parser.Data
 import Parser.Driver
 import Parser.Element exposing (Element(..))
 import Parser.Getters
 import Parser.SourceMap exposing (SourceMap)
-import Parser.Data
 import Parser.TextCursor
 import Render.Utility
 import String.Extra
@@ -187,20 +187,23 @@ listPadding =
     E.paddingEach { left = 18, right = 0, top = 0, bottom = 0 }
 
 
-getPrefixSymbol : List String -> String
-getPrefixSymbol args_ =
-    case List.head (Utility.entities args_) of
+getPrefixSymbol : Int -> List String -> E.Element Mark2Msg
+getPrefixSymbol k args_ =
+    case List.head (Utility.entities args_) |> Maybe.map String.trim of
+        Just "numbered" ->
+            el [ Font.size 12, E.alignTop, E.moveDown 2.2 ] (text (String.fromInt (k + 1) ++ "."))
+
         Nothing ->
-            "•"
+            el [ Font.size 16 ] (text "•")
 
         Just "bullet" ->
-            "•"
+            el [ Font.size 16 ] (text "•")
 
         Just "none" ->
-            ""
+            E.none
 
         Just str ->
-            str
+            el [ Font.size 16 ] (text str)
 
 
 listTitle args_ =
@@ -223,31 +226,32 @@ list : FRender Mark2Msg
 list renderArgs name args_ body sm =
     case body of
         LX list_ _ ->
-            column [ spacing 4, listPadding ] (listTitle args_ :: List.map (renderListItem (getPrefixSymbol args_) renderArgs) list_)
+            column [ spacing 4, listPadding ]
+                (listTitle args_ :: List.indexedMap (\k item_ -> renderListItem (getPrefixSymbol k args_) renderArgs item_) list_)
 
         _ ->
             el [ Font.color redColor ] (text "Malformed list")
 
 
-renderListItem : String -> RenderArgs -> Element -> E.Element Mark2Msg
+renderListItem : E.Element Mark2Msg -> RenderArgs -> Element -> E.Element Mark2Msg
 renderListItem prefixSymbol renderArgs elt =
     case elt of
         Element "item" _ body _ ->
-            let
-                prefix =
-                    case prefixSymbol of
-                        "bullet" ->
-                            el [ Font.size 16, E.alignTop ] (text prefixSymbol)
-
-                        _ ->
-                            el [ Font.size 16, E.alignTop ] (text prefixSymbol)
-            in
-            row [ spacing 8 ] [ prefix, renderElement renderArgs elt ]
+            --let
+            --    prefix =
+            --        case prefixSymbol of
+            --            "bullet" ->
+            --                prefixSymbol
+            --
+            --            _ ->
+            --                prefixSymbol
+            --in
+            row [ spacing 8 ] [ prefixSymbol, renderElement renderArgs elt ]
 
         Element "list" args body _ ->
             case body of
                 LX list_ _ ->
-                    column [ spacing 4, listPadding ] (listTitle args :: List.map (renderListItem (getPrefixSymbol args) renderArgs) list_)
+                    column [ spacing 4, listPadding ] (listTitle args :: List.indexedMap (\k item_ -> renderListItem (getPrefixSymbol k args) renderArgs item_) list_)
 
                 _ ->
                     el [ Font.color redColor ] (text "Malformed list")
