@@ -409,7 +409,7 @@ section3FontSize =
 
 link : FRender Mark2Msg
 link renderArgs name args body sm =
-    case getArg_ 0 args of
+    case Render.Utility.getArg_ 0 args of
         Nothing ->
             let
                 url_ =
@@ -500,13 +500,13 @@ highlightRGB : FRender Mark2Msg
 highlightRGB renderArgs _ args body sm =
     let
         r =
-            getInt 0 args
+            Render.Utility.getInt 0 args
 
         g =
-            getInt 1 args
+            Render.Utility.getInt 1 args
 
         b =
-            getInt 2 args
+            Render.Utility.getInt 2 args
     in
     el [ Background.color (E.rgb255 r g b), E.paddingXY 4 2 ] (renderElement renderArgs body)
 
@@ -515,13 +515,13 @@ fontRGB : FRender Mark2Msg
 fontRGB renderArgs name args body sm =
     let
         r =
-            getInt 0 args
+            Render.Utility.getInt 0 args
 
         g =
-            getInt 1 args
+            Render.Utility.getInt 1 args
 
         b =
-            getInt 2 args
+            Render.Utility.getInt 2 args
     in
     el [ Font.color (E.rgb255 r g b), E.paddingXY 4 2 ] (renderElement renderArgs body)
 
@@ -534,7 +534,7 @@ renderaAsTheoremLikeElement : FRender Mark2Msg
 renderaAsTheoremLikeElement renderArgs name args body sm =
     let
         label_ =
-            getArg_ 0 args
+            Render.Utility.getArg_ 0 args
 
         heading =
             case label_ of
@@ -698,7 +698,7 @@ bargraph renderArgs name args body sm =
 
         numbers : List Float
         numbers =
-            getColumn dict body
+            Render.Utility.getColumn dict body
                 |> List.map (\x -> x + 0.5)
 
         dataMax =
@@ -730,7 +730,7 @@ bargraph renderArgs name args body sm =
     in
     column []
         [ barChart barGraphAttributes (List.map (\x -> x + 0.001) numbers) |> E.html
-        , captionElement dict
+        , Render.Utility.captionElement dict
         , paragraph [ spacing 12 ]
             [ text ("data points: " ++ String.fromFloat n ++ ", ")
             , text ("min: " ++ String.fromFloat (Utility.roundTo 2 dataMin) ++ ", ")
@@ -779,60 +779,8 @@ linegraph renderArgs name args body sm =
     in
     column []
         [ lineChart lineGraphAttributes points |> E.html
-        , captionElement dict
+        , Render.Utility.captionElement dict
         ]
-
-
-getColumn : Dict String String -> Element -> List Float
-getColumn dict body =
-    let
-        toInt_ : Int -> String -> Int
-        toInt_ default str =
-            String.toInt str |> Maybe.withDefault default
-
-        col =
-            case Dict.get "column" dict of
-                Just i ->
-                    toInt_ 0 i - 1
-
-                _ ->
-                    0
-
-        cutoff =
-            Dict.get "cutoff" dict |> Maybe.andThen String.toFloat
-
-        rawData : List (List String)
-        rawData =
-            Render.Utility.getCSV body
-
-        getDataColumn : Int -> List (List String) -> List (Maybe String)
-        getDataColumn i data =
-            List.map (\column -> List.Extra.getAt i column) rawData
-
-        filter data_ =
-            case cutoff of
-                Just cutoffValue ->
-                    List.filter (\x -> x < cutoffValue) data_
-
-                _ ->
-                    data_
-    in
-    body
-        |> Render.Utility.getCSV
-        |> getDataColumn col
-        |> Maybe.Extra.values
-        |> List.map String.toFloat
-        |> Maybe.Extra.values
-        |> filter
-
-
-captionElement dict =
-    case Dict.get "caption" dict of
-        Just caption ->
-            paragraph [ Font.bold ] [ text caption ]
-
-        Nothing ->
-            E.none
 
 
 scatterplot : FRender Mark2Msg
@@ -876,7 +824,7 @@ scatterplot renderArgs name args body sm =
     in
     column []
         [ scatterPlot scatterPlotAttributes points2 |> E.html
-        , captionElement dict
+        , Render.Utility.captionElement dict
         , paragraph [ spacing 12 ]
             [ text ("data points: " ++ String.fromFloat n ++ ", ")
             , text ("xmax: " ++ String.fromFloat (Utility.roundTo 0 xmax) ++ ", ")
@@ -887,26 +835,6 @@ scatterplot renderArgs name args body sm =
 
 
 -- HELPERS
-
-
-getInt : Int -> List String -> Int
-getInt k stringList =
-    List.Extra.getAt k stringList
-        |> Maybe.andThen String.toInt
-        |> Maybe.withDefault 0
-
-
-getArg_ : Int -> List String -> Maybe String
-getArg_ k stringList =
-    List.Extra.getAt k stringList
-
-
-getArg : Int -> String -> List String -> String
-getArg k default stringList =
-    List.Extra.getAt k stringList |> Maybe.withDefault default
-
-
-
 -- active : SourceMap -> String -> List (Attribute LaTeXMsg)
 -- active sm selectedId =
 --     let
