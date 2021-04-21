@@ -666,7 +666,7 @@ sum renderArgs name args body sm =
         precision =
             getPrecisionWithDefault 2 args
     in
-    row [ spacing 8 ] (text "sum" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (roundTo precision sum_)) ])
+    row [ spacing 8 ] (text "sum" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (Utility.roundTo precision sum_)) ])
 
 
 average : FRender Mark2Msg
@@ -690,7 +690,7 @@ average renderArgs name args body sm =
         precision =
             getPrecisionWithDefault 2 args
     in
-    row [ spacing 8 ] (text "average" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (roundTo precision average_)) ])
+    row [ spacing 8 ] (text "average" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (Utility.roundTo precision average_)) ])
 
 
 stdev : FRender Mark2Msg
@@ -724,7 +724,7 @@ stdev renderArgs name args body sm =
         precision =
             getPrecisionWithDefault 2 args
     in
-    row [ spacing 8 ] (text "stdev" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (roundTo precision stdev_)) ])
+    row [ spacing 8 ] (text "stdev" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (Utility.roundTo precision stdev_)) ])
 
 
 getPrecisionWithDefault : Int -> List String -> Int
@@ -741,24 +741,23 @@ getPrecision args =
     Dict.get "precision" dict |> Maybe.andThen String.toInt
 
 
-roundTo : Int -> Float -> Float
-roundTo k x =
-    let
-        factor =
-            10.0 ^ toFloat k
-    in
-    toFloat (round (factor * x)) / factor
-
-
 bargraph : FRender Mark2Msg
 bargraph renderArgs name args body sm =
     let
-        numbers_ =
-            getTextList body
+        dict =
+            Utility.keyValueDict args
 
         numbers : List Float
         numbers =
-            List.map String.toFloat numbers_ |> Maybe.Extra.values
+            --List.map String.toFloat numbers_ |> Maybe.Extra.values
+            getColumn dict body
+                |> List.map (\x -> x + 0.5)
+
+        dataMax =
+            List.maximum numbers |> Maybe.withDefault 0
+
+        dataMin =
+            List.minimum numbers |> Maybe.withDefault 0
 
         n =
             List.length numbers |> toFloat
@@ -781,12 +780,23 @@ bargraph renderArgs name args body sm =
             , options = options
             }
     in
-    column [] [ barChart barGraphAttributes numbers |> E.html ]
+    column []
+        [ barChart barGraphAttributes (List.map (\x -> x + 0.001) numbers) |> E.html
+        , captionElement dict
+        , paragraph [ spacing 12 ]
+            [ text ("data points: " ++ String.fromFloat n ++ ", ")
+            , text ("min: " ++ String.fromFloat (Utility.roundTo 2 dataMin) ++ ", ")
+            , text ("max: " ++ String.fromFloat (Utility.roundTo 2 dataMax))
+            ]
+        ]
 
 
 linegraph : FRender Mark2Msg
 linegraph renderArgs name args body sm =
     let
+        dict =
+            Utility.keyValueDict args
+
         numbers_ : List (List String)
         numbers_ =
             getCSV body
@@ -811,10 +821,10 @@ linegraph renderArgs name args body sm =
             List.length points |> toFloat
 
         graphHeight =
-            100.0
+            200.0
 
         graphWidth =
-            250.0
+            350.0
 
         deltaX =
             graphWidth / n
@@ -828,7 +838,10 @@ linegraph renderArgs name args body sm =
             , options = options
             }
     in
-    column [] [ lineChart lineGraphAttributes points |> E.html ]
+    column []
+        [ lineChart lineGraphAttributes points |> E.html
+        , captionElement dict
+        ]
 
 
 getColumn : Dict String String -> Element -> List Float
@@ -940,19 +953,20 @@ getPoints dict body =
         |> yfilter
 
 
+captionElement dict =
+    case Dict.get "caption" dict of
+        Just caption ->
+            paragraph [ Font.bold ] [ text caption ]
+
+        Nothing ->
+            E.none
+
+
 scatterplot : FRender Mark2Msg
 scatterplot renderArgs name args body sm =
     let
         dict =
             Utility.keyValueDict args
-
-        captionElement =
-            case Dict.get "caption" dict of
-                Just caption ->
-                    paragraph [] [ text caption ]
-
-                Nothing ->
-                    E.none
 
         points =
             getPoints dict body
@@ -967,10 +981,10 @@ scatterplot renderArgs name args body sm =
             List.length points |> toFloat
 
         graphHeight =
-            250.0
+            400.0
 
         graphWidth =
-            250.0
+            400.0
 
         deltaX =
             graphWidth / n
@@ -983,15 +997,18 @@ scatterplot renderArgs name args body sm =
             , graphWidth = graphWidth
             , options = options
             }
+
+        points2 =
+            List.map (\( x, y ) -> ( x - 0.03, y )) points
     in
     column []
-        [ scatterPlot scatterPlotAttributes points |> E.html
+        [ scatterPlot scatterPlotAttributes points2 |> E.html
+        , captionElement dict
         , paragraph [ spacing 12 ]
             [ text ("data points: " ++ String.fromFloat n ++ ", ")
-            , text ("xmax: " ++ String.fromFloat (roundTo 0 xmax) ++ ", ")
-            , text ("ymax: " ++ String.fromFloat (roundTo 0 ymax))
+            , text ("xmax: " ++ String.fromFloat (Utility.roundTo 0 xmax) ++ ", ")
+            , text ("ymax: " ++ String.fromFloat (Utility.roundTo 0 ymax))
             ]
-        , captionElement
         ]
 
 

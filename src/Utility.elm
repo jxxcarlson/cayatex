@@ -1,7 +1,16 @@
-module Utility exposing (entities, keyValueDict, liftToMaybe)
+module Utility exposing (entities, keyValueDict, liftToMaybe, roundTo)
 
 import Dict exposing (Dict)
 import Maybe.Extra
+
+
+roundTo : Int -> Float -> Float
+roundTo k x =
+    let
+        factor =
+            10.0 ^ toFloat k
+    in
+    toFloat (round (factor * x)) / factor
 
 
 entities : List String -> List String
