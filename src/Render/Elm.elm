@@ -831,6 +831,49 @@ linegraph renderArgs name args body sm =
     column [] [ lineChart lineGraphAttributes points |> E.html ]
 
 
+getColumn : Dict String String -> Element -> List Float
+getColumn dict body =
+    let
+        toInt_ : Int -> String -> Int
+        toInt_ default str =
+            String.toInt str |> Maybe.withDefault default
+
+        col =
+            case Dict.get "column" dict of
+                Just i ->
+                    toInt_ 0 i - 1
+
+                _ ->
+                    0
+
+        cutoff =
+            Dict.get "cutoff" dict |> Maybe.andThen String.toFloat
+
+        rawData : List (List String)
+        rawData =
+            getCSV body
+
+        getDataColumn : Int -> List (List String) -> List (Maybe String)
+        getDataColumn i data =
+            List.map (\column -> List.Extra.getAt i column) rawData
+
+        filter data_ =
+            case cutoff of
+                Just cutoffValue ->
+                    List.filter (\x -> x < cutoffValue) data_
+
+                _ ->
+                    data_
+    in
+    body
+        |> getCSV
+        |> getDataColumn col
+        |> Maybe.Extra.values
+        |> List.map String.toFloat
+        |> Maybe.Extra.values
+        |> filter
+
+
 getPoints : Dict String String -> Element -> List ( Float, Float )
 getPoints dict body =
     let
