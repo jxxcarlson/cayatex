@@ -95,7 +95,7 @@ identifies logical chunks of text, parses these using
 Parser.Driverx.parseLoop, and prepends them to a list of TextCursor.
 The parsed text is held the field 'parsed' of TextCursor.
 
-Each time a loop is completed, the value of Parser.Data.Data
+Each time a loop is completed, the value of Parser.SourceText.SourceText
 is updated. The final value will be used in Render.Elm to
 furnish section numbering, cross references, a table of contents,
 etc.
@@ -258,7 +258,7 @@ initWithBlockType currentLine_ state =
         newTC =
             Parser.Driver.parseLoop state.generation state.lineNumber (String.join "\n" (List.reverse (currentLine_ :: state.blockContents)))
 
-        -- TODO (1_: wire up Parser.Data.Data
+        -- TODO (1_: wire up Parser.SourceText.SourceText
         --laTeXState =
         --    Reduce.laTeXState newTC.parsed state.laTeXState
     in
@@ -357,7 +357,7 @@ pushBlock_ line state =
         tc =
             Parser.Driver.parseLoop state.generation state.lineNumber str
 
-        -- TODO (2): wire up Parser.Data.Data
+        -- TODO (2): wire up Parser.SourceText.SourceText
     in
     { state
         | blockType = Start
@@ -384,7 +384,7 @@ popBlockStack currentLine_ state =
             tc_ =
                 Parser.Driver.parseLoop state.generation state.lineNumber input_
 
-            -- TODO (3): wire up Parser.Data.Data
+            -- TODO (3): wire up Parser.SourceText.SourceText
             tc =
                 { tc_ | text = input_ }
         in
@@ -422,7 +422,7 @@ flush state =
                     tc_ =
                         Parser.Driver.parseLoop state.generation state.lineNumber input
 
-                    -- TODO (4):: wire up Parser.Data.Data
+                    -- TODO (4):: wire up Parser.SourceText.SourceText
                     tc =
                         { tc_ | text = input }
 

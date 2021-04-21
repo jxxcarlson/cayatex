@@ -764,10 +764,10 @@ bargraph renderArgs name args body sm =
             List.length numbers |> toFloat
 
         graphHeight =
-            100.0
+            200.0
 
         graphWidth =
-            250.0
+            300.0
 
         deltaX =
             graphWidth / n
@@ -831,12 +831,50 @@ linegraph renderArgs name args body sm =
     column [] [ lineChart lineGraphAttributes points |> E.html ]
 
 
-scatterplot : FRender Mark2Msg
-scatterplot renderArgs name args body sm =
+getPoints : Dict String String -> Element -> List ( Float, Float )
+getPoints dict body =
     let
-        numbers_ : List (List String)
-        numbers_ =
+        toInt_ : Int -> String -> Int
+        toInt_ default str =
+            String.toInt str |> Maybe.withDefault default
+
+        ( col1, col2 ) =
+            case ( Dict.get "col1" dict, Dict.get "col2" dict ) of
+                ( Just i, Just j ) ->
+                    ( toInt_ 0 i - 1, toInt_ 1 j - 1 )
+
+                _ ->
+                    ( 0, 1 )
+
+        xcutoff =
+            Dict.get "xcutoff" dict |> Maybe.andThen String.toFloat
+
+        ycutoff =
+            Dict.get "ycutoff" dict |> Maybe.andThen String.toFloat
+
+        rawData : List (List String)
+        rawData =
             getCSV body
+
+        getDataColumns : Int -> Int -> List (List String) -> List (List (Maybe String))
+        getDataColumns i j data =
+            List.map (\column -> [ List.Extra.getAt i column, List.Extra.getAt j column ]) rawData
+
+        xfilter points_ =
+            case xcutoff of
+                Just xcutoffValue ->
+                    List.filter (\( x, y ) -> x < xcutoffValue) points_
+
+                _ ->
+                    points_
+
+        yfilter points_ =
+            case ycutoff of
+                Just ycutoffValue ->
+                    List.filter (\( x, y ) -> y < ycutoffValue) points_
+
+                _ ->
+                    points_
 
         makePair : List Float -> Maybe ( Float, Float )
         makePair ns =
@@ -846,13 +884,41 @@ scatterplot renderArgs name args body sm =
 
                 _ ->
                     Nothing
+    in
+    body
+        |> getCSV
+        |> getDataColumns col1 col2
+        |> List.map Maybe.Extra.values
+        |> List.map (List.map String.toFloat)
+        |> List.map Maybe.Extra.values
+        |> List.map makePair
+        |> Maybe.Extra.values
+        |> xfilter
+        |> yfilter
 
-        points : List ( Float, Float )
+
+scatterplot : FRender Mark2Msg
+scatterplot renderArgs name args body sm =
+    let
+        dict =
+            Utility.keyValueDict args
+
+        captionElement =
+            case Dict.get "caption" dict of
+                Just caption ->
+                    paragraph [] [ text caption ]
+
+                Nothing ->
+                    E.none
+
         points =
-            List.map (List.map String.toFloat) numbers_
-                |> List.map Maybe.Extra.values
-                |> List.map makePair
-                |> Maybe.Extra.values
+            getPoints dict body
+
+        xmax =
+            List.maximum (List.map Tuple.first points) |> Maybe.withDefault 0
+
+        ymax =
+            List.maximum (List.map Tuple.second points) |> Maybe.withDefault 0
 
         n =
             List.length points |> toFloat
@@ -869,13 +935,21 @@ scatterplot renderArgs name args body sm =
         options =
             [ Color "rgb(0,0,200)", DeltaX deltaX, YTickmarks 6, XTickmarks (round (n + 1)), Scale 1.0 1.0 ]
 
-        lineGraphAttributes =
+        scatterPlotAttributes =
             { graphHeight = graphHeight
             , graphWidth = graphWidth
             , options = options
             }
     in
-    column [] [ scatterPlot lineGraphAttributes points |> E.html ]
+    column []
+        [ scatterPlot scatterPlotAttributes points |> E.html
+        , paragraph [ spacing 12 ]
+            [ text ("data points: " ++ String.fromFloat n ++ ", ")
+            , text ("xmax: " ++ String.fromFloat (roundTo 0 xmax) ++ ", ")
+            , text ("ymax: " ++ String.fromFloat (roundTo 0 ymax))
+            ]
+        , captionElement
+        ]
 
 
 

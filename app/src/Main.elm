@@ -56,7 +56,7 @@ type alias Flags =
 
 
 initialText =
-    Data.test
+    Data.text
 
 
 init : Flags -> ( Model, Cmd Msg )

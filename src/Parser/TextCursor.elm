@@ -12,7 +12,7 @@ module Parser.TextCursor exposing
 -- import Parser.Element exposing (Expression)
 
 
-{-| Data structure used by Parser.Loop.run as it progressively "eats" bites of
+{-| SourceText structure used by Parser.Loop.run as it progressively "eats" bites of
 the text, accumulating the parsed bites in the list `parsed: List Expression`.
 The `offset` represents the position of beginning of the current `text` in the
 original text. It is used to properly construct Expressions, which contain

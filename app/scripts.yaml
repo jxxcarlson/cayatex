@@ -12,3 +12,6 @@ scripts:
     - sed 's/800/600/' src/Main.elm | sed 's/Data.test/Data.text/' | sed 's/101/0/' >public/Main.elm
     - elm make  --optimize public/Main.elm --output=public/Main.js
     - cp public/Main.js /Users/jxxcarlson/dev/jxxcarlson.github.io/app/cayatex/
+
+  benchmark:
+    - elm make benchmarks/TestRunner.elm --output=benchmark.html
