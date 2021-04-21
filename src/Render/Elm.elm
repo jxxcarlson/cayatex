@@ -664,7 +664,7 @@ sum renderArgs name args body sm =
             List.sum numbers
 
         precision =
-            getPrecisionWithDefault 2 args
+            Render.Utility.getPrecisionWithDefault 2 args
     in
     row [ spacing 8 ] (text "sum" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (Utility.roundTo precision sum_)) ])
 
@@ -688,7 +688,7 @@ average renderArgs name args body sm =
             sum_ / n
 
         precision =
-            getPrecisionWithDefault 2 args
+            Render.Utility.getPrecisionWithDefault 2 args
     in
     row [ spacing 8 ] (text "average" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (Utility.roundTo precision average_)) ])
 
@@ -722,23 +722,13 @@ stdev renderArgs name args body sm =
             sqrt sumOfDeltasSquared / (n - 1)
 
         precision =
-            getPrecisionWithDefault 2 args
+            Render.Utility.getPrecisionWithDefault 2 args
     in
     row [ spacing 8 ] (text "stdev" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (Utility.roundTo precision stdev_)) ])
 
 
-getPrecisionWithDefault : Int -> List String -> Int
-getPrecisionWithDefault default args =
-    getPrecision args |> Maybe.withDefault default
 
-
-getPrecision : List String -> Maybe Int
-getPrecision args =
-    let
-        dict =
-            Utility.keyValueDict args
-    in
-    Dict.get "precision" dict |> Maybe.andThen String.toInt
+-- DATA
 
 
 bargraph : FRender Mark2Msg
@@ -749,7 +739,6 @@ bargraph renderArgs name args body sm =
 
         numbers : List Float
         numbers =
-            --List.map String.toFloat numbers_ |> Maybe.Extra.values
             getColumn dict body
                 |> List.map (\x -> x + 0.5)
 
@@ -801,20 +790,11 @@ linegraph renderArgs name args body sm =
         numbers_ =
             getCSV body
 
-        makePair : List Float -> Maybe ( Float, Float )
-        makePair ns =
-            case ns of
-                [ x, y ] ->
-                    Just ( x, y )
-
-                _ ->
-                    Nothing
-
         points : List ( Float, Float )
         points =
             List.map (List.map String.toFloat) numbers_
                 |> List.map Maybe.Extra.values
-                |> List.map makePair
+                |> List.map Render.Utility.makePair
                 |> Maybe.Extra.values
 
         n =
@@ -931,15 +911,6 @@ getPoints dict body =
 
                 _ ->
                     points_
-
-        makePair : List Float -> Maybe ( Float, Float )
-        makePair ns =
-            case ns of
-                [ x, y ] ->
-                    Just ( x, y )
-
-                _ ->
-                    Nothing
     in
     body
         |> getCSV
@@ -947,7 +918,7 @@ getPoints dict body =
         |> List.map Maybe.Extra.values
         |> List.map (List.map String.toFloat)
         |> List.map Maybe.Extra.values
-        |> List.map makePair
+        |> List.map Render.Utility.makePair
         |> Maybe.Extra.values
         |> xfilter
         |> yfilter
