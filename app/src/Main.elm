@@ -43,7 +43,7 @@ type Msg
     | GetText
     | GetTest
     | SetMode Mode
-    | Mark2Msg Render.Elm.Mark2Msg
+    | Mark2Msg Parser.Mark2Msg
 
 
 type Mode

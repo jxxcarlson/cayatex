@@ -1,4 +1,4 @@
-module Render.Elm exposing (Mark2Msg(..), renderElement, renderList, renderString)
+module Render.Elm exposing (renderElement, renderList, renderString)
 
 import Dict exposing (Dict)
 import Element as E exposing (column, el, paragraph, px, row, spacing, text)
@@ -12,7 +12,7 @@ import List.Extra
 import Maybe.Extra
 import Parser.Data
 import Parser.Driver
-import Parser.Element exposing (Element(..))
+import Parser.Element exposing (Element(..), Mark2Msg)
 import Parser.Getters
 import Parser.SourceMap exposing (SourceMap)
 import Parser.TextCursor
@@ -41,10 +41,6 @@ type alias FRender a =
 
 type alias RenderElementDict a =
     Dict String (FRender a)
-
-
-type Mark2Msg
-    = Mark2Msg
 
 
 type DisplayMode
@@ -172,7 +168,7 @@ getTextList : Element -> List String
 getTextList element =
     case element of
         LX list_ _ ->
-            List.map extractText list_
+            List.map Render.Utility.extractText list_
                 |> List.map (Maybe.withDefault "")
                 |> List.map (String.split ",")
                 |> List.map (List.map String.trim)
@@ -183,51 +179,14 @@ getTextList element =
             []
 
 
-getCSV : Element -> List (List String)
-getCSV element =
-    case element of
-        LX list_ _ ->
-            case List.map extractText list_ of
-                [ Just data ] ->
-                    data
-                        |> String.split "\n"
-                        |> List.map (String.split ",")
-                        |> List.map (List.map String.trim)
-
-                _ ->
-                    [ [] ]
-
-        _ ->
-            [ [] ]
-
-
 getText2 : Element -> String
 getText2 element =
     case element of
         LX list_ _ ->
-            List.map extractText list_ |> Maybe.Extra.values |> String.join "\n"
+            List.map Render.Utility.extractText list_ |> Maybe.Extra.values |> String.join "\n"
 
         _ ->
             ""
-
-
-
---case element of
---    LX list_ _ ->
---        List.map extractText list_ |> Maybe.Extra.values |> String.join "\n"
---
---    _ ->
---        ""
-
-
-extractText : Element -> Maybe String
-extractText element =
-    case element of
-        Text content _ ->
-            Just content
-
-        _ ->
-            Nothing
 
 
 
@@ -788,7 +747,7 @@ linegraph renderArgs name args body sm =
 
         numbers_ : List (List String)
         numbers_ =
-            getCSV body
+            Render.Utility.getCSV body
 
         points : List ( Float, Float )
         points =
@@ -844,7 +803,7 @@ getColumn dict body =
 
         rawData : List (List String)
         rawData =
-            getCSV body
+            Render.Utility.getCSV body
 
         getDataColumn : Int -> List (List String) -> List (Maybe String)
         getDataColumn i data =
@@ -859,69 +818,12 @@ getColumn dict body =
                     data_
     in
     body
-        |> getCSV
+        |> Render.Utility.getCSV
         |> getDataColumn col
         |> Maybe.Extra.values
         |> List.map String.toFloat
         |> Maybe.Extra.values
         |> filter
-
-
-getPoints : Dict String String -> Element -> List ( Float, Float )
-getPoints dict body =
-    let
-        toInt_ : Int -> String -> Int
-        toInt_ default str =
-            String.toInt str |> Maybe.withDefault default
-
-        ( col1, col2 ) =
-            case ( Dict.get "col1" dict, Dict.get "col2" dict ) of
-                ( Just i, Just j ) ->
-                    ( toInt_ 0 i - 1, toInt_ 1 j - 1 )
-
-                _ ->
-                    ( 0, 1 )
-
-        xcutoff =
-            Dict.get "xcutoff" dict |> Maybe.andThen String.toFloat
-
-        ycutoff =
-            Dict.get "ycutoff" dict |> Maybe.andThen String.toFloat
-
-        rawData : List (List String)
-        rawData =
-            getCSV body
-
-        getDataColumns : Int -> Int -> List (List String) -> List (List (Maybe String))
-        getDataColumns i j data =
-            List.map (\column -> [ List.Extra.getAt i column, List.Extra.getAt j column ]) rawData
-
-        xfilter points_ =
-            case xcutoff of
-                Just xcutoffValue ->
-                    List.filter (\( x, y ) -> x < xcutoffValue) points_
-
-                _ ->
-                    points_
-
-        yfilter points_ =
-            case ycutoff of
-                Just ycutoffValue ->
-                    List.filter (\( x, y ) -> y < ycutoffValue) points_
-
-                _ ->
-                    points_
-    in
-    body
-        |> getCSV
-        |> getDataColumns col1 col2
-        |> List.map Maybe.Extra.values
-        |> List.map (List.map String.toFloat)
-        |> List.map Maybe.Extra.values
-        |> List.map Render.Utility.makePair
-        |> Maybe.Extra.values
-        |> xfilter
-        |> yfilter
 
 
 captionElement dict =
@@ -940,7 +842,7 @@ scatterplot renderArgs name args body sm =
             Utility.keyValueDict args
 
         points =
-            getPoints dict body
+            Render.Utility.getPoints dict body
 
         xmax =
             List.maximum (List.map Tuple.first points) |> Maybe.withDefault 0
