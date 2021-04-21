@@ -409,7 +409,7 @@ section3FontSize =
 
 link : FRender Mark2Msg
 link renderArgs name args body sm =
-    case Render.Utility.getArg_ 0 args of
+    case Render.Utility.getArg 0 args of
         Nothing ->
             let
                 url_ =
@@ -534,7 +534,7 @@ renderaAsTheoremLikeElement : FRender Mark2Msg
 renderaAsTheoremLikeElement renderArgs name args body sm =
     let
         label_ =
-            Render.Utility.getArg_ 0 args
+            Render.Utility.getArg 0 args
 
         heading =
             case label_ of

@@ -1,7 +1,8 @@
 module Render.Utility exposing
     ( captionElement
     , extractText
-    , getArg_
+    , getArg
+    , getArgWithDefault
     , getCSV
     , getColumn
     , getInt
@@ -26,18 +27,8 @@ htmlAttribute key value =
     E.htmlAttribute (Html.Attributes.attribute key value)
 
 
-getPrecisionWithDefault : Int -> List String -> Int
-getPrecisionWithDefault default args =
-    getPrecision args |> Maybe.withDefault default
 
-
-getPrecision : List String -> Maybe Int
-getPrecision args =
-    let
-        dict =
-            Utility.keyValueDict args
-    in
-    Dict.get "precision" dict |> Maybe.andThen String.toInt
+-- DATA
 
 
 makePair : List Float -> Maybe ( Float, Float )
@@ -125,16 +116,6 @@ getCSV element =
             [ [] ]
 
 
-extractText : Element -> Maybe String
-extractText element =
-    case element of
-        Text content _ ->
-            Just content
-
-        _ ->
-            Nothing
-
-
 getColumn : Dict String String -> Element -> List Float
 getColumn dict body =
     let
@@ -178,6 +159,10 @@ getColumn dict body =
         |> filter
 
 
+
+-- ELEMENTS
+
+
 captionElement dict =
     case Dict.get "caption" dict of
         Just caption ->
@@ -187,6 +172,34 @@ captionElement dict =
             E.none
 
 
+
+-- GETTERS
+
+
+getPrecisionWithDefault : Int -> List String -> Int
+getPrecisionWithDefault default args =
+    getPrecision args |> Maybe.withDefault default
+
+
+getPrecision : List String -> Maybe Int
+getPrecision args =
+    let
+        dict =
+            Utility.keyValueDict args
+    in
+    Dict.get "precision" dict |> Maybe.andThen String.toInt
+
+
+extractText : Element -> Maybe String
+extractText element =
+    case element of
+        Text content _ ->
+            Just content
+
+        _ ->
+            Nothing
+
+
 getInt : Int -> List String -> Int
 getInt k stringList =
     List.Extra.getAt k stringList
@@ -194,11 +207,11 @@ getInt k stringList =
         |> Maybe.withDefault 0
 
 
-getArg_ : Int -> List String -> Maybe String
-getArg_ k stringList =
+getArg : Int -> List String -> Maybe String
+getArg k stringList =
     List.Extra.getAt k stringList
 
 
-getArg : Int -> String -> List String -> String
-getArg k default stringList =
+getArgWithDefault : Int -> String -> List String -> String
+getArgWithDefault k default stringList =
     List.Extra.getAt k stringList |> Maybe.withDefault default
