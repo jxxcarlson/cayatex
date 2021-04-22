@@ -117,9 +117,9 @@ renderElementDict =
         , ( "mathdisplay", renderMathDisplay )
 
         -- COMPUTATIONS
-        , ( "sum", sum )
-        , ( "average", average )
-        , ( "stdev", stdev )
+        , ( "sum", Widget.Data.sum )
+        , ( "average", Widget.Data.average )
+        , ( "stdev", Widget.Data.stdev )
         , ( "bargraph", Widget.Data.bargraph )
         , ( "linegraph", Widget.Data.linegraph )
         , ( "scatterplot", Widget.Data.scatterplot )
@@ -134,21 +134,6 @@ getText element =
 
         _ ->
             Nothing
-
-
-getTextList : Element -> List String
-getTextList element =
-    case element of
-        LX list_ _ ->
-            List.map Render.Utility.extractText list_
-                |> List.map (Maybe.withDefault "")
-                |> List.map (String.split ",")
-                |> List.map (List.map String.trim)
-                |> List.concat
-
-        --  |> Maybe.Extra.values
-        _ ->
-            []
 
 
 getText2 : Element -> String
@@ -580,85 +565,6 @@ isDisplayMathMode displayMode =
 
 
 -- MATH
-
-
-sum : FRender Mark2Msg
-sum renderArgs name args body sm =
-    let
-        numbers_ =
-            getTextList body
-
-        numbers =
-            List.map String.toFloat numbers_ |> Maybe.Extra.values
-
-        sum_ =
-            List.sum numbers
-
-        precision =
-            Render.Utility.getPrecisionWithDefault 2 args
-    in
-    row [ spacing 8 ] (text "sum" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (Utility.roundTo precision sum_)) ])
-
-
-average : FRender Mark2Msg
-average renderArgs name args body sm =
-    let
-        numbers_ =
-            getTextList body
-
-        numbers =
-            List.map String.toFloat numbers_ |> Maybe.Extra.values
-
-        n =
-            toFloat (List.length numbers)
-
-        sum_ =
-            List.sum numbers
-
-        average_ =
-            sum_ / n
-
-        precision =
-            Render.Utility.getPrecisionWithDefault 2 args
-    in
-    row [ spacing 8 ] (text "average" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (Utility.roundTo precision average_)) ])
-
-
-stdev : FRender Mark2Msg
-stdev renderArgs name args body sm =
-    let
-        numbers_ =
-            getTextList body
-
-        numbers : List Float
-        numbers =
-            List.map String.toFloat numbers_ |> Maybe.Extra.values
-
-        n =
-            toFloat (List.length numbers)
-
-        sum_ =
-            List.sum numbers
-
-        average_ =
-            sum_ / n
-
-        deltas =
-            List.map (\x -> x - average_) numbers
-
-        sumOfDeltasSquared =
-            List.map2 (*) deltas deltas |> List.sum
-
-        stdev_ =
-            sqrt sumOfDeltasSquared / (n - 1)
-
-        precision =
-            Render.Utility.getPrecisionWithDefault 2 args
-    in
-    row [ spacing 8 ] (text "stdev" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (Utility.roundTo precision stdev_)) ])
-
-
-
 -- HELPERS
 -- active : SourceMap -> String -> List (Attribute LaTeXMsg)
 -- active sm selectedId =

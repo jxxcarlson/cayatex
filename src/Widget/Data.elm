@@ -1,4 +1,11 @@
-module Widget.Data exposing (bargraph, linegraph, scatterplot)
+module Widget.Data exposing
+    ( average
+    , bargraph
+    , linegraph
+    , scatterplot
+    , stdev
+    , sum
+    )
 
 import Element as E exposing (column, el, paragraph, px, row, spacing, text)
 import Element.Background as Background
@@ -9,6 +16,82 @@ import Render.Types exposing (FRender)
 import Render.Utility
 import SimpleGraph exposing (Option(..), barChart, lineChart, scatterPlot)
 import Utility
+
+
+sum : FRender Mark2Msg
+sum renderArgs name args body sm =
+    let
+        numbers_ =
+            Render.Utility.getTextList body
+
+        numbers =
+            List.map String.toFloat numbers_ |> Maybe.Extra.values
+
+        sum_ =
+            List.sum numbers
+
+        precision =
+            Render.Utility.getPrecisionWithDefault 2 args
+    in
+    row [ spacing 8 ] (text "sum" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (Utility.roundTo precision sum_)) ])
+
+
+average : FRender Mark2Msg
+average renderArgs name args body sm =
+    let
+        numbers_ =
+            Render.Utility.getTextList body
+
+        numbers =
+            List.map String.toFloat numbers_ |> Maybe.Extra.values
+
+        n =
+            toFloat (List.length numbers)
+
+        sum_ =
+            List.sum numbers
+
+        average_ =
+            sum_ / n
+
+        precision =
+            Render.Utility.getPrecisionWithDefault 2 args
+    in
+    row [ spacing 8 ] (text "average" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (Utility.roundTo precision average_)) ])
+
+
+stdev : FRender Mark2Msg
+stdev renderArgs name args body sm =
+    let
+        numbers_ =
+            Render.Utility.getTextList body
+
+        numbers : List Float
+        numbers =
+            List.map String.toFloat numbers_ |> Maybe.Extra.values
+
+        n =
+            toFloat (List.length numbers)
+
+        sum_ =
+            List.sum numbers
+
+        average_ =
+            sum_ / n
+
+        deltas =
+            List.map (\x -> x - average_) numbers
+
+        sumOfDeltasSquared =
+            List.map2 (*) deltas deltas |> List.sum
+
+        stdev_ =
+            sqrt sumOfDeltasSquared / (n - 1)
+
+        precision =
+            Render.Utility.getPrecisionWithDefault 2 args
+    in
+    row [ spacing 8 ] (text "stdev" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (Utility.roundTo precision stdev_)) ])
 
 
 

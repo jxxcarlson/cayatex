@@ -8,6 +8,7 @@ module Render.Utility exposing
     , getInt
     , getPoints
     , getPrecisionWithDefault
+    , getTextList
     , htmlAttribute
     , makePair
     )
@@ -25,6 +26,21 @@ import Utility
 htmlAttribute : String -> String -> E.Attribute msg
 htmlAttribute key value =
     E.htmlAttribute (Html.Attributes.attribute key value)
+
+
+getTextList : Element -> List String
+getTextList element =
+    case element of
+        LX list_ _ ->
+            List.map extractText list_
+                |> List.map (Maybe.withDefault "")
+                |> List.map (String.split ",")
+                |> List.map (List.map String.trim)
+                |> List.concat
+
+        --  |> Maybe.Extra.values
+        _ ->
+            []
 
 
 
