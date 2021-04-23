@@ -1,4 +1,4 @@
-module Widget.GameOfLife exposing (..)
+module Widget.GameOfLife exposing (run)
 
 {- This is a starter app which presents a text label, text field, and a button.
    What you enter in the text field is echoed in the label.  When you press the
@@ -13,10 +13,20 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
-import Html exposing (Html)
+import Parser.Element exposing (Mark2Msg)
 import Random
+import Render.Types exposing (FRender)
 import Time exposing (Posix)
 import Widget.Conway as Conway exposing (State(..))
+
+
+run : FRender Mark2Msg
+run renderArgs name args body sm =
+    let
+        model =
+            init
+    in
+    view model
 
 
 type alias Config =
@@ -71,7 +81,7 @@ type AppState
 --
 
 
-type Msg
+type GameOfLifeMsg
     = NoOp
     | InputBeta String
     | InputSeed String
@@ -88,7 +98,7 @@ type alias Flags =
     {}
 
 
-init : ( Model, Cmd Msg )
+init : ( Model, Cmd GameOfLifeMsg )
 init =
     ( { input = "Test"
       , output = "Test"
@@ -119,7 +129,7 @@ subscriptions model =
     Time.every config.tickInterval Tick
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : GameOfLifeMsg -> Model -> ( Model, Cmd GameOfLifeMsg )
 update msg model =
     case msg of
         NoOp ->
@@ -249,13 +259,8 @@ generatePosition model =
 --
 
 
-view : Model -> Html Msg
+view : Model -> Element GameOfLifeMsg
 view model =
-    Element.layout [ Background.color dark ] (mainColumn model)
-
-
-mainColumn : Model -> Element Msg
-mainColumn model =
     column mainColumnStyle
         [ column [ centerX, spacing 20 ]
             [ title <| "Conway's Game of Life (" ++ String.fromInt model.gridWidth ++ ", " ++ String.fromInt model.gridWidth ++ ")"
@@ -323,7 +328,7 @@ cellStyle model =
     }
 
 
-counterDisplay : Model -> Element Msg
+counterDisplay : Model -> Element GameOfLifeMsg
 counterDisplay model =
     el [ Font.size 18, width (px 30), Font.color light ] (text <| String.fromInt model.counter)
 
@@ -343,7 +348,7 @@ buttonFontSize =
     16
 
 
-inputDensity : Model -> Element Msg
+inputDensity : Model -> Element GameOfLifeMsg
 inputDensity model =
     Input.text [ width (px 60), height (px 30), Font.size buttonFontSize, Background.color light, centerY ]
         { onChange = InputBeta
@@ -353,7 +358,7 @@ inputDensity model =
         }
 
 
-inputGridSize : Model -> Element Msg
+inputGridSize : Model -> Element GameOfLifeMsg
 inputGridSize model =
     Input.text [ width (px 60), height (px 30), Font.size buttonFontSize, Background.color light, centerY ]
         { onChange = InputGridWidth
@@ -363,7 +368,7 @@ inputGridSize model =
         }
 
 
-inputSeed : Model -> Element Msg
+inputSeed : Model -> Element GameOfLifeMsg
 inputSeed model =
     Input.text [ width (px 60), Font.size buttonFontSize ]
         { onChange = InputSeed
@@ -373,7 +378,7 @@ inputSeed model =
         }
 
 
-stepButton : Element Msg
+stepButton : Element GameOfLifeMsg
 stepButton =
     row [ centerX ]
         [ Input.button buttonStyle
@@ -383,7 +388,7 @@ stepButton =
         ]
 
 
-runButton : Model -> Element Msg
+runButton : Model -> Element GameOfLifeMsg
 runButton model =
     row [ centerX, width (px 80) ]
         [ Input.button (buttonStyle ++ [ activeBackgroundColor model ])
@@ -402,7 +407,7 @@ activeBackgroundColor model =
             Background.color (gray 0.2)
 
 
-resetButton : Element Msg
+resetButton : Element GameOfLifeMsg
 resetButton =
     row [ centerX ]
         [ Input.button buttonStyle

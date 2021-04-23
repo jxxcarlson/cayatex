@@ -21,6 +21,7 @@ import Widget.Data
 
 
 
+-- import Widget.Simulations
 -- STYLE PARAMETERS
 
 
@@ -123,6 +124,8 @@ renderElementDict =
         , ( "bargraph", Widget.Data.bargraph )
         , ( "linegraph", Widget.Data.linegraph )
         , ( "scatterplot", Widget.Data.scatterplot )
+
+        -- , ( "gameoflife", Widget.Simulations.gameOfLife )
         ]
 
 

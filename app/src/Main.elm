@@ -1,6 +1,7 @@
 module Main exposing (keyedNode, main)
 
 import Browser
+import CaYaTeX
 import Data
 import Element exposing (..)
 import Element.Background as Background
@@ -295,11 +296,7 @@ initState k =
 
 render : Int -> String -> Element Msg
 render k str =
-    Parser.Document.runloop k (String.lines str)
-        |> Parser.Document.toParsed
-        |> List.map (Render.Elm.renderList (initState k))
-        |> column [ spacing 18 ]
-        |> Element.map Mark2Msg
+    CaYaTeX.render "id__" { content = str, generation = k } |> Element.map Mark2Msg
 
 
 paragraphFormat =
