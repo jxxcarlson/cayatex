@@ -1,4 +1,4 @@
-module CaYaTeX exposing (Data, init, render, update)
+module CaYaTeX exposing (CaYaTeXMsg, Data, init, render, update)
 
 import Element as E
 import Parser.Data
@@ -11,6 +11,10 @@ type alias Data =
     { content : String, generation : Int }
 
 
+type alias CaYaTeXMsg =
+    Parser.Element.Mark2Msg
+
+
 init : Int -> String -> Data
 init generation text =
     { content = text, generation = generation }
@@ -21,12 +25,11 @@ update generation text _ =
     init generation text
 
 
-render : String -> Data -> E.Element Parser.Element.Mark2Msg
+render : String -> Data -> List (E.Element Parser.Element.Mark2Msg)
 render id data =
     Parser.Document.runloop data.generation (String.lines data.content)
         |> Parser.Document.toParsed
         |> List.map (Render.Elm.renderList (initState data.generation))
-        |> E.column [ E.spacing 18 ]
 
 
 initState k =

@@ -296,7 +296,12 @@ initState k =
 
 render : Int -> String -> Element Msg
 render k str =
-    CaYaTeX.render "id__" { content = str, generation = k } |> Element.map Mark2Msg
+    -- CaYaTeX.render "id__" { content = str, generation = k } |> Element.map Mark2Msg
+    Parser.Document.runloop k (String.lines str)
+        |> Parser.Document.toParsed
+        |> List.map (Render.Elm.renderList (initState k))
+        |> column [ spacing 18 ]
+        |> Element.map Mark2Msg
 
 
 paragraphFormat =
