@@ -1,4 +1,4 @@
-module Render.Elm exposing (renderElement, renderList, renderString)
+module Render.Elm exposing (paragraphs, renderElement, renderList, renderString)
 
 import Dict exposing (Dict)
 import Element as E exposing (column, el, paragraph, px, row, spacing, text)
@@ -56,11 +56,29 @@ renderElement renderArgs element =
             -- TODO
             el [] (text str)
 
+        --case paragraphs str of
+        --    [] ->
+        --        E.none
+        --
+        --    [ str_ ] ->
+        --        el [] (text str_)
+        --
+        --    list_ ->
+        --        column [ spacing 12 ] (List.map text list_)
         Element name args body sm ->
             renderWithDictionary renderArgs name args body sm
 
         LX list_ _ ->
             paragraph format (List.map (renderElement renderArgs) list_)
+
+
+paragraphs : String -> List String
+paragraphs str =
+    str
+        |> Debug.log "STR!"
+        |> String.split "\n\n"
+        |> List.map String.trim
+        |> Debug.log "PAR!"
 
 
 theoremLikeElements =
@@ -115,7 +133,11 @@ renderElementDict =
         , ( "link", link )
         , ( "image", image )
         , ( "math", renderMath )
-        , ( "mathdisplay", renderMathDisplay )
+        , ( "m", renderMath )
+        , ( "displaymath", renderMathDisplay )
+        , ( "dm", renderMathDisplay )
+        , ( "center", center )
+        , ( "indent", indent )
 
         -- COMPUTATIONS
         , ( "sum", Widget.Data.sum )
@@ -156,6 +178,10 @@ getText2 element =
 
 listPadding =
     E.paddingEach { left = 18, right = 0, top = 0, bottom = 0 }
+
+
+indentPadding =
+    E.paddingEach { left = 24, right = 0, top = 0, bottom = 0 }
 
 
 getPrefixSymbol : Int -> List String -> E.Element Mark2Msg
@@ -349,6 +375,16 @@ section2 renderArgs name args body sm =
 section3 : FRender Mark2Msg
 section3 renderArgs name args body sm =
     column [ Font.size section3FontSize, paddingAbove (round <| 0.8 * section3FontSize) ] [ text (getText body |> Maybe.withDefault "no subsubsection name found") ]
+
+
+center : FRender Mark2Msg
+center renderArgs name args body sm =
+    column [ E.centerX ] [ renderElement renderArgs body ]
+
+
+indent : FRender Mark2Msg
+indent renderArgs name args body sm =
+    column [ indentPadding ] [ renderElement renderArgs body ]
 
 
 paddingAbove k =

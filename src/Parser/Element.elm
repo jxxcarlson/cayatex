@@ -1,4 +1,13 @@
-module Parser.Element exposing (Element(..), Mark2Msg(..), element, elementList, fubar, parse, parseList)
+module Parser.Element exposing
+    ( Element(..)
+    , Mark2Msg(..)
+    , element
+    , elementBody
+    , elementList
+    , fubar
+    , parse
+    , parseList
+    )
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
