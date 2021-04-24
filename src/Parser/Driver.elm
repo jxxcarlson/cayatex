@@ -31,6 +31,10 @@ pl str =
     parseLoop 0 0 str |> .parsed
 
 
+pl2 str =
+    pl str |> List.map Getters.strip
+
+
 {-| increment the offset field of the SourceMap component of an Expression
 -}
 incrementOffset : Int -> Element -> Element
