@@ -80,7 +80,7 @@ fubar =
 
 
 elementName =
-    T.first (string_ [ ' ', '\n' ]) Parser.spaces
+    T.first (string_ [ '[', ']', ' ', '\n' ]) Parser.spaces
 
 
 argsAndBody generation lineNumber =
