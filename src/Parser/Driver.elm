@@ -26,6 +26,7 @@ parseLoop generation initialLineNumber str =
     Loop.parseLoop packet generation initialLineNumber str
 
 
+pl : String -> List Element
 pl str =
     parseLoop 0 0 str |> .parsed
 
