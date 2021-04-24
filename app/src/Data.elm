@@ -1127,7 +1127,7 @@ speeds up compilation during editing.  All in due time!]
 Pythagoras says that [math a^2 + b^2 = c^2].
 This is an [strong [italic extremely]] cool result. But just as cool is the below:
 
-[mathdisplay \\sum_{n=1}^\\infty \\frac{1}{n} = \\infty,]
+[displaymath \\sum_{n=1}^\\infty \\frac{1}{n} = \\infty,]
 
 which goes back to the work of Nicole Oresme (1320–1382).  See the entry in the
 [link |Stanford Encyclopedia of Philosophy| https://plato.stanford.edu/entries/nicole-oresme/].
@@ -1136,7 +1136,7 @@ You can also consult [link https://en.wikipedia.org/wiki/Nicole_Oresme].
 We can also do some high-school math, with that beautifully curved integral sign
 that attracts so many people to the subject:
 
-[mathdisplay \\int_0^1 x^n dx = \\frac{1}{n+1}]
+[displaymath \\int_0^1 x^n dx = \\frac{1}{n+1}]
 
 And of course, we can also do theorems:
 
