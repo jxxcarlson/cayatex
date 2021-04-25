@@ -1,10 +1,11 @@
-module CaYaTeX exposing (CaYaTeXMsg, Data, init, render, update)
+module CaYaTeX exposing (CaYaTeXMsg, Data, init, render, renderToLaTeX, update)
 
 import Element as E
 import Parser.Data
 import Parser.Document
 import Parser.Element
 import Render.Elm
+import Render.LaTeX
 import Render.Types as Types
 
 
@@ -31,6 +32,11 @@ render id data =
     Parser.Document.runloop data.generation (String.lines data.content)
         |> Parser.Document.toParsed
         |> List.map (Render.Elm.renderList (initState data.generation))
+
+
+renderToLaTeX : String -> String
+renderToLaTeX =
+    Render.LaTeX.render
 
 
 initState : Int -> Types.RenderArgs

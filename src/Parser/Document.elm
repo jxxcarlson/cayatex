@@ -25,15 +25,18 @@ at which a block begins. Recall that a block is a string (which may contain newl
 from a set of contiguous lines. It represents a logical paragraph: either an ordinary paragraph or
 an outer begin-end pair. The offset describes the position of a string in the block. Thus, if
 the text "a\\nb\\nc" starts at line 100 of the source text and is preceded and followed by a blank line,
-then the block offset is 100, the offset of "a" is 0, the offest of "b" is 2, and the offest of "c" is 4.
+then the block offset is 100, the offset of "a" is 0, the offset of "b" is 2, and the offest of "c" is 4.
+
+NOTES:
+
+  - Parser.Driver.parseLoop is called in three places:
+      - pushBlock\_ : String -> State -> State
+      - popBlockStack : String -> State -> State
+      - flush : State -> State
+        These are the sites in Document.runLoop at which parsing is done.
 
 -}
 
--- import Parser.Parser as Parser
---import Render.LaTeXState as LaTeXState exposing (LaTeXState)
---import Render.Reduce as Reduce
-
-import Dict exposing (Dict)
 import Parser as P exposing ((|.), (|=))
 import Parser.Data
 import Parser.Driver
@@ -240,38 +243,24 @@ differentialBlockLevel str =
     leftBrackets - rightBrackets
 
 
-{-| Put State in the Start state
+{-| (ST 1) Put State in the Start state
+Used in ( Start, LTBlank )
+ST uses: 10 uses, 5 functions in 3x4 + 1 state transitions
 -}
 start : State -> State
 start state =
     { state | blockType = Start, blockLevel = 0, blockContents = [] }
 
 
+{-| (ST 2) Two uses: ( Start, LTEndElement ) and ( Start, LTTextBlock )
+-}
 initBlock : BlockStatus -> String -> State -> State
 initBlock blockType_ currentLine_ state =
     { state | blockType = blockType_, blockContents = [ currentLine_ ] }
 
 
-initWithBlockType : String -> State -> State
-initWithBlockType currentLine_ state =
-    let
-        newTC =
-            Parser.Driver.parseLoop state.generation state.lineNumber (String.join "\n" (List.reverse (currentLine_ :: state.blockContents)))
-
-        -- TODO (1_: wire up Parser.SourceText.SourceText
-        --laTeXState =
-        --    Reduce.laTeXState newTC.parsed state.laTeXState
-    in
-    { state
-        | -- blockContents = [ currentLine_ ]
-          blockContents = []
-        , lineNumber = state.lineNumber + countLines state.blockContents
-
-        --, laTeXState = laTeXState
-        , output = newTC :: state.output
-    }
-
-
+{-| (ST 3) Three uses: ( InTextBlock, LTEndElement ),( InTextBlock, LTTextBlock ), ( InElementBlock, LTTextBlock )
+-}
 addToBlockContents : String -> State -> State
 addToBlockContents currentLine_ state =
     let
@@ -280,34 +269,24 @@ addToBlockContents currentLine_ state =
 
         newBlockLevel =
             state.blockLevel + deltaBlockLevel
-
-        -- |> Debug.log "ATB, newBlockLevel"
-        --_ =
-        --    Debug.log "(BL, Delta)" ( state.blockLevel, deltaBlockLevel )
     in
     if newBlockLevel == 0 && deltaBlockLevel < 0 then
-        --let
-        --    _ =
-        --        Debug.log "FUNNY PATH"
-        --in
         pushBlock_ ("\n" ++ currentLine_) state
 
     else
         { state | blockLevel = newBlockLevel, blockContents = currentLine_ :: state.blockContents }
 
 
+{-| (ST 4) One use: ( InElementBlock, LTBlank )
+-}
 pushBlockStack : String -> State -> State
 pushBlockStack currentLine_ state =
     let
         deltaBlockLevel =
             differentialBlockLevel currentLine_
 
-        -- |> Debug.log "PBS, Delta BL"
         newBlockLevel =
-            -- TODO: the trouble is somewhere in newBlockLevel
             state.blockLevel + deltaBlockLevel
-
-        --  |> Debug.log "PBS, newBlockLevel"
     in
     if newBlockLevel == 0 then
         pushBlock_ ("\n" ++ currentLine_) state
@@ -319,6 +298,8 @@ pushBlockStack currentLine_ state =
         }
 
 
+{-| (ST 5) Three uses: ( Start, LTBeginElement ), ( InTextBlock, LTBeginElement ), ( InElementBlock, LTBeginElement )
+-}
 startBlock : String -> State -> State
 startBlock currentLine_ state =
     let
@@ -328,10 +309,6 @@ startBlock currentLine_ state =
         newBlockLevel =
             state.blockLevel + deltaBlockLevel
     in
-    --if newBlockLevel == 0 then
-    --    pushBlock_ ("\n" ++ currentLine_) state
-    --
-    --else
     { state
         | blockContents = currentLine_ :: state.blockContents
         , blockLevel = newBlockLevel
@@ -339,11 +316,15 @@ startBlock currentLine_ state =
     }
 
 
+{-| (ST 6) Called at ( InTextBlock, LTBlank )
+-}
 pushBlock : State -> State
 pushBlock state =
     pushBlock_ "" state
 
 
+{-| (ST 6)
+-}
 pushBlock_ : String -> State -> State
 pushBlock_ line state =
     let
@@ -352,12 +333,9 @@ pushBlock_ line state =
                 ++ "\n"
                 ++ line
 
-        -- |> Debug.log "PUSH"
         tc : TextCursor Element
         tc =
             Parser.Driver.parseLoop state.generation state.lineNumber str
-
-        -- TODO (2): wire up Parser.SourceText.SourceText
     in
     { state
         | blockType = Start
@@ -370,6 +348,8 @@ pushBlock_ line state =
     }
 
 
+{-| (ST 7 Called at ( InElementBlock, LTEndElement )
+-}
 popBlockStack : String -> State -> State
 popBlockStack currentLine_ state =
     let
@@ -384,7 +364,6 @@ popBlockStack currentLine_ state =
             tc_ =
                 Parser.Driver.parseLoop state.generation state.lineNumber input_
 
-            -- TODO (3): wire up Parser.SourceText.SourceText
             tc =
                 { tc_ | text = input_ }
         in
@@ -422,7 +401,6 @@ flush state =
                     tc_ =
                         Parser.Driver.parseLoop state.generation state.lineNumber input
 
-                    -- TODO (4):: wire up Parser.SourceText.SourceText
                     tc =
                         { tc_ | text = input }
 
@@ -431,7 +409,6 @@ flush state =
                 in
                 { state
                     | -- laTeXState = laTeXState
-                      -- output = List.reverse (tc :: state.output)
                       output = tc :: state.output
                 }
     in
