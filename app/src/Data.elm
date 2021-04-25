@@ -6,6 +6,36 @@ module Data exposing (test, text)
 
 test =
     """
+[data 
+
+N,  Symbol,  Name, W
+1, H, Hydrogen,1.008
+2, He, Helium, 4.002
+3, Li, Lithium, 6.94
+4, Be, Beryllium, 9.012
+5, B, Boron, 10.81
+6, C, Carbon, 12.011
+7, N, Nitrogen, 14.007
+8, O, Oxygen, 15.999
+9, F, Fluorine, 18.998
+10, Ne, Neon, 20.1797
+11, Na, Sodium, 22.989
+12, Mg, Magnesium, 24.305
+13, Al, Aluminium, 26.981
+14, Si, Silicon, 28.085
+15, P, Phosphorus, 30.973
+16, S, Sulfur, 32.06
+17, Cl, Chlorine, 35.45
+18, Ar, Argon, 39.948
+19, K, Potassium, 39.0983
+20, Ca, Calcium, 40.078
+
+]
+"""
+
+
+test22 =
+    """
     [scatterplot |col1:3,  col2:4, caption: Hubble's 1929 data|
 object,ms,R (Mpc),v (km/sec),mt,Mt,"D from mt,Mt",,,,,,,,,
 S.Mag.,..,0.032,170,1.5,-16.0,0.03,Slope when Intercept set to zero,423.901701290206,km/sec/Mpc,,,,,,
@@ -1118,6 +1148,11 @@ Such functions can be composed, as in mathematics or as in languages such as Has
 
 [item [strong Modern]. Unicode compatible.]]
 
+
+Certain tasks are particularly simple with cayatex: insertion of images referenced by URL, construction of tables, graphs, and plots from data given in a standard format such as CSV, and also inline compatations of statistical data. Examples of these are given below.
+
+Our goal is to have a convenient  tool for writing technical documents that are immediately publishible on the web while at the same time offering export to conventional formats such as LaTeX (and therefore also) PDF.
+
 [strong Note.] [fontRGB |50, 0, 200| At the moment  we have not yet implemented differential compilation, which greatly
 speeds up compilation during editing.  All in due time!]
 
@@ -1156,7 +1191,7 @@ Example:  [highlightRGB |252, 178, 50| [fontRGB |23, 57, 156| [strong What color
 Note the nesting of elements, aka function composition. When we have our macro facility up and running,  users can abbreviate constructs like
 this one, e.g., just say [code raw##[myhighlight| What color is this?]##]
 
-[section2 SourceText]
+[section2 Data]
 
 One can design elements which manipulate data (numerical computations, visualization).  Here are some data computations:
 
@@ -1397,6 +1432,34 @@ N.G.C.6822,..,0.214,-130,9,-12.7,0.22,Slope,453.85999408475,km/sec/Mpc,,,,,,
 Table 1,,,,,-15.5,,,,,,,,,,
 ]
 
+[section2 Tables]
+
+[data |title:Atomic weights, header|
+
+N,  Symbol,  Name, W
+1, H, Hydrogen,1.008
+2, He, Helium, 4.002
+3, Li, Lithium, 6.94
+4, Be, Beryllium, 9.012
+5, B, Boron, 10.81
+6, C, Carbon, 12.011
+7, N, Nitrogen, 14.007
+8, O, Oxygen, 15.999
+9, F, Fluorine, 18.998
+10, Ne, Neon, 20.1797
+11, Na, Sodium, 22.989
+12, Mg, Magnesium, 24.305
+13, Al, Aluminium, 26.981
+14, Si, Silicon, 28.085
+15, P, Phosphorus, 30.973
+16, S, Sulfur, 32.06
+17, Cl, Chlorine, 35.45
+18, Ar, Argon, 39.948
+19, K, Potassium, 39.0983
+20, Ca, Calcium, 40.078
+
+]
+
 
 [section2 Unicode]
 
@@ -1473,48 +1536,19 @@ A numbered list has "numbered" as its first argument, as in the example below.
 Because CaYaTeX is so simple, the type of the AST is very small:
 
 [codeblock
-
 raw##type Element
-    = Text String (Maybe SourceMap)
-    | Element
-        String
-        (List String)
-        Element (Maybe SourceMap)
-    | LX (List Element) (Maybe SourceMap)
+    =   Text String
+      | Element String (List String) Element
+      | LX (List Element)
 ##
 ]
 
+The first variant, [code Text String] accounts for plain text.
+The second is of the form [code Element name args body],
+while the third shows how a list of elements can form an
+element.  In particular, the body of an element can be
+[code LX] of a list of elements.
+
+
 
 """
-
-
-appendix =
-    """
-[section2 Appendix: Technical Stuff]
-
-Here is the type of the AST:
-
-[codeblock
-
-raw##type Element
-    = Text String (Maybe SourceMap)
-    | Element
-        String
-        (List String)
-        Element (Maybe SourceMap)
-    | LX (List Element) (Maybe SourceMap
-##
-"""
-
-
-stuff =
-    """% Notice the a leading percent sign makes a line into a comment.           
-%
-%[section2 About Errors]
-%
-%Look what happens here:
-%
-%(1) [ital One more beer, please!]
-%
-%(2) [italic One more beer, please
-           """

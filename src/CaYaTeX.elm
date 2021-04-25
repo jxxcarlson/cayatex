@@ -5,6 +5,7 @@ import Parser.Data
 import Parser.Document
 import Parser.Element
 import Render.Elm
+import Render.Types as Types
 
 
 type alias Data =
@@ -32,6 +33,7 @@ render id data =
         |> List.map (Render.Elm.renderList (initState data.generation))
 
 
+initState : Int -> Types.RenderArgs
 initState k =
     { generation = k
     , blockOffset = 0

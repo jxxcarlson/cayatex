@@ -1,5 +1,6 @@
 module Render.Utility exposing
     ( captionElement
+    , columnWidths
     , extractText
     , getArg
     , getArgWithDefault
@@ -130,6 +131,25 @@ getCSV element =
 
         _ ->
             [ [] ]
+
+
+itemWidths : List (List String) -> List (List Int)
+itemWidths items =
+    List.map (List.map String.length) items
+
+
+columnWidths_ : List (List String) -> List Int
+columnWidths_ items =
+    items
+        |> itemWidths
+        |> List.Extra.transpose
+        |> List.map List.maximum
+        |> Maybe.Extra.values
+
+
+columnWidths : Float -> Float -> List (List String) -> List Float
+columnWidths factor term items =
+    items |> columnWidths_ |> List.map (\k -> factor * toFloat k + term)
 
 
 getColumn : Dict String String -> Element -> List Float

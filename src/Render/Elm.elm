@@ -8,6 +8,7 @@ import Html exposing (Html)
 import Html.Attributes as HA
 import Html.Keyed
 import Json.Encode
+import List.Extra
 import Maybe.Extra
 import Parser.Driver
 import Parser.Element exposing (Element(..), Mark2Msg)
@@ -75,10 +76,8 @@ renderElement renderArgs element =
 paragraphs : String -> List String
 paragraphs str =
     str
-        |> Debug.log "STR!"
         |> String.split "\n\n"
         |> List.map String.trim
-        |> Debug.log "PAR!"
 
 
 theoremLikeElements =
@@ -129,6 +128,7 @@ renderElementDict =
         , ( "section2", section2 )
         , ( "section3", section3 )
         , ( "list", list )
+        , ( "data", dataTable )
         , ( "item", item )
         , ( "link", link )
         , ( "image", image )
@@ -203,7 +203,7 @@ getPrefixSymbol k args_ =
             el [ Font.size 16 ] (text str)
 
 
-listTitle args_ =
+elementTitle args_ =
     let
         dict =
             Utility.keyValueDict args_
@@ -216,7 +216,11 @@ listTitle args_ =
             E.none
 
         Just title_ ->
-            el [ Font.bold ] (text title_)
+            el [ Font.bold, Font.size titleSize ] (text title_)
+
+
+titleSize =
+    16
 
 
 list : FRender Mark2Msg
@@ -224,10 +228,40 @@ list renderArgs name args_ body sm =
     case body of
         LX list_ _ ->
             column [ spacing 4, listPadding ]
-                (listTitle args_ :: List.indexedMap (\k item_ -> renderListItem (getPrefixSymbol k args_) renderArgs item_) (filterOutBlankItems list_))
+                (elementTitle args_ :: List.indexedMap (\k item_ -> renderListItem (getPrefixSymbol k args_) renderArgs item_) (filterOutBlankItems list_))
 
         _ ->
             el [ Font.color redColor ] (text "Malformed list")
+
+
+dataTable : FRender Mark2Msg
+dataTable renderArgs name args_ body sm =
+    let
+        rawData : List (List String)
+        rawData =
+            Render.Utility.getCSV body
+                |> List.filter (\row -> row /= [ "" ])
+
+        widths : List Float
+        widths =
+            Render.Utility.columnWidths 10 0 rawData
+
+        headerRow =
+            List.member "header" (Utility.entities args_)
+
+        style k =
+            if k == 0 && headerRow then
+                [ Font.bold, spacing 4 ]
+
+            else
+                [ spacing 4 ]
+
+        makeRow : Int -> List Float -> List String -> E.Element Mark2Msg
+        makeRow k columnWidths cells =
+            row (style k) (List.map2 (\w cell -> el [ E.width (E.px (round w)) ] (text cell)) columnWidths cells)
+    in
+    column [ spacing 8 ]
+        (elementTitle args_ :: List.indexedMap (\k -> makeRow k widths) rawData)
 
 
 filterOutBlankItems : List Element -> List Element
@@ -249,12 +283,12 @@ renderListItem : E.Element Mark2Msg -> RenderArgs -> Element -> E.Element Mark2M
 renderListItem prefixSymbol renderArgs elt =
     case elt of
         Element "item" _ body _ ->
-            row [ spacing 8 ] [ prefixSymbol, renderElement renderArgs elt ]
+            E.row [ E.spacing 8 ] [ prefixSymbol, renderElement renderArgs elt ]
 
         Element "list" args body _ ->
             case body of
                 LX list_ _ ->
-                    column [ spacing 4, listPadding ] (listTitle args :: List.indexedMap (\k item_ -> renderListItem (getPrefixSymbol k args) renderArgs item_) (filterOutBlankItems list_))
+                    column [ spacing 4, listPadding ] (elementTitle args :: List.indexedMap (\k item_ -> renderListItem (getPrefixSymbol k args) renderArgs item_) (filterOutBlankItems list_))
 
                 _ ->
                     el [ Font.color redColor ] (text "Malformed list")
@@ -438,7 +472,7 @@ image renderArgs name args body sm =
                     E.none
 
                 Just c ->
-                    row [ E.centerX ] [ el [ E.width E.fill ] (text c) ]
+                    E.row [ E.centerX ] [ el [ E.width E.fill ] (text c) ]
 
         width =
             case Dict.get "width" dict of
@@ -535,7 +569,7 @@ renderaAsTheoremLikeElement renderArgs name args body sm =
         heading =
             case label_ of
                 Nothing ->
-                    row [] [ el [ Font.bold ] (text <| String.Extra.toSentenceCase name ++ ".") ]
+                    E.row [] [ el [ Font.bold ] (text <| String.Extra.toSentenceCase name ++ ".") ]
 
                 Just label ->
                     paragraph []

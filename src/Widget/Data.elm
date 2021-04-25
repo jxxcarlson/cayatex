@@ -8,8 +8,6 @@ module Widget.Data exposing
     )
 
 import Element as E exposing (column, el, paragraph, px, row, spacing, text)
-import Element.Background as Background
-import Element.Font as Font
 import Maybe.Extra
 import Parser.Element exposing (Element(..), Mark2Msg)
 import Render.Types exposing (FRender)
