@@ -1,4 +1,4 @@
-module Utility exposing (entities, keyValueDict, liftToMaybe, roundTo)
+module CYUtility exposing (entities, keyValueDict, liftToMaybe, roundTo)
 
 import Dict exposing (Dict)
 import Maybe.Extra

@@ -1,5 +1,6 @@
 module Render.Elm exposing (paragraphs, renderElement, renderList, renderString)
 
+import CYUtility
 import Dict exposing (Dict)
 import Element as E exposing (column, el, paragraph, px, row, spacing, text)
 import Element.Background as Background
@@ -17,7 +18,6 @@ import Parser.TextCursor
 import Render.Types exposing (DisplayMode(..), FRender, RenderArgs, RenderElementDict)
 import Render.Utility
 import String.Extra
-import Utility
 import Widget.Data
 
 
@@ -186,7 +186,7 @@ indentPadding =
 
 getPrefixSymbol : Int -> List String -> E.Element Mark2Msg
 getPrefixSymbol k args_ =
-    case List.head (Utility.entities args_) |> Maybe.map String.trim of
+    case List.head (CYUtility.entities args_) |> Maybe.map String.trim of
         Just "numbered" ->
             el [ Font.size 12, E.alignTop, E.moveDown 2.2 ] (text (String.fromInt (k + 1) ++ "."))
 
@@ -206,7 +206,7 @@ getPrefixSymbol k args_ =
 elementTitle args_ =
     let
         dict =
-            Utility.keyValueDict args_
+            CYUtility.keyValueDict args_
 
         title =
             Dict.get "title" dict
@@ -247,7 +247,7 @@ dataTable renderArgs name args_ body sm =
             Render.Utility.columnWidths 10 0 rawData
 
         headerRow =
-            List.member "header" (Utility.entities args_)
+            List.member "header" (CYUtility.entities args_)
 
         style k =
             if k == 0 && headerRow then
@@ -461,7 +461,7 @@ image : FRender Mark2Msg
 image renderArgs name args body sm =
     let
         dict =
-            Utility.keyValueDict args
+            CYUtility.keyValueDict args
 
         description =
             Dict.get "caption" dict |> Maybe.withDefault ""

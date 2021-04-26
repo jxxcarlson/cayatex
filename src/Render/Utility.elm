@@ -14,6 +14,7 @@ module Render.Utility exposing
     , makePair
     )
 
+import CYUtility
 import Dict exposing (Dict)
 import Element as E
 import Element.Font as Font
@@ -21,7 +22,6 @@ import Html.Attributes
 import List.Extra
 import Maybe.Extra
 import Parser.Element exposing (Element(..), Mark2Msg)
-import Utility
 
 
 htmlAttribute : String -> String -> E.Attribute msg
@@ -221,7 +221,7 @@ getPrecision : List String -> Maybe Int
 getPrecision args =
     let
         dict =
-            Utility.keyValueDict args
+            CYUtility.keyValueDict args
     in
     Dict.get "precision" dict |> Maybe.andThen String.toInt
 

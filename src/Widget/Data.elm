@@ -7,13 +7,13 @@ module Widget.Data exposing
     , sum
     )
 
+import CYUtility
 import Element as E exposing (column, el, paragraph, px, row, spacing, text)
 import Maybe.Extra
 import Parser.Element exposing (Element(..), Mark2Msg)
 import Render.Types exposing (FRender)
 import Render.Utility
 import SimpleGraph exposing (Option(..), barChart, lineChart, scatterPlot)
-import Utility
 
 
 sum : FRender Mark2Msg
@@ -31,7 +31,7 @@ sum renderArgs name args body sm =
         precision =
             Render.Utility.getPrecisionWithDefault 2 args
     in
-    row [ spacing 8 ] (text "sum" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (Utility.roundTo precision sum_)) ])
+    row [ spacing 8 ] (text "sum" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (CYUtility.roundTo precision sum_)) ])
 
 
 average : FRender Mark2Msg
@@ -55,7 +55,7 @@ average renderArgs name args body sm =
         precision =
             Render.Utility.getPrecisionWithDefault 2 args
     in
-    row [ spacing 8 ] (text "average" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (Utility.roundTo precision average_)) ])
+    row [ spacing 8 ] (text "average" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (CYUtility.roundTo precision average_)) ])
 
 
 stdev : FRender Mark2Msg
@@ -89,7 +89,7 @@ stdev renderArgs name args body sm =
         precision =
             Render.Utility.getPrecisionWithDefault 2 args
     in
-    row [ spacing 8 ] (text "stdev" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (Utility.roundTo precision stdev_)) ])
+    row [ spacing 8 ] (text "stdev" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (CYUtility.roundTo precision stdev_)) ])
 
 
 
@@ -100,7 +100,7 @@ bargraph : FRender Mark2Msg
 bargraph renderArgs name args body sm =
     let
         dict =
-            Utility.keyValueDict args
+            CYUtility.keyValueDict args
 
         numbers : List Float
         numbers =
@@ -139,8 +139,8 @@ bargraph renderArgs name args body sm =
         , Render.Utility.captionElement dict
         , paragraph [ spacing 12 ]
             [ text ("data points: " ++ String.fromFloat n ++ ", ")
-            , text ("min: " ++ String.fromFloat (Utility.roundTo 2 dataMin) ++ ", ")
-            , text ("max: " ++ String.fromFloat (Utility.roundTo 2 dataMax))
+            , text ("min: " ++ String.fromFloat (CYUtility.roundTo 2 dataMin) ++ ", ")
+            , text ("max: " ++ String.fromFloat (CYUtility.roundTo 2 dataMax))
             ]
         ]
 
@@ -149,7 +149,7 @@ linegraph : FRender Mark2Msg
 linegraph renderArgs name args body sm =
     let
         dict =
-            Utility.keyValueDict args
+            CYUtility.keyValueDict args
 
         numbers_ : List (List String)
         numbers_ =
@@ -193,7 +193,7 @@ scatterplot : FRender Mark2Msg
 scatterplot renderArgs name args body sm =
     let
         dict =
-            Utility.keyValueDict args
+            CYUtility.keyValueDict args
 
         points =
             Render.Utility.getPoints dict body
@@ -233,7 +233,7 @@ scatterplot renderArgs name args body sm =
         , Render.Utility.captionElement dict
         , paragraph [ spacing 12 ]
             [ text ("data points: " ++ String.fromFloat n ++ ", ")
-            , text ("xmax: " ++ String.fromFloat (Utility.roundTo 0 xmax) ++ ", ")
-            , text ("ymax: " ++ String.fromFloat (Utility.roundTo 0 ymax))
+            , text ("xmax: " ++ String.fromFloat (CYUtility.roundTo 0 xmax) ++ ", ")
+            , text ("ymax: " ++ String.fromFloat (CYUtility.roundTo 0 ymax))
             ]
         ]
