@@ -3,7 +3,8 @@
 by James Carlson and Nicholas Yang
 
 
-CaYaTeX is an experimental markup language that compiles to LaTeX, Html, ahd (indirectly) PDF. 
+CaYaTeX is an experimental markup language that compiles to LaTeX, Html, and (indirectly) PDF. 
+Here is a a [demo](https://jxxcarlson.github.io/app/cayatex/).
 
 There are two constructs in the language: _text_ and _elements_. Below are
 some elements.  They have the form `[name |args| body]` where (a) `|args|` may be
