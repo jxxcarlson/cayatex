@@ -1,7 +1,7 @@
 module Parser.Document exposing
     ( process, toParsed, toText
     , State, Block, LineType(..)
-    , BlockStatus(..), Step(..), applyNextState, classify, differentialBlockLevel, getParseResult, init, nextState, runloop
+    , BlockStatus(..), Step(..), applyNextState, classify, differentialBlockLevel, getParseResult, init, nextState, rl, runloop
     )
 
 {-| The main function in this module is process, which takes as input
@@ -107,6 +107,10 @@ etc.
 runloop : Int -> List String -> State
 runloop generation strList =
     loop (init generation strList) nextState
+
+
+rl str =
+    runloop 0 (String.lines str) |> toParsed |> List.map (List.map Parser.Getters.strip)
 
 
 {-| Return the AST from the State.
