@@ -116,13 +116,16 @@ renderElementDict : RenderElementDict Mark2Msg
 renderElementDict =
     Dict.fromList
         [ ( "Error", error )
-        , ( "strong", renderStrong )
+        , ( "bold", renderStrong )
+        , ( "b", renderStrong )
         , ( "italic", renderItalic )
+        , ( "i", renderItalic )
         , ( "highlight", highlight )
         , ( "highlightRGB", highlightRGB )
         , ( "fontRGB", fontRGB )
         , ( "code", renderCode )
-        , ( "codeblock", renderCodeBlock )
+        , ( "codeblock", codeblock )
+        , ( "verbatim", verbatim )
         , ( "poetry", poetry )
         , ( "section", section )
         , ( "section2", section2 )
@@ -177,16 +180,16 @@ getText2 element =
 
 
 listPadding =
-    E.paddingEach { left = 18, right = 0, top = 0, bottom = 0 }
+    E.paddingEach { left = 18, right = 0, top = 8, bottom = 0 }
 
 
 indentPadding =
     E.paddingEach { left = 24, right = 0, top = 0, bottom = 0 }
 
 
-getPrefixSymbol : Int -> List String -> E.Element Mark2Msg
-getPrefixSymbol k args_ =
-    case List.head (CYUtility.entities args_) |> Maybe.map String.trim of
+getPrefixSymbol : Int -> Dict String String -> E.Element Mark2Msg
+getPrefixSymbol k dict =
+    case Dict.get "s" dict of
         Just "numbered" ->
             el [ Font.size 12, E.alignTop, E.moveDown 2.2 ] (text (String.fromInt (k + 1) ++ "."))
 
@@ -216,19 +219,23 @@ elementTitle args_ =
             E.none
 
         Just title_ ->
-            el [ Font.bold, Font.size titleSize ] (text title_)
+            el [ Font.size titleSize ] (text title_)
 
 
 titleSize =
-    16
+    14
 
 
 list : FRender Mark2Msg
 list renderArgs name args_ body sm =
+    let
+        dict =
+            CYUtility.keyValueDict args_
+    in
     case body of
         LX list_ _ ->
             column [ spacing 4, listPadding ]
-                (elementTitle args_ :: List.indexedMap (\k item_ -> renderListItem (getPrefixSymbol k args_) renderArgs item_) (filterOutBlankItems list_))
+                (elementTitle args_ :: List.indexedMap (\k item_ -> renderListItem (getPrefixSymbol k dict) renderArgs item_) (filterOutBlankItems list_))
 
         _ ->
             el [ Font.color redColor ] (text "Malformed list")
@@ -286,9 +293,13 @@ renderListItem prefixSymbol renderArgs elt =
             E.row [ E.spacing 8 ] [ prefixSymbol, renderElement renderArgs elt ]
 
         Element "list" args body _ ->
+            let
+                dict =
+                    CYUtility.keyValueDict args
+            in
             case body of
                 LX list_ _ ->
-                    column [ spacing 4, listPadding ] (elementTitle args :: List.indexedMap (\k item_ -> renderListItem (getPrefixSymbol k args) renderArgs item_) (filterOutBlankItems list_))
+                    column [ spacing 4, listPadding ] (elementTitle args :: List.indexedMap (\k item_ -> renderListItem (getPrefixSymbol k dict) renderArgs item_) (filterOutBlankItems list_))
 
                 _ ->
                     el [ Font.color redColor ] (text "Malformed list")
@@ -354,8 +365,8 @@ poetry renderArgs _ _ body sm =
         (List.map text (getLines (getText2 body |> String.trim)))
 
 
-renderCodeBlock : FRender Mark2Msg
-renderCodeBlock renderArgs _ _ body sm =
+codeblock : FRender Mark2Msg
+codeblock renderArgs _ _ body sm =
     column
         [ Font.family
             [ Font.typeface "Inconsolata"
@@ -364,6 +375,21 @@ renderCodeBlock renderArgs _ _ body sm =
         , Font.size 14
         , Font.color codeColor
         , Render.Utility.htmlAttribute "white-space" "pre"
+        , indentation
+        ]
+        (List.map text (getLines (getText2 body |> String.trim)))
+
+
+verbatim : FRender Mark2Msg
+verbatim renderArgs _ _ body sm =
+    column
+        [ Font.family
+            [ Font.typeface "Inconsolata"
+            , Font.monospace
+            ]
+        , Font.size 14
+        , Render.Utility.htmlAttribute "white-space" "pre"
+        , Render.Utility.htmlAttribute "line-height" "1.5"
         , indentation
         ]
         (List.map text (getLines (getText2 body |> String.trim)))
