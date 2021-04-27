@@ -233,7 +233,11 @@ parsed model =
 
 parsed_ : a -> List String
 parsed_ pt =
-    Paragraph.lines paragraphFormat2 (Debug.toString pt)
+    []
+
+
+
+-- Paragraph.lines paragraphFormat2 (Debug.toString pt)
 
 
 outputDisplay : Model -> Element Msg
