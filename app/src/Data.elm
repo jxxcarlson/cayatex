@@ -1079,22 +1079,22 @@ Red Magnitude,Redshift,RA,Dec,,Distance (MPc),Velocity (km/s)
 test2 =
     """A
            
-[strong C]
-D [strong E]"""
+[bold C]
+D [bold E]"""
 
 
 test3 =
-    """[strong A]
-[strong B]
+    """[bold A]
+[bold B]
 C
 
-[strong A]
-[strong B]
-[strong D]
+[bold A]
+[bold B]
+[bold D]
 
-[strong A]
-[strong B]
-C [strong D]"""
+[bold A]
+[bold B]
+C [bold D]"""
 
 
 text =
@@ -1103,18 +1103,23 @@ text =
 
 By James Carlson and Nicholas Yang
 
-%Notice the a leading percent sign makes a line into a comment.
-
 [italic CaYaTeX is a simple yet powerful markup language that
 compiles to both LaTeX and Html.]
 
-[italic The present document, written entirely in CaYaTeX,
+% Note that instead of saying [italic ... ], we can say [i .... ]
+% There are shortcuts for a few other common elements:
+% [b ... ] instead of [bold ... ]
+% [m ...] instead of [math ... ]
+% [dm ... ] instead of [displaymath ...]
+% Note also how comments are made.
+
+[i The present document, written entirely in CaYaTeX,
 lays out our design goals and demonstrates some of the
 progress we have made towards specifiying the language and implementing it in Elm. While our work
 is incomplete, it
 is a start.]
 
-[italic We are also working on an implementation in Rust. This will,
+[i We are also working on an implementation in Rust. This will,
 among other things, help us to cross-validate the specification.]
 
 The project is open source: [link https://github.com/jxxcarlson/cayatex]
@@ -1126,9 +1131,9 @@ The goals of the CaYaTeX project are for the language to be
 
 [list |numbered|
 
-[item [strong Small], hence easy to learn. [italic To this end there are just two constructs: ordinary text and [code elements]].]
+[item [bold Small], hence easy to learn. [i To this end there are just two constructs: ordinary text and [code elements]].]
 
-[item [strong Powerful].  We borrow ideas from functional programming.
+[item [b Powerful].  We borrow ideas from functional programming.
 Elements have a Lisp-like syntax with brackets in place of parentheses.
 An element has the form [code raw##[name |argument-list| body]##] or simply  [code raw##[name body]##]
 The argument list is a comma-delimited sequence of
@@ -1138,29 +1143,29 @@ Such functions can be composed, as in mathematics or as in languages such as Has
 ]
 
 
-[item [strong Extensible]. [italic Via a macro facility].]
+[item [b Extensible]. [i Via a macro facility].]
 
-[item [strong Multiple inputs and outputs.] Documents written in CaYaTeX can be compiled to LaTeX, Markdown, and HTML. Markdown documents can be compiled to CaYaTeX.]
+[item [b Multiple inputs and outputs.] Documents written in CaYaTeX can be compiled to LaTeX, Markdown, and HTML. Markdown documents can be compiled to CaYaTeX.]
 
-[item [strong Web-ready]. CaYaTeX has a differential compiler that makes it suitable for real-time editing, e.g.,  in a web app. ]
+[item [b Web-ready]. CaYaTeX has a differential compiler that makes it suitable for real-time editing, e.g.,  in a web app. ]
 
-[item [strong Kind and Helpful]. Displays friendly and informative error messages in real time in the rendered text; has hooks for highlighting the corresponding source text in a suitable IDE/editor.]
+[item [b Kind and Helpful]. Displays friendly and informative error messages in real time in the rendered text; has hooks for highlighting the corresponding source text in a suitable IDE/editor.]
 
-[item [strong Modern]. Unicode compatible.]]
+[item [b Modern]. Unicode compatible.]]
 
 
 Certain tasks are particularly simple with cayatex: insertion of images referenced by URL, construction of tables, graphs, and plots from data given in a standard format such as CSV, and also inline compatations of statistical data. Examples of these are given below.
 
 Our goal is to have a convenient  tool for writing technical documents that are immediately publishible on the web while at the same time offering export to conventional formats such as LaTeX (and therefore also) PDF.
 
-[strong Note.] [fontRGB |50, 0, 200| At the moment  we have not yet implemented differential compilation, which greatly
+[b Note.] [fontRGB |50, 0, 200| At the moment  we have not yet implemented differential compilation, which greatly
 speeds up compilation during editing.  All in due time!]
 
 [section2 Mathematics]
 
 
 Pythagoras says that [math a^2 + b^2 = c^2].
-This is an [strong [italic extremely]] cool result. But just as cool is the below:
+This is an [b [i extremely]] cool result. But just as cool is the below:
 
 [displaymath \\sum_{n=1}^\\infty \\frac{1}{n} = \\infty,]
 
@@ -1183,9 +1188,9 @@ And of course, we can also do theorems:
 
 [section2 Color]
 
-Example:  [highlightRGB |252, 178, 50| [fontRGB |23, 57, 156| [strong What color is this?]]]
+Example:  [highlightRGB |252, 178, 50| [fontRGB |23, 57, 156| [b What color is this?]]]
 
-[code raw###[highlightRGB |252, 178, 50| [fontRGB |23, 57, 156| [strong What color is this?]]]###]
+[code raw###[highlightRGB |252, 178, 50| [fontRGB |23, 57, 156| [b What color is this?]]]###]
 
 
 Note the nesting of elements, aka function composition. When we have our macro facility up and running,  users can abbreviate constructs like
@@ -1474,6 +1479,23 @@ You can freely use unicode characters, as in this poetry element:
 — Анна Ахматова
 ]
 
+[section2 Shortcuts]
+
+[verbatim
+
+raw###
+Note that instead of saying [italic ...  ],
+you can say [i .... ]
+
+There are shortcuts for a few
+other common elements:
+[b ...] instead of [bold ... ]
+[m ...] instead of [math ... ]
+[dm ...] instead of [displaymath ... ]
+###
+
+]
+
 [section2 Code]
 
 Time for some code: [code raw##col :: Int -> Matrix a -> [a]##].
@@ -1494,7 +1516,7 @@ cols m =
 ##]
 
 
-[italic [highlight Note the use of Rust-like raw strings in the source text to avoid escaping all the brackets.]]
+[i [highlight Note the use of Rust-like raw strings in the source text to avoid escaping all the brackets.]]
 
 
 
