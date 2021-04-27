@@ -1,0 +1,33 @@
+[section Cayatex Todo List]
+
+[list |title: Priority|
+
+  [item Add to lamdera app]
+
+  [item Auto-numbereing of sections, etc.]
+
+]
+
+[list |item:@, numbered, title:Bugs|
+
+  [item Use key-value format, not entity for item symbol]
+
+  [item Better error handling]
+
+  [item The parser bug in handling text.]
+
+  [item Rendering bug: temporary duplicates]
+
+]
+
+[list |title: Editor|
+
+  [item How to handle option characters in editor]
+
+  [item Autoindent]
+
+  [item Auto-wrap bug]
+
+  [item Add as option to lamdera app.]
+]
+
