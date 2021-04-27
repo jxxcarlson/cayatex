@@ -2,6 +2,7 @@ module Parser.Driver exposing (..)
 
 import List.Extra
 import Parser.Advanced as PA
+import Parser.Data
 import Parser.Element as Element exposing (Element(..))
 import Parser.Error exposing (Context(..), Problem(..))
 import Parser.Getters as Getters
@@ -18,6 +19,7 @@ packet =
     , incrementOffset = incrementOffset
     , highlighter = Nothing
     , handleError = Just handleError
+    , updateData = Parser.Data.update
     }
 
 
