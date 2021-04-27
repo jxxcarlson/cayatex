@@ -111,6 +111,7 @@ unhandledError tc_ mFirstError errorColumn mRecoveryData lxError errorText =
     , offset = newOffset tc_ errorColumn mRecoveryData
     , count = tc_.count
     , generation = tc_.generation
+    , data = tc_.data
     }
 
 
@@ -175,6 +176,7 @@ handleRightBracketError tc_ mFirstError errorColumn mRecoveryData =
     , offset = newOffset tc_ errorColumn mRecoveryData -- |> Debug.log "RBEH, offset"
     , count = tc_.count
     , generation = tc_.generation
+    , data = tc_.data
     }
 
 
@@ -229,6 +231,7 @@ handlePipeError tc_ mFirstError errorColumn mRecoveryData =
     , offset = newOffset tc_ errorColumn mRecoveryData
     , count = tc_.count
     , generation = tc_.generation
+    , data = tc_.data
     }
 
 

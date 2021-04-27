@@ -11,6 +11,8 @@ module Parser.TextCursor exposing
 
 -- import Parser.Element exposing (Expression)
 
+import Parser.Data
+
 
 {-| SourceText structure used by Parser.Loop.run as it progressively "eats" bites of
 the text, accumulating the parsed bites in the list `parsed: List Expression`.
@@ -28,6 +30,7 @@ type alias TextCursor e =
     , offset : Int
     , count : Int
     , generation : Int
+    , data : Parser.Data.Data
     }
 
 
@@ -38,14 +41,32 @@ parseResult t =
 
 empty : TextCursor a
 empty =
-    { count = 0, text = "", block = "", blockIndex = 0, parsed = [], stack = [], offset = 0, generation = 0 }
+    { count = 0
+    , text = ""
+    , block = ""
+    , blockIndex = 0
+    , parsed = []
+    , stack = []
+    , offset = 0
+    , generation = 0
+    , data = Parser.Data.init Parser.Data.defaultConfig
+    }
 
 
 {-| Return a TextCursor with given chunkNumber and text
 -}
 init : Int -> Int -> String -> TextCursor a
 init generation blockIndex text =
-    { count = 0, text = text, block = "", blockIndex = blockIndex, parsed = [], stack = [], offset = 0, generation = generation }
+    { count = 0
+    , text = text
+    , block = ""
+    , blockIndex = blockIndex
+    , parsed = []
+    , stack = []
+    , offset = 0
+    , generation = generation
+    , data = Parser.Data.init Parser.Data.defaultConfig
+    }
 
 
 {-| -}

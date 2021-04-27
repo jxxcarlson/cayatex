@@ -38,7 +38,6 @@ NOTES:
 -}
 
 import Parser as P exposing ((|.), (|=))
-import Parser.Data
 import Parser.Driver
 import Parser.Element exposing (Element)
 import Parser.Getters
@@ -54,7 +53,6 @@ type alias State =
     , blockContents : List String
     , blockLevel : Int
     , output : List (TextCursor Element)
-    , parserData : Parser.Data.Data
     }
 
 
@@ -141,7 +139,6 @@ init generation strList =
     , blockContents = []
     , blockLevel = 0
     , output = []
-    , parserData = Parser.Data.init Parser.Data.defaultConfig
     }
 
 
