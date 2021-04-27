@@ -1,6 +1,7 @@
 module Parser.Loop exposing (..)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
+import Parser.Data
 import Parser.Error exposing (Context, Problem)
 import Parser.Getters
 import Parser.SourceMap exposing (SourceMap)
@@ -18,6 +19,7 @@ type alias Packet a =
     , incrementOffset : Int -> a -> a
     , highlighter : Maybe (a -> Maybe SourceMap -> a)
     , handleError : Maybe (TextCursor a -> List (Parser.DeadEnd Context Problem) -> TextCursor a)
+    , updateData : a -> Parser.Data.Data -> Parser.Data.Data
     }
 
 
@@ -70,6 +72,15 @@ nextCursor packet tc =
                 let
                     sourceMapLength =
                         packet.getSource expr |> Maybe.map .length |> Maybe.withDefault 0
+
+                    _ =
+                        tc.data.counters |> Debug.log "OC"
+
+                    newData =
+                        packet.updateData expr tc.data
+
+                    _ =
+                        newData.counters |> Debug.log "NC"
                 in
                 ParserTool.Loop
                     { tc
@@ -78,6 +89,7 @@ nextCursor packet tc =
                         , block = tc.block ++ String.left sourceMapLength tc.text
                         , parsed = newExpr packet tc expr :: tc.parsed
                         , offset = tc.offset + sourceMapLength
+                        , data = newData
                     }
 
             Err e ->
