@@ -11,6 +11,7 @@ import Html.Keyed
 import Json.Encode
 import List.Extra
 import Maybe.Extra
+import Parser.Data as Data
 import Parser.Driver
 import Parser.Element exposing (CYTMsg, Element(..))
 import Parser.Metadata exposing (Metadata)
@@ -40,7 +41,7 @@ format =
 
 renderString : RenderArgs -> String -> E.Element CYTMsg
 renderString renderArgs str =
-    Parser.Driver.parseLoop renderArgs.generation renderArgs.blockOffset str
+    Parser.Driver.parseLoop renderArgs.generation renderArgs.blockOffset (Data.init Data.defaultConfig) str
         |> Parser.TextCursor.parseResult
         |> renderList renderArgs
 
@@ -66,8 +67,8 @@ renderElement renderArgs element =
         --
         --    list_ ->
         --        column [ spacing 12 ] (List.map text list_)
-        Element name args body sm ->
-            renderWithDictionary renderArgs name args body sm
+        Element name args body meta ->
+            renderWithDictionary renderArgs name args body meta
 
         LX list_ _ ->
             paragraph format (List.map (renderElement renderArgs) list_)
@@ -84,17 +85,17 @@ theoremLikeElements =
     [ "theorem", "proposition", "proof", "definition", "example", "problem", "corollary", "lemma" ]
 
 
-renderWithDictionary renderArgs name args body sm =
+renderWithDictionary renderArgs name args body meta =
     case Dict.get name renderElementDict of
         Nothing ->
             if List.member name theoremLikeElements then
-                renderaAsTheoremLikeElement renderArgs name args body sm
+                renderaAsTheoremLikeElement renderArgs name args body meta
 
             else
                 renderMissingElement name body
 
         Just f ->
-            f renderArgs name args body sm
+            f renderArgs name args body meta
 
 
 renderMissingElement : String -> Element -> E.Element CYTMsg
@@ -127,7 +128,9 @@ renderElementDict =
         , ( "codeblock", codeblock )
         , ( "verbatim", verbatim )
         , ( "poetry", poetry )
+        , ( "title", docTitle )
         , ( "section", section )
+        , ( "section1", section )
         , ( "section2", section2 )
         , ( "section3", section3 )
         , ( "list", list )
@@ -227,7 +230,7 @@ titleSize =
 
 
 list : FRender CYTMsg
-list renderArgs name args_ body sm =
+list renderArgs name args_ body meta =
     let
         dict =
             CYUtility.keyValueDict args_
@@ -242,7 +245,7 @@ list renderArgs name args_ body sm =
 
 
 dataTable : FRender CYTMsg
-dataTable renderArgs name args_ body sm =
+dataTable renderArgs name args_ body meta =
     let
         rawData : List (List String)
         rawData =
@@ -309,12 +312,12 @@ renderListItem prefixSymbol renderArgs elt =
 
 
 item : FRender CYTMsg
-item renderArgs name args_ body sm =
+item renderArgs name args_ body meta =
     paragraph [] [ renderElement renderArgs body ]
 
 
 error : FRender CYTMsg
-error renderArgs name args_ body sm =
+error renderArgs name args_ body meta =
     el [ Font.color violetColor ] (renderElement renderArgs body)
 
 
@@ -324,14 +327,14 @@ error renderArgs name args_ body sm =
 
 
 renderCode : FRender CYTMsg
-renderCode renderArgs _ _ body sm =
+renderCode renderArgs _ _ body meta =
     let
         adjustedBody =
             getText body
                 |> Maybe.withDefault "(body)"
                 |> String.replace "\\[" "["
                 |> String.replace "\\]" "]"
-                |> (\text -> Text text sm)
+                |> (\text -> Text text meta)
     in
     el
         [ Font.family
@@ -355,7 +358,7 @@ getLXText element =
 
 
 poetry : FRender CYTMsg
-poetry renderArgs _ _ body sm =
+poetry renderArgs _ _ body meta =
     column
         [ Font.size 14
         , Render.Utility.htmlAttribute "white-space" "pre"
@@ -366,7 +369,7 @@ poetry renderArgs _ _ body sm =
 
 
 codeblock : FRender CYTMsg
-codeblock renderArgs _ _ body sm =
+codeblock renderArgs _ _ body meta =
     column
         [ Font.family
             [ Font.typeface "Inconsolata"
@@ -381,7 +384,7 @@ codeblock renderArgs _ _ body sm =
 
 
 verbatim : FRender CYTMsg
-verbatim renderArgs _ _ body sm =
+verbatim renderArgs _ _ body meta =
     column
         [ Font.family
             [ Font.typeface "Inconsolata"
@@ -422,33 +425,52 @@ getLines str =
 -- NEW
 
 
+getLabel : Maybe Metadata -> String
+getLabel mmeta =
+    case mmeta of
+        Nothing ->
+            ""
+
+        Just meta ->
+            meta.label
+
+
+docTitle : FRender CYTMsg
+docTitle renderArgs name args body meta =
+    column [ Font.size titleFontSize, paddingAbove (round <| 0.8 * sectionFontSize) ] [ text <| getLabel meta ++ " " ++ (getText body |> Maybe.withDefault "no section name found") ]
+
+
 section : FRender CYTMsg
-section renderArgs name args body sm =
-    column [ Font.size sectionFontSize, paddingAbove (round <| 0.8 * sectionFontSize) ] [ text (getText body |> Maybe.withDefault "no section name found") ]
+section renderArgs name args body meta =
+    column [ Font.size sectionFontSize, paddingAbove (round <| 0.8 * sectionFontSize) ] [ text <| getLabel meta ++ " " ++ (getText body |> Maybe.withDefault "no section name found") ]
 
 
 section2 : FRender CYTMsg
-section2 renderArgs name args body sm =
-    column [ Font.size section2FontSize, paddingAbove (round <| 0.8 * section2FontSize) ] [ text (getText body |> Maybe.withDefault "no subsection name found") ]
+section2 renderArgs name args body meta =
+    column [ Font.size section2FontSize, paddingAbove (round <| 0.8 * section2FontSize) ] [ text <| getLabel meta ++ " " ++ (getText body |> Maybe.withDefault "no subsection name found") ]
 
 
 section3 : FRender CYTMsg
-section3 renderArgs name args body sm =
+section3 renderArgs name args body meta =
     column [ Font.size section3FontSize, paddingAbove (round <| 0.8 * section3FontSize) ] [ text (getText body |> Maybe.withDefault "no subsubsection name found") ]
 
 
 center : FRender CYTMsg
-center renderArgs name args body sm =
+center renderArgs name args body meta =
     column [ E.centerX ] [ renderElement renderArgs body ]
 
 
 indent : FRender CYTMsg
-indent renderArgs name args body sm =
+indent renderArgs name args body meta =
     column [ indentPadding ] [ renderElement renderArgs body ]
 
 
 paddingAbove k =
     E.paddingEach { top = k, bottom = 0, left = 0, right = 0 }
+
+
+titleFontSize =
+    30
 
 
 sectionFontSize =
@@ -464,7 +486,7 @@ section3FontSize =
 
 
 link : FRender CYTMsg
-link renderArgs name args body sm =
+link renderArgs name args body meta =
     case Render.Utility.getArg 0 args of
         Nothing ->
             let
@@ -484,7 +506,7 @@ link renderArgs name args body sm =
 
 
 image : FRender CYTMsg
-image renderArgs name args body sm =
+image renderArgs name args body meta =
     let
         dict =
             CYUtility.keyValueDict args
@@ -538,12 +560,12 @@ image renderArgs name args body sm =
 
 
 renderStrong : FRender CYTMsg
-renderStrong renderArgs _ _ body sm =
+renderStrong renderArgs _ _ body meta =
     el [ Font.bold ] (renderElement renderArgs body)
 
 
 renderItalic : FRender CYTMsg
-renderItalic renderArgs _ _ body sm =
+renderItalic renderArgs _ _ body meta =
     el [ Font.italic ] (renderElement renderArgs body)
 
 
@@ -553,7 +575,7 @@ highlight renderArgs _ _ body _ =
 
 
 highlightRGB : FRender CYTMsg
-highlightRGB renderArgs _ args body sm =
+highlightRGB renderArgs _ args body meta =
     let
         r =
             Render.Utility.getInt 0 args
@@ -568,7 +590,7 @@ highlightRGB renderArgs _ args body sm =
 
 
 fontRGB : FRender CYTMsg
-fontRGB renderArgs name args body sm =
+fontRGB renderArgs name args body meta =
     let
         r =
             Render.Utility.getInt 0 args
@@ -587,7 +609,7 @@ fontRGB renderArgs name args body sm =
 
 
 renderaAsTheoremLikeElement : FRender CYTMsg
-renderaAsTheoremLikeElement renderArgs name args body sm =
+renderaAsTheoremLikeElement renderArgs name args body meta =
     let
         label_ =
             Render.Utility.getArg 0 args
@@ -611,43 +633,43 @@ renderaAsTheoremLikeElement renderArgs name args body sm =
 
 
 renderMathDisplay : FRender CYTMsg
-renderMathDisplay rendArgs name args body sm =
+renderMathDisplay rendArgs name args body meta =
     case getText body of
         Just content ->
-            mathText rendArgs DisplayMathMode content sm
+            mathText rendArgs DisplayMathMode content meta
 
         Nothing ->
             el [ Font.color redColor ] (text "Error rendering math !!!")
 
 
 renderMath : FRender CYTMsg
-renderMath renderArgs name args body sm =
+renderMath renderArgs name args body meta =
     case getText body of
         Just content ->
-            mathText renderArgs InlineMathMode content sm
+            mathText renderArgs InlineMathMode content meta
 
         Nothing ->
             el [ Font.color redColor ] (text "Error rendering math !!!")
 
 
 mathText : RenderArgs -> DisplayMode -> String -> Maybe Metadata -> E.Element CYTMsg
-mathText renderArgs displayMode content sm =
+mathText renderArgs displayMode content meta =
     Html.Keyed.node "span"
         []
-        [ ( String.fromInt renderArgs.generation, mathText_ displayMode renderArgs.selectedId content sm )
+        [ ( String.fromInt renderArgs.generation, mathText_ displayMode renderArgs.selectedId content meta )
         ]
         |> E.html
 
 
 mathText_ : DisplayMode -> String -> String -> Maybe Metadata -> Html CYTMsg
-mathText_ displayMode selectedId content sm =
+mathText_ displayMode selectedId content meta =
     Html.node "math-text"
-        -- active sm selectedId  ++
+        -- active meta selectedId  ++
         [ HA.property "display" (Json.Encode.bool (isDisplayMathMode displayMode))
         , HA.property "content" (Json.Encode.string content)
 
-        -- , clicker sm
-        -- , HA.id (makeId sm)
+        -- , clicker meta
+        -- , HA.id (makeId meta)
         ]
         []
 
@@ -666,14 +688,14 @@ isDisplayMathMode displayMode =
 -- MATH
 -- HELPERS
 -- active : SourceMap -> String -> List (Attribute LaTeXMsg)
--- active sm selectedId =
+-- active meta selectedId =
 --     let
 --         id_ =
---             makeId sm
+--             makeId meta
 --     in
---     [ clicker sm, HA.id id_, highlight "#FAA" selectedId id_ ]
--- clicker sm =
---     onClick (SendSourceMap sm)
+--     [ clicker meta, HA.id id_, highlight "#FAA" selectedId id_ ]
+-- clicker meta =
+--     onClick (SendSourceMap meta)
 -- COLORS
 
 

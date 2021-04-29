@@ -1099,7 +1099,7 @@ C [bold D]"""
 
 text =
     """
-[section CaYaTeX Test Document]
+[title CaYaTeX Test Document]
 
 By James Carlson and Nicholas Yang
 
@@ -1125,7 +1125,7 @@ among other things, help us to cross-validate the specification.]
 The project is open source: [link https://github.com/jxxcarlson/cayatex]
 
 
-[section2 Design Goals]
+[section1 Design Goals]
 
 The goals of the CaYaTeX project are for the language to be
 
@@ -1161,7 +1161,7 @@ Our goal is to have a convenient  tool for writing technical documents that are 
 [b Note.] [fontRGB |50, 0, 200| At the moment  we have not yet implemented differential compilation, which greatly
 speeds up compilation during editing.  All in due time!]
 
-[section2 Mathematics]
+[section1 Mathematics]
 
 
 Pythagoras says that [math a^2 + b^2 = c^2].
@@ -1186,7 +1186,7 @@ And of course, we can also do theorems:
 
 
 
-[section2 Color]
+[section1 Color]
 
 Example:  [highlightRGB |252, 178, 50| [fontRGB |23, 57, 156| [b What color is this?]]]
 
@@ -1196,7 +1196,7 @@ Example:  [highlightRGB |252, 178, 50| [fontRGB |23, 57, 156| [b What color is t
 Note the nesting of elements, aka function composition. When we have our macro facility up and running,  users can abbreviate constructs like
 this one, e.g., just say [code raw##[myhighlight| What color is this?]##]
 
-[section2 Data]
+[section1 Data]
 
 One can design elements which manipulate data (numerical computations, visualization).  Here are some data computations:
 
@@ -1215,11 +1215,11 @@ or
 [codeblock raw##[stdev |precision:3| 1.2, 2, 3.4, 4]## ]
 
 
-[section2 Graphs]
+[section1 Graphs]
 
 Below are three simple data visualizations. We plan more, and more configurability of what you see here.
 
-[section3 Bar graphs]
+[section2 Bar graphs]
 
 [bargraph |column:2, yShift: 0.2, caption: Global temperature anomaly 1880-1957|
 1880,-0.12
@@ -1310,7 +1310,7 @@ The bargraph code:
 1881,-0.07
 ...]## ]
 
-[section3 Line graphs]
+[section2 Line graphs]
 
 [linegraph |caption: Global temperature anomaly 1880-1957|
 1880,-0.12
@@ -1401,7 +1401,7 @@ temperature anomaly 1880-1957|
 1881,-0.0]
 ##]
 
-[section3 Scatter plots]
+[section2 Scatter plots]
 
 Use the same syntax as before, but with "scatterplot" in place of "linegraph."
 
@@ -1437,7 +1437,7 @@ N.G.C.6822,..,0.214,-130,9,-12.7,0.22,Slope,453.85999408475,km/sec/Mpc,,,,,,
 Table 1,,,,,-15.5,,,,,,,,,,
 ]
 
-[section2 Tables]
+[section1 Tables]
 
 [data |title:Atomic weights, header|
 
@@ -1466,7 +1466,7 @@ N,  Symbol,  Name, W
 ]
 
 
-[section2 Unicode]
+[section1 Unicode]
 
 You can freely use unicode characters, as in this poetry element:
 
@@ -1479,7 +1479,7 @@ You can freely use unicode characters, as in this poetry element:
 — Анна Ахматова
 ]
 
-[section2 Shortcuts]
+[section1 Shortcuts]
 
 [verbatim
 
@@ -1496,7 +1496,7 @@ other common elements:
 
 ]
 
-[section2 Code]
+[section1 Code]
 
 Time for some code: [code raw##col :: Int -> Matrix a -> [a]##].
 Do you recognize the language (ha ha)?
@@ -1521,13 +1521,13 @@ cols m =
 
 
 
-[section2 Images]
+[section1 Images]
 
 [image |caption: Rotkehlchen aufgeplustert, width: 200, placement: center|https://i.pinimg.com/originals/d4/07/a4/d407a45bcf3ade18468ac7ba633244b9.jpg]
 
 [code raw##[image |caption: Rotkehlchen aufgeplustert, width: 200, placement: center| https://..jpg]##]
 
-[section2 Lists]
+[section1 Lists]
 
 Note that lists can be nested and can be given a title if desired.  The symbol for "bulleted" lists is • by default, but can be specified by the user.
 A numbered list has "numbered" as its first argument, as in the example below.
@@ -1553,15 +1553,15 @@ A numbered list has "numbered" as its first argument, as in the example below.
 ]]]
 
 
-[section2 Appendix: Technical Stuff]
+[section1 Appendix: Technical Stuff]
 
 Because CaYaTeX is so simple, the type of the AST is very small:
 
 [codeblock
 raw##type Element
-    =   Text String
-      | Element String (List String) Element
-      | LX (List Element)
+    =   Text String Meta
+      | Element String (List String) Element Meta
+      | LX (List Element) Meta
 ##
 ]
 
@@ -1569,7 +1569,9 @@ The first variant, [code Text String] accounts for plain text.
 The second is of the form [code Element name args body],
 while the third shows how a list of elements can form an
 element.  In particular, the body of an element can be
-[code LX] of a list of elements.
+[code LX] of a list of elements.  The [code Meta] component tracks
+location of the corresponding piece of text in the source code and
+othe metadata such as section numbering.
 
 
 
