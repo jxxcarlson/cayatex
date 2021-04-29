@@ -349,9 +349,7 @@ pushBlock_ line state =
         | blockType = Start
         , blockContents = []
         , blockLevel = 0
-        , data = updateData tc |> Debug.log "UD (pushBlock_)"
-
-        -- , laTeXState = Reduce.laTeXState tc.parsed state.laTeXState
+        , data = updateData tc
         , output = tc :: state.output
         , lineNumber = state.lineNumber + countLines state.blockContents
     }
@@ -363,7 +361,7 @@ updateData tc =
             tc.data
 
         Just parsand ->
-            Parser.Data.update (Debug.log "PARSAND" parsand) tc.data |> Debug.log "UD (f)"
+            Parser.Data.update parsand tc.data
 
 
 {-| (ST 7 Called at ( InElementBlock, LTEndElement )
@@ -391,9 +389,7 @@ popBlockStack currentLine_ state =
             , blockLevel = 0
             , blockContents = currentLine_ :: state.blockContents
             , output = tc :: state.output
-            , data = updateData tc |> Debug.log "UD (pushBlockStack)"
-
-            --, laTeXState = Reduce.laTeXState tc.parsed state.laTeXState
+            , data = updateData tc
             , lineNumber = state.lineNumber + (2 + List.length state.blockContents) -- TODO: think about this.  Is it correct?
         }
 
@@ -431,7 +427,7 @@ flush state =
                 { state
                     | -- laTeXState = laTeXState
                       output = tc :: state.output
-                    , data = updateData tc |> Debug.log "UD (flush)"
+                    , data = updateData tc
                 }
     in
     newState
