@@ -2,7 +2,7 @@ module Render.Abstract exposing (..)
 
 import Dict exposing (Dict)
 import Parser.Element exposing (Element(..))
-import Parser.SourceMap exposing (SourceMap)
+import Parser.Metadata exposing (Metadata)
 
 
 type Renderer
@@ -30,7 +30,7 @@ type alias RenderArgs =
 
 
 type alias FRender a =
-    RenderArgs -> String -> List String -> Element -> Maybe SourceMap -> a
+    RenderArgs -> String -> List String -> Element -> Maybe Metadata -> a
 
 
 type alias RenderElementDict a =

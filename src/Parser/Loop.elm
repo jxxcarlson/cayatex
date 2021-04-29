@@ -5,7 +5,7 @@ import Parser.Data as Data exposing (Data)
 import Parser.Element exposing (Element)
 import Parser.Error exposing (Context, Problem)
 import Parser.Getters
-import Parser.SourceMap exposing (SourceMap)
+import Parser.Metadata exposing (Metadata)
 import Parser.TextCursor as TextCursor exposing (TextCursor)
 import Parser.Tool as ParserTool
 
@@ -16,9 +16,9 @@ type alias Parser a =
 
 type alias Packet a =
     { parser : Int -> Int -> Parser a
-    , getSource : a -> Maybe SourceMap
+    , getSource : a -> Maybe Metadata
     , incrementOffset : Int -> a -> a
-    , highlighter : Maybe (a -> Maybe SourceMap -> a)
+    , highlighter : Maybe (a -> Maybe Metadata -> a)
     , handleError : Maybe (TextCursor a -> List (Parser.DeadEnd Context Problem) -> TextCursor a)
     }
 
@@ -74,6 +74,9 @@ nextCursor packet tc =
 
                     parsand =
                         newExpr packet tc expr
+
+                    data =
+                        Data.update parsand tc.data
                 in
                 ParserTool.Loop
                     { tc
@@ -81,9 +84,9 @@ nextCursor packet tc =
                         , text = String.dropLeft sourceMapLength tc.text
                         , block = tc.block ++ String.left sourceMapLength tc.text
                         , parsand = Just parsand
-                        , parsed = parsand :: tc.parsed
+                        , parsed = Data.labelElement data parsand :: tc.parsed
                         , offset = tc.offset + sourceMapLength
-                        , data = Data.update parsand tc.data
+                        , data = data
                     }
 
             Err e ->

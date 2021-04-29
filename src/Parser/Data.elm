@@ -92,6 +92,46 @@ handleSection name data =
     incrementOrInsertCounter name_ data
 
 
+labelElement : Data -> Element -> Element
+labelElement data element =
+    case element of
+        Element name args body _ ->
+            if String.left 7 name == "section" then
+                -- Element.setLabel (String.fromInt (getCounter name data)) element
+                setSectionLabel name data element
+
+            else
+                element
+
+        _ ->
+            element
+
+
+setSectionLabel : String -> Data -> Element -> Element
+setSectionLabel name_ data element =
+    let
+        name =
+            if name_ == "section" then
+                "section1"
+
+            else
+                name_
+    in
+    case name of
+        "section1" ->
+            Element.setLabel (String.fromInt (getCounter "section1" data)) element
+
+        "section2" ->
+            let
+                label_ =
+                    String.fromInt (getCounter "section1" data) ++ "." ++ String.fromInt (getCounter "section2" data)
+            in
+            Element.setLabel label_ element
+
+        _ ->
+            Element.setLabel "??" element
+
+
 
 -- DEFAULTS
 

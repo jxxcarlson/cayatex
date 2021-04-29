@@ -7,10 +7,12 @@ module Parser.Element exposing
     , parseList
     , parser
     , rlp
+    , setLabel
     )
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
+import Parser.Metadata as Metadata exposing (Metadata)
 import Parser.RawString as RawString
 import Parser.Tool as T
 import Parser.XString as XString
@@ -21,14 +23,24 @@ rlp str =
 
 
 type Element
-    = Text String (Maybe SourceMap)
-    | Element String (List String) Element (Maybe SourceMap)
-    | LX (List Element) (Maybe SourceMap)
+    = Text String (Maybe Metadata)
+    | Element String (List String) Element (Maybe Metadata)
+    | LX (List Element) (Maybe Metadata)
 
 
 makeList : List Element -> Element
 makeList list =
     LX list Nothing
+
+
+setLabel : String -> Element -> Element
+setLabel label element_ =
+    case element_ of
+        Element name args body (Just metadata) ->
+            Element name args body (Just { metadata | label = label })
+
+        _ ->
+            element_
 
 
 type alias Parser a =
@@ -75,7 +87,9 @@ parser generation lineNumber =
 primitiveElement : Int -> Int -> Parser Element
 primitiveElement generation blockOffset =
     Parser.inContext CElement <|
-        Parser.succeed (\start name ( args, body_ ) end source -> Element name args body_ (Just { generation = generation, blockOffset = blockOffset, offset = start, length = end - start }))
+        -- Parser.succeed (\start name ( args, body_ ) end source -> Element name args body_ (Just { generation = generation, blockOffset = blockOffset, offset = start, length = end - start }))
+        -- TODO: is this correct?
+        Parser.succeed (\start name ( args, body_ ) end source -> Element name args body_ (Just (Metadata.init generation blockOffset start end)))
             |= Parser.getOffset
             |. leftBracket
             |= elementName
@@ -133,7 +147,7 @@ text generation lineNumber =
 
 rawString : Int -> Int -> Parser Element
 rawString generation lineNumber =
-    Parser.succeed (\start source finish -> Text source (Just { blockOffset = lineNumber, offset = start, length = finish - start, generation = generation }))
+    Parser.succeed (\start source finish -> Text source (Just (Metadata.init generation lineNumber start finish)))
         |= Parser.getOffset
         |= RawString.parser
         |= Parser.getOffset
@@ -143,7 +157,7 @@ plainText : Int -> Int -> Parser Element
 plainText generation lineNumber =
     Parser.inContext TextExpression <|
         (XString.textWithPredicate XString.isNonLanguageChar
-            |> Parser.map (\data -> Text data.content (Just { blockOffset = lineNumber, offset = data.start, length = data.finish - data.start, generation = generation }))
+            |> Parser.map (\data -> Text data.content (Just (Metadata.init generation lineNumber data.start data.finish)))
         )
 
 
@@ -151,20 +165,12 @@ textWithPredicate : (Char -> Bool) -> Int -> Int -> Parser Element
 textWithPredicate predicate generation lineNumber =
     Parser.inContext TextExpression <|
         (XString.textWithPredicate predicate
-            |> Parser.map (\data -> Text data.content (Just { blockOffset = lineNumber, offset = data.start, length = data.finish - data.start, generation = generation }))
+            |> Parser.map (\data -> Text data.content (Just (Metadata.init generation lineNumber data.start data.finish)))
         )
 
 
 type alias StringData =
     { content : String, start : Int, finish : Int }
-
-
-type alias SourceMap =
-    { blockOffset : Int
-    , offset : Int
-    , length : Int
-    , generation : Int
-    }
 
 
 string stopChars =
@@ -226,7 +232,7 @@ rightBracket =
     Use this to parse a string and return information about its location in the source
 
 -}
-getChompedString : Int -> Int -> Parser a -> Parser ( String, Maybe SourceMap )
+getChompedString : Int -> Int -> Parser a -> Parser ( String, Maybe Metadata )
 getChompedString generation lineNumber parser_ =
     let
         sm first_ last_ source_ =
@@ -234,7 +240,9 @@ getChompedString generation lineNumber parser_ =
                 src =
                     String.slice first_ last_ source_
             in
-            ( src, Just { blockOffset = lineNumber, length = last_, offset = 0, generation = generation } )
+            -- ( src, Just { blockOffset = lineNumber, length = last_, offset = 0, generation = generation } )
+            -- TODO: is the below correct?
+            ( src, Just (Metadata.init generation lineNumber 0 last_) )
     in
     Parser.succeed sm
         |= Parser.getOffset

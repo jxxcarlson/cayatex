@@ -1,7 +1,7 @@
 module Parser.Getters exposing (..)
 
 import Parser.Element exposing (Element(..))
-import Parser.SourceMap exposing (SourceMap)
+import Parser.Metadata exposing (Metadata)
 
 
 {-| Set the SourceMap to Nothing
@@ -19,7 +19,7 @@ strip expr =
             LX (List.map strip expr_) Nothing
 
 
-getSource : Element -> Maybe SourceMap
+getSource : Element -> Maybe Metadata
 getSource expr =
     case expr of
         Text _ sm ->

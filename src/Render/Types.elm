@@ -4,7 +4,7 @@ import Dict exposing (Dict)
 import Element as E
 import Parser.Data
 import Parser.Element exposing (CYTMsg, Element(..))
-import Parser.SourceMap exposing (SourceMap)
+import Parser.Metadata exposing (Metadata)
 
 
 
@@ -21,7 +21,7 @@ type alias RenderArgs =
 
 
 type alias FRender a =
-    RenderArgs -> String -> List String -> Element -> Maybe SourceMap -> E.Element a
+    RenderArgs -> String -> List String -> Element -> Maybe Metadata -> E.Element a
 
 
 type alias RenderElementDict a =

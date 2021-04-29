@@ -13,7 +13,7 @@ import List.Extra
 import Maybe.Extra
 import Parser.Driver
 import Parser.Element exposing (CYTMsg, Element(..))
-import Parser.SourceMap exposing (SourceMap)
+import Parser.Metadata exposing (Metadata)
 import Parser.TextCursor
 import Render.Types exposing (DisplayMode(..), FRender, RenderArgs, RenderElementDict)
 import Render.Utility
@@ -630,7 +630,7 @@ renderMath renderArgs name args body sm =
             el [ Font.color redColor ] (text "Error rendering math !!!")
 
 
-mathText : RenderArgs -> DisplayMode -> String -> Maybe SourceMap -> E.Element CYTMsg
+mathText : RenderArgs -> DisplayMode -> String -> Maybe Metadata -> E.Element CYTMsg
 mathText renderArgs displayMode content sm =
     Html.Keyed.node "span"
         []
@@ -639,7 +639,7 @@ mathText renderArgs displayMode content sm =
         |> E.html
 
 
-mathText_ : DisplayMode -> String -> String -> Maybe SourceMap -> Html CYTMsg
+mathText_ : DisplayMode -> String -> String -> Maybe Metadata -> Html CYTMsg
 mathText_ displayMode selectedId content sm =
     Html.node "math-text"
         -- active sm selectedId  ++

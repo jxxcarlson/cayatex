@@ -2,7 +2,7 @@ module Parser.RecoveryData exposing (..)
 
 import Parser.Element as Element exposing (Element(..))
 import Parser.Error exposing (Problem(..))
-import Parser.SourceMap as SourceMap exposing (SourceMap)
+import Parser.Metadata as SourceMap exposing (Metadata)
 import Parser.TextCursor exposing (TextCursor)
 
 
@@ -85,7 +85,7 @@ isError expr =
 
 
 {-| -}
-setSourceMap : Maybe SourceMap -> Element -> Element
+setSourceMap : Maybe Metadata -> Element -> Element
 setSourceMap sm expr =
     case expr of
         Text e _ ->

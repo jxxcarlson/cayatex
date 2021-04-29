@@ -7,8 +7,8 @@ import Parser.Element as Element exposing (Element(..))
 import Parser.Error exposing (Context(..), Problem(..))
 import Parser.Getters as Getters
 import Parser.Loop as Loop
+import Parser.Metadata as Metadata exposing (Metadata)
 import Parser.RecoveryData as RecoveryData exposing (RecoveryData)
-import Parser.SourceMap exposing (SourceMap)
 import Parser.TextCursor exposing (TextCursor)
 
 
@@ -51,7 +51,7 @@ incrementOffset delta expr =
             LX e (incrementSourceMapOffset delta sm)
 
 
-incrementSourceMapOffset : Int -> Maybe SourceMap -> Maybe SourceMap
+incrementSourceMapOffset : Int -> Maybe Metadata -> Maybe Metadata
 incrementSourceMapOffset delta sourceMap =
     case sourceMap of
         Just sm ->
@@ -94,7 +94,7 @@ handleError tc_ e =
             RecoveryData.get tc_ problem
 
         lxError =
-            Element "Error" [] (Text errorText Nothing) (Just { blockOffset = tc_.blockIndex, length = errorColumn, offset = tc_.offset + errorColumn, generation = tc_.generation })
+            Element "Error" [] (Text errorText Nothing) (Just { blockOffset = tc_.blockIndex, length = errorColumn, offset = tc_.offset + errorColumn, generation = tc_.generation, label = "" })
     in
     case problem of
         ExpectingRightBracket ->
