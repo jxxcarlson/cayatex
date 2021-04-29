@@ -2,6 +2,7 @@ module Parser.Element exposing
     ( CYTMsg(..)
     , Element(..)
     , listParser
+    , makeList
     , parse
     , parseList
     , parser
@@ -23,6 +24,11 @@ type Element
     = Text String (Maybe SourceMap)
     | Element String (List String) Element (Maybe SourceMap)
     | LX (List Element) (Maybe SourceMap)
+
+
+makeList : List Element -> Element
+makeList list =
+    LX list Nothing
 
 
 type alias Parser a =

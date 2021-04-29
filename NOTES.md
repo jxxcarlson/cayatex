@@ -153,7 +153,7 @@ with this new value.
 
 - increments the program counter
 - drops the part of `text` just parsed and stores the result in `text`.
-- postpends the dropped text to `block`
+- postpends the dropped text to `block`(_what is this used for?_)
 - updates the offset
 - updates the `data` field
 

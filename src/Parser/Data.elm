@@ -74,6 +74,11 @@ update element data =
             data
 
 
+updateList : List Element -> Data -> Data
+updateList list data =
+    List.foldl update data list
+
+
 handleSection : String -> Data -> Data
 handleSection name data =
     let

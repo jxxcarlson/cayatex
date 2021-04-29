@@ -1,6 +1,6 @@
 module Parser.TextCursor exposing
     ( TextCursor, init, incrementBlockIndex, incrementBlockOffset
-    , parseResult
+    , empty, parseResult
     )
 
 {-| TextCursor is the data structure used by Parser.parseLoop.
