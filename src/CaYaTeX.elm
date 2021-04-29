@@ -14,7 +14,7 @@ type alias Data =
 
 
 type alias CaYaTeXMsg =
-    Parser.Element.Mark2Msg
+    Parser.Element.CYTMsg
 
 
 init : Int -> String -> Data
@@ -27,7 +27,7 @@ update generation text _ =
     init generation text
 
 
-render : String -> Data -> List (E.Element Parser.Element.Mark2Msg)
+render : String -> Data -> List (E.Element Parser.Element.CYTMsg)
 render id data =
     Parser.Document.runloop data.generation (String.lines data.content)
         |> Parser.Document.toParsed

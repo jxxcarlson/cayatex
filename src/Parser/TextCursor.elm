@@ -24,9 +24,10 @@ text.
 type alias TextCursor e =
     { text : String
     , block : String
-    , blockIndex : Int
+    , parsand : Maybe e
     , parsed : List e
     , stack : List String
+    , blockIndex : Int
     , offset : Int
     , count : Int
     , generation : Int
@@ -45,6 +46,7 @@ empty =
     , text = ""
     , block = ""
     , blockIndex = 0
+    , parsand = Nothing
     , parsed = []
     , stack = []
     , offset = 0
@@ -61,6 +63,7 @@ init generation blockIndex text =
     , text = text
     , block = ""
     , blockIndex = blockIndex
+    , parsand = Nothing
     , parsed = []
     , stack = []
     , offset = 0

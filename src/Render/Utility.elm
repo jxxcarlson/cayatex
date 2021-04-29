@@ -21,7 +21,7 @@ import Element.Font as Font
 import Html.Attributes
 import List.Extra
 import Maybe.Extra
-import Parser.Element exposing (Element(..), Mark2Msg)
+import Parser.Element exposing (CYTMsg, Element(..))
 
 
 htmlAttribute : String -> String -> E.Attribute msg

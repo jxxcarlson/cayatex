@@ -38,6 +38,7 @@ NOTES:
 -}
 
 import Parser as P exposing ((|.), (|=))
+import Parser.Data
 import Parser.Driver
 import Parser.Element exposing (Element)
 import Parser.Getters
@@ -53,6 +54,7 @@ type alias State =
     , blockContents : List String
     , blockLevel : Int
     , output : List (TextCursor Element)
+    , data : Parser.Data.Data
     }
 
 
@@ -147,6 +149,7 @@ init generation strList =
     , blockContents = []
     , blockLevel = 0
     , output = []
+    , data = Parser.Data.init Parser.Data.defaultConfig
     }
 
 
@@ -350,11 +353,21 @@ pushBlock_ line state =
         | blockType = Start
         , blockContents = []
         , blockLevel = 0
+        , data = updateData tc
 
         -- , laTeXState = Reduce.laTeXState tc.parsed state.laTeXState
         , output = tc :: state.output
         , lineNumber = state.lineNumber + countLines state.blockContents
     }
+
+
+updateData tc =
+    case tc.parsand of
+        Nothing ->
+            tc.data
+
+        Just parsand ->
+            Parser.Data.update parsand tc.data |> Debug.log "UD"
 
 
 {-| (ST 7 Called at ( InElementBlock, LTEndElement )
@@ -381,6 +394,7 @@ popBlockStack currentLine_ state =
             , blockLevel = 0
             , blockContents = currentLine_ :: state.blockContents
             , output = tc :: state.output
+            , data = updateData tc
 
             --, laTeXState = Reduce.laTeXState tc.parsed state.laTeXState
             , lineNumber = state.lineNumber + (2 + List.length state.blockContents) -- TODO: think about this.  Is it correct?
@@ -419,6 +433,7 @@ flush state =
                 { state
                     | -- laTeXState = laTeXState
                       output = tc :: state.output
+                    , data = updateData tc |> Debug.log "DATA"
                 }
     in
     newState

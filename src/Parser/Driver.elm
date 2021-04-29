@@ -14,12 +14,11 @@ import Parser.TextCursor exposing (TextCursor)
 
 packet : Loop.Packet Element
 packet =
-    { parser = Element.element
+    { parser = Element.parser
     , getSource = Getters.getSource
     , incrementOffset = incrementOffset
     , highlighter = Nothing
     , handleError = Just handleError
-    , updateData = Parser.Data.update
     }
 
 
@@ -66,9 +65,13 @@ incrementSourceMapOffset delta sourceMap =
 -- ERROR HANDLER
 
 
+type alias ErrorData =
+    PA.DeadEnd Context Problem
+
+
 {-| TODO: Document how this works and how it is extended.
 -}
-handleError : TextCursor Element -> List (PA.DeadEnd Context Problem) -> TextCursor Element
+handleError : TextCursor Element -> List ErrorData -> TextCursor Element
 handleError tc_ e =
     let
         mFirstError =
@@ -108,6 +111,7 @@ unhandledError tc_ mFirstError errorColumn mRecoveryData lxError errorText =
     { text = makeNewText tc_ errorColumn mRecoveryData
     , block = "?? TO DO"
     , blockIndex = tc_.blockIndex
+    , parsand = Nothing
     , parsed = newParsed tc_ lxError mRecoveryData
     , stack = newStack tc_ errorText mRecoveryData
     , offset = newOffset tc_ errorColumn mRecoveryData
@@ -173,6 +177,7 @@ handleRightBracketError tc_ mFirstError errorColumn mRecoveryData =
     { text = newText
     , block = "?? TO DO" --
     , blockIndex = tc_.blockIndex --
+    , parsand = Nothing
     , parsed = List.drop 1 tc_.parsed -- throw away the erroneous parsand
     , stack = [] -- not used
     , offset = newOffset tc_ errorColumn mRecoveryData -- |> Debug.log "RBEH, offset"
@@ -229,6 +234,7 @@ handlePipeError tc_ mFirstError errorColumn mRecoveryData =
     , block = "?? TO DO"
     , blockIndex = tc_.blockIndex
     , parsed = parse__ (String.join "\n" errorLines)
+    , parsand = Nothing
     , stack = [] --newStack tc_ errorText mRecoveryData
     , offset = newOffset tc_ errorColumn mRecoveryData
     , count = tc_.count
@@ -283,7 +289,7 @@ newStack tc_ errorText_ mRecoveryData =
 
 parse__ : String -> List Element
 parse__ str =
-    case PA.run (Element.elementList 0 0) str of
+    case PA.run (Element.listParser 0 0) str of
         Ok list ->
             list
 

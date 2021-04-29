@@ -1,9 +1,11 @@
-module Parser.Data exposing (Data, defaultConfig, init)
+module Parser.Data exposing (..)
+
+{- (Data, defaultConfig, init, nullUpdate) -}
 
 import Dict exposing (Dict)
 import Html exposing (Attribute)
 import Html.Attributes as HA
-import Parser.Element as Element
+import Parser.Element as Element exposing (Element(..))
 
 
 {-| SourceText is a composite strucure holding information on section and other
@@ -55,6 +57,45 @@ type alias Config =
     }
 
 
+update : Element -> Data -> Data
+update element data =
+    case element of
+        Element name args body _ ->
+            if String.left 7 name == "section" then
+                handleSection name data
+
+            else
+                data
+
+        LX list _ ->
+            List.foldl update data list
+
+        _ ->
+            data
+
+
+handleSection : String -> Data -> Data
+handleSection name data =
+    let
+        name_ =
+            if name == "section" then
+                "section1"
+
+            else
+                name
+    in
+    incrementOrInsertCounter name_ data
+
+
+
+-- DEFAULTS
+
+
+nullUpdate : a -> Data -> Data
+nullUpdate a data =
+    data
+
+
 defaultConfig : Config
 defaultConfig =
     { redColor = "#a00"
@@ -63,17 +104,21 @@ defaultConfig =
     }
 
 
+
+-- HELPERS
+
+
 {-| -}
 addSection : String -> String -> Int -> Data -> Data
-addSection sectionName label level state =
+addSection sectionName label level data =
     let
         newEntry =
             TocEntry sectionName label level
 
         toc =
-            state.tableOfContents ++ [ newEntry ]
+            data.tableOfContents ++ [ newEntry ]
     in
-    { state | tableOfContents = toc }
+    { data | tableOfContents = toc }
 
 
 {-| Return the value of a named counter from the LaTeXSTate
@@ -149,6 +194,23 @@ incrementCounter name state =
     { state | counters = newCounters }
 
 
+incrementOrInsertCounter : String -> Data -> Data
+incrementOrInsertCounter name state =
+    let
+        maybeInc =
+            Maybe.map (\x -> x + 1)
+
+        newCounters =
+            case Dict.get name state.counters of
+                Nothing ->
+                    Dict.insert name 1 state.counters
+
+                Just k ->
+                    Dict.insert name (k + 1) state.counters
+    in
+    { state | counters = newCounters }
+
+
 {-| -}
 setCounter : String -> Int -> Data -> Data
 setCounter name value state =
@@ -177,4 +239,4 @@ setCrossReference label value state =
 
 initialCounters : Dict String Int
 initialCounters =
-    Dict.fromList [ ( "section1", 0 ), ( "section2", 0 ), ( "section3", 0 ), ( "theorem", 0 ), ( "eqno", 0 ) ]
+    Dict.fromList []

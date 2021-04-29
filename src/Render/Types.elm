@@ -3,7 +3,7 @@ module Render.Types exposing (DisplayMode(..), FRender, RenderArgs, RenderElemen
 import Dict exposing (Dict)
 import Element as E
 import Parser.Data
-import Parser.Element exposing (Element(..), Mark2Msg)
+import Parser.Element exposing (CYTMsg, Element(..))
 import Parser.SourceMap exposing (SourceMap)
 
 

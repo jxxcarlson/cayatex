@@ -12,7 +12,7 @@ import Json.Encode
 import List.Extra
 import Maybe.Extra
 import Parser.Driver
-import Parser.Element exposing (Element(..), Mark2Msg)
+import Parser.Element exposing (CYTMsg, Element(..))
 import Parser.SourceMap exposing (SourceMap)
 import Parser.TextCursor
 import Render.Types exposing (DisplayMode(..), FRender, RenderArgs, RenderElementDict)
@@ -38,19 +38,19 @@ format =
 -- TOP-LEVEL RENDERERS
 
 
-renderString : RenderArgs -> String -> E.Element Mark2Msg
+renderString : RenderArgs -> String -> E.Element CYTMsg
 renderString renderArgs str =
     Parser.Driver.parseLoop renderArgs.generation renderArgs.blockOffset str
         |> Parser.TextCursor.parseResult
         |> renderList renderArgs
 
 
-renderList : RenderArgs -> List Element -> E.Element Mark2Msg
+renderList : RenderArgs -> List Element -> E.Element CYTMsg
 renderList renderArgs list_ =
     paragraph format (List.map (renderElement renderArgs) list_)
 
 
-renderElement : RenderArgs -> Element -> E.Element Mark2Msg
+renderElement : RenderArgs -> Element -> E.Element CYTMsg
 renderElement renderArgs element =
     case element of
         Text str _ ->
@@ -97,7 +97,7 @@ renderWithDictionary renderArgs name args body sm =
             f renderArgs name args body sm
 
 
-renderMissingElement : String -> Element -> E.Element Mark2Msg
+renderMissingElement : String -> Element -> E.Element CYTMsg
 renderMissingElement name body =
     paragraph []
         [ el [ Font.bold ] (text "[")
@@ -112,7 +112,7 @@ renderMissingElement name body =
 -- RENDERER DICTIONARY
 
 
-renderElementDict : RenderElementDict Mark2Msg
+renderElementDict : RenderElementDict CYTMsg
 renderElementDict =
     Dict.fromList
         [ ( "Error", error )
@@ -187,7 +187,7 @@ indentPadding =
     E.paddingEach { left = 24, right = 0, top = 0, bottom = 0 }
 
 
-getPrefixSymbol : Int -> Dict String String -> E.Element Mark2Msg
+getPrefixSymbol : Int -> Dict String String -> E.Element CYTMsg
 getPrefixSymbol k dict =
     case Dict.get "s" dict of
         Just "numbered" ->
@@ -226,7 +226,7 @@ titleSize =
     14
 
 
-list : FRender Mark2Msg
+list : FRender CYTMsg
 list renderArgs name args_ body sm =
     let
         dict =
@@ -241,7 +241,7 @@ list renderArgs name args_ body sm =
             el [ Font.color redColor ] (text "Malformed list")
 
 
-dataTable : FRender Mark2Msg
+dataTable : FRender CYTMsg
 dataTable renderArgs name args_ body sm =
     let
         rawData : List (List String)
@@ -263,7 +263,7 @@ dataTable renderArgs name args_ body sm =
             else
                 [ spacing 4 ]
 
-        makeRow : Int -> List Float -> List String -> E.Element Mark2Msg
+        makeRow : Int -> List Float -> List String -> E.Element CYTMsg
         makeRow k columnWidths cells =
             row (style k) (List.map2 (\w cell -> el [ E.width (E.px (round w)) ] (text cell)) columnWidths cells)
     in
@@ -286,7 +286,7 @@ isBlankItem el =
             False
 
 
-renderListItem : E.Element Mark2Msg -> RenderArgs -> Element -> E.Element Mark2Msg
+renderListItem : E.Element CYTMsg -> RenderArgs -> Element -> E.Element CYTMsg
 renderListItem prefixSymbol renderArgs elt =
     case elt of
         Element "item" _ body _ ->
@@ -308,12 +308,12 @@ renderListItem prefixSymbol renderArgs elt =
             E.none
 
 
-item : FRender Mark2Msg
+item : FRender CYTMsg
 item renderArgs name args_ body sm =
     paragraph [] [ renderElement renderArgs body ]
 
 
-error : FRender Mark2Msg
+error : FRender CYTMsg
 error renderArgs name args_ body sm =
     el [ Font.color violetColor ] (renderElement renderArgs body)
 
@@ -323,7 +323,7 @@ error renderArgs name args_ body sm =
 -- CODE
 
 
-renderCode : FRender Mark2Msg
+renderCode : FRender CYTMsg
 renderCode renderArgs _ _ body sm =
     let
         adjustedBody =
@@ -354,7 +354,7 @@ getLXText element =
             ""
 
 
-poetry : FRender Mark2Msg
+poetry : FRender CYTMsg
 poetry renderArgs _ _ body sm =
     column
         [ Font.size 14
@@ -365,7 +365,7 @@ poetry renderArgs _ _ body sm =
         (List.map text (getLines (getText2 body |> String.trim)))
 
 
-codeblock : FRender Mark2Msg
+codeblock : FRender CYTMsg
 codeblock renderArgs _ _ body sm =
     column
         [ Font.family
@@ -380,7 +380,7 @@ codeblock renderArgs _ _ body sm =
         (List.map text (getLines (getText2 body |> String.trim)))
 
 
-verbatim : FRender Mark2Msg
+verbatim : FRender CYTMsg
 verbatim renderArgs _ _ body sm =
     column
         [ Font.family
@@ -422,27 +422,27 @@ getLines str =
 -- NEW
 
 
-section : FRender Mark2Msg
+section : FRender CYTMsg
 section renderArgs name args body sm =
     column [ Font.size sectionFontSize, paddingAbove (round <| 0.8 * sectionFontSize) ] [ text (getText body |> Maybe.withDefault "no section name found") ]
 
 
-section2 : FRender Mark2Msg
+section2 : FRender CYTMsg
 section2 renderArgs name args body sm =
     column [ Font.size section2FontSize, paddingAbove (round <| 0.8 * section2FontSize) ] [ text (getText body |> Maybe.withDefault "no subsection name found") ]
 
 
-section3 : FRender Mark2Msg
+section3 : FRender CYTMsg
 section3 renderArgs name args body sm =
     column [ Font.size section3FontSize, paddingAbove (round <| 0.8 * section3FontSize) ] [ text (getText body |> Maybe.withDefault "no subsubsection name found") ]
 
 
-center : FRender Mark2Msg
+center : FRender CYTMsg
 center renderArgs name args body sm =
     column [ E.centerX ] [ renderElement renderArgs body ]
 
 
-indent : FRender Mark2Msg
+indent : FRender CYTMsg
 indent renderArgs name args body sm =
     column [ indentPadding ] [ renderElement renderArgs body ]
 
@@ -463,7 +463,7 @@ section3FontSize =
     16
 
 
-link : FRender Mark2Msg
+link : FRender CYTMsg
 link renderArgs name args body sm =
     case Render.Utility.getArg 0 args of
         Nothing ->
@@ -483,7 +483,7 @@ link renderArgs name args body sm =
                 }
 
 
-image : FRender Mark2Msg
+image : FRender CYTMsg
 image renderArgs name args body sm =
     let
         dict =
@@ -537,22 +537,22 @@ image renderArgs name args body sm =
         ]
 
 
-renderStrong : FRender Mark2Msg
+renderStrong : FRender CYTMsg
 renderStrong renderArgs _ _ body sm =
     el [ Font.bold ] (renderElement renderArgs body)
 
 
-renderItalic : FRender Mark2Msg
+renderItalic : FRender CYTMsg
 renderItalic renderArgs _ _ body sm =
     el [ Font.italic ] (renderElement renderArgs body)
 
 
-highlight : FRender Mark2Msg
+highlight : FRender CYTMsg
 highlight renderArgs _ _ body _ =
     el [ Background.color yellowColor, E.paddingXY 4 2 ] (renderElement renderArgs body)
 
 
-highlightRGB : FRender Mark2Msg
+highlightRGB : FRender CYTMsg
 highlightRGB renderArgs _ args body sm =
     let
         r =
@@ -567,7 +567,7 @@ highlightRGB renderArgs _ args body sm =
     el [ Background.color (E.rgb255 r g b), E.paddingXY 4 2 ] (renderElement renderArgs body)
 
 
-fontRGB : FRender Mark2Msg
+fontRGB : FRender CYTMsg
 fontRGB renderArgs name args body sm =
     let
         r =
@@ -586,7 +586,7 @@ fontRGB renderArgs name args body sm =
 -- MATH
 
 
-renderaAsTheoremLikeElement : FRender Mark2Msg
+renderaAsTheoremLikeElement : FRender CYTMsg
 renderaAsTheoremLikeElement renderArgs name args body sm =
     let
         label_ =
@@ -610,7 +610,7 @@ renderaAsTheoremLikeElement renderArgs name args body sm =
         ]
 
 
-renderMathDisplay : FRender Mark2Msg
+renderMathDisplay : FRender CYTMsg
 renderMathDisplay rendArgs name args body sm =
     case getText body of
         Just content ->
@@ -620,7 +620,7 @@ renderMathDisplay rendArgs name args body sm =
             el [ Font.color redColor ] (text "Error rendering math !!!")
 
 
-renderMath : FRender Mark2Msg
+renderMath : FRender CYTMsg
 renderMath renderArgs name args body sm =
     case getText body of
         Just content ->
@@ -630,7 +630,7 @@ renderMath renderArgs name args body sm =
             el [ Font.color redColor ] (text "Error rendering math !!!")
 
 
-mathText : RenderArgs -> DisplayMode -> String -> Maybe SourceMap -> E.Element Mark2Msg
+mathText : RenderArgs -> DisplayMode -> String -> Maybe SourceMap -> E.Element CYTMsg
 mathText renderArgs displayMode content sm =
     Html.Keyed.node "span"
         []
@@ -639,7 +639,7 @@ mathText renderArgs displayMode content sm =
         |> E.html
 
 
-mathText_ : DisplayMode -> String -> String -> Maybe SourceMap -> Html Mark2Msg
+mathText_ : DisplayMode -> String -> String -> Maybe SourceMap -> Html CYTMsg
 mathText_ displayMode selectedId content sm =
     Html.node "math-text"
         -- active sm selectedId  ++

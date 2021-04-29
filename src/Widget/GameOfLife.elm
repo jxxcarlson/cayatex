@@ -13,14 +13,14 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
-import Parser.Element exposing (Mark2Msg)
+import Parser.Element exposing (CYTMsg)
 import Random
 import Render.Types exposing (FRender)
 import Time exposing (Posix)
 import Widget.Conway as Conway exposing (State(..))
 
 
-run : FRender Mark2Msg
+run : FRender CYTMsg
 run renderArgs name args body sm =
     let
         model =

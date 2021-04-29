@@ -10,13 +10,13 @@ module Widget.Data exposing
 import CYUtility
 import Element as E exposing (column, el, paragraph, px, row, spacing, text)
 import Maybe.Extra
-import Parser.Element exposing (Element(..), Mark2Msg)
+import Parser.Element exposing (CYTMsg, Element(..))
 import Render.Types exposing (FRender)
 import Render.Utility
 import SimpleGraph exposing (Option(..), barChart, lineChart, scatterPlot)
 
 
-sum : FRender Mark2Msg
+sum : FRender CYTMsg
 sum renderArgs name args body sm =
     let
         numbers_ =
@@ -34,7 +34,7 @@ sum renderArgs name args body sm =
     row [ spacing 8 ] (text "sum" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (CYUtility.roundTo precision sum_)) ])
 
 
-average : FRender Mark2Msg
+average : FRender CYTMsg
 average renderArgs name args body sm =
     let
         numbers_ =
@@ -58,7 +58,7 @@ average renderArgs name args body sm =
     row [ spacing 8 ] (text "average" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (CYUtility.roundTo precision average_)) ])
 
 
-stdev : FRender Mark2Msg
+stdev : FRender CYTMsg
 stdev renderArgs name args body sm =
     let
         numbers_ =
@@ -96,7 +96,7 @@ stdev renderArgs name args body sm =
 -- DATA
 
 
-bargraph : FRender Mark2Msg
+bargraph : FRender CYTMsg
 bargraph renderArgs name args body sm =
     let
         dict =
@@ -145,7 +145,7 @@ bargraph renderArgs name args body sm =
         ]
 
 
-linegraph : FRender Mark2Msg
+linegraph : FRender CYTMsg
 linegraph renderArgs name args body sm =
     let
         dict =
@@ -189,7 +189,7 @@ linegraph renderArgs name args body sm =
         ]
 
 
-scatterplot : FRender Mark2Msg
+scatterplot : FRender CYTMsg
 scatterplot renderArgs name args body sm =
     let
         dict =

@@ -1,12 +1,11 @@
 module Parser.Element exposing
-    ( Element(..)
-    , Mark2Msg(..)
-    , element
-    , elementBody
-    , elementList
-    , fubar
+    ( CYTMsg(..)
+    , Element(..)
+    , listParser
     , parse
     , parseList
+    , parser
+    , rlp
     )
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
@@ -14,6 +13,10 @@ import Parser.Error exposing (Context(..), Problem(..))
 import Parser.RawString as RawString
 import Parser.Tool as T
 import Parser.XString as XString
+
+
+rlp str =
+    Parser.run (listParser 0 0) "[section A]\n\n[section B]\n\n[section C]"
 
 
 type Element
@@ -26,7 +29,7 @@ type alias Parser a =
     Parser.Parser Context Problem a
 
 
-type Mark2Msg
+type CYTMsg
     = Mark2Msg
 
 
@@ -36,21 +39,21 @@ type Mark2Msg
 
 parse : Int -> Int -> String -> Result (List (Parser.DeadEnd Context Problem)) Element
 parse generation lineNumber str =
-    Parser.run (element 1 2) str
+    Parser.run (parser 1 2) str
 
 
 parseList : Int -> Int -> String -> Result (List (Parser.DeadEnd Context Problem)) (List Element)
 parseList generation lineNumber str =
-    Parser.run (elementList generation lineNumber) str
+    Parser.run (listParser generation lineNumber) str
 
 
-elementList : Int -> Int -> Parser (List Element)
-elementList generation lineNumber =
-    T.many (element generation lineNumber)
+listParser : Int -> Int -> Parser (List Element)
+listParser generation lineNumber =
+    T.many (parser generation lineNumber)
 
 
-element : Int -> Int -> Parser Element
-element generation lineNumber =
+parser : Int -> Int -> Parser Element
+parser generation lineNumber =
     Parser.oneOf [ primitiveElement generation lineNumber, text generation lineNumber ]
 
 
@@ -77,17 +80,6 @@ primitiveElement generation blockOffset =
             |= Parser.getSource
 
 
-fubar : Parser { start : Int, finish : Int, content : String }
-fubar =
-    Parser.succeed (\start finish content -> { start = start, finish = finish, content = String.slice start finish content })
-        |= Parser.getOffset
-        |. leftBracket
-        |. Parser.chompWhile (\c -> c /= ']')
-        |. rightBracket
-        |= Parser.getOffset
-        |= Parser.getSource
-
-
 elementName =
     T.first (string_ [ '[', ']', ' ', '\n' ]) Parser.spaces
 
@@ -109,7 +101,7 @@ innerElementArgs =
 elementBody : Int -> Int -> Parser.Parser Context Problem Element
 elementBody generation lineNumber =
     Parser.inContext CBody <|
-        Parser.lazy (\_ -> T.many (element generation lineNumber) |> Parser.map (\list -> LX list Nothing))
+        Parser.lazy (\_ -> T.many (parser generation lineNumber) |> Parser.map (\list -> LX list Nothing))
 
 
 argsAndBody_ generation lineNumber =

@@ -52,7 +52,7 @@ This is a test:
 
 
 runElement str =
-    run (element 1 2) str |> Result.map strip
+    run (parser 1 2) str |> Result.map strip
 
 
 suite =
@@ -66,12 +66,12 @@ suite =
             , test "Inline" <|
                 \_ ->
                     Expect.equal
-                        (run (element 1 2) "[image |height:40, width:100| stuff]" |> Result.map strip)
+                        (run (parser 1 2) "[image |height:40, width:100| stuff]" |> Result.map strip)
                         (Ok (Element "image" [ "height:40", "width:100" ] (LX [ Text "stuff" Nothing ] Nothing) Nothing))
             , test "Inline, complex" <|
                 \_ ->
                     Expect.equal
-                        (run (T.many (element 0 0)) "foo bar [strong stuff] ho ho ho" |> Result.map (List.map strip))
+                        (run (T.many (parser 0 0)) "foo bar [strong stuff] ho ho ho" |> Result.map (List.map strip))
                         (Ok [ Text "foo bar " Nothing, Element "strong" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing, Text " ho ho ho" Nothing ])
             , test "inline (2)" <|
                 \_ ->
@@ -87,7 +87,7 @@ suite =
                         (Ok (Element "strong" [ "font-size 36", "la-di-dah: 79" ] (LX [ Element "italic" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing ] Nothing) Nothing))
             , test "many inlineExpression" <|
                 \_ ->
-                    Expect.equal (run (T.many (element 0 0)) "[strong |font-size 36, la-di-dah: 79| [italic stuff]] ho ho [large ho]!" |> Result.map (List.map Parser.Getters.strip))
+                    Expect.equal (run (T.many (parser 0 0)) "[strong |font-size 36, la-di-dah: 79| [italic stuff]] ho ho [large ho]!" |> Result.map (List.map Parser.Getters.strip))
                         (Ok [ Element "strong" [ "font-size 36", "la-di-dah: 79" ] (LX [ Element "italic" [] (LX [ Text "stuff" Nothing ] Nothing) Nothing ] Nothing) Nothing, Text " ho ho " Nothing, Element "large" [] (LX [ Text "ho" Nothing ] Nothing) Nothing, Text "!" Nothing ])
             ]
         , describe "inline-extended" <|
