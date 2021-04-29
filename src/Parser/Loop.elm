@@ -1,7 +1,8 @@
 module Parser.Loop exposing (..)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
-import Parser.Data
+import Parser.Data as Data exposing (Data)
+import Parser.Element exposing (Element)
 import Parser.Error exposing (Context, Problem)
 import Parser.Getters
 import Parser.SourceMap exposing (SourceMap)
@@ -26,9 +27,9 @@ type alias Packet a =
 a string of source text, the "chunk." It returns a TextCursor, which
 is a data structure which includes the parsed source text.
 -}
-parseLoop : Packet a -> Int -> Int -> String -> TextCursor a
-parseLoop packet generation initialLineNumber str =
-    ParserTool.loop (TextCursor.init generation initialLineNumber str) (nextCursor packet)
+parseLoop : Packet Element -> Int -> Int -> Data -> String -> TextCursor Element
+parseLoop packet generation initialLineNumber data str =
+    ParserTool.loop (TextCursor.init generation initialLineNumber data str) (nextCursor packet)
 
 
 {-| nextCursor operates by running the expression parser on
@@ -54,13 +55,15 @@ operated by parseLoop is updated:
     - `expr` is prepended to `tc.parsed`
 
 -}
-nextCursor : Packet a -> TextCursor a -> ParserTool.Step (TextCursor a) (TextCursor a)
+nextCursor : Packet Element -> TextCursor Element -> ParserTool.Step (TextCursor Element) (TextCursor Element)
 nextCursor packet tc =
-    --let
-    --    --_ =
-    --        -- Debug.log "xxx tc;  (count, le)" ( tc.count, tc.parsed )
-    --       --  Debug.log "xxx tc;  count" tc.count
-    --in
+    let
+        _ =
+            Debug.log "(N, p, c)" ( tc.count, tc.parsand |> Maybe.map Parser.Getters.strip, tc.data.counters )
+
+        --_ =
+        --    Debug.log "xxx tc;  count" tc.count
+    in
     if tc.text == "" || tc.count > 100 then
         -- TODO: that usage of count needs to be removed after bug is fixed
         ParserTool.Done { tc | parsed = List.reverse tc.parsed }
@@ -83,6 +86,7 @@ nextCursor packet tc =
                         , parsand = Just parsand
                         , parsed = parsand :: tc.parsed
                         , offset = tc.offset + sourceMapLength
+                        , data = Data.update parsand tc.data
                     }
 
             Err e ->

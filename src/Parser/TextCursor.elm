@@ -11,7 +11,7 @@ module Parser.TextCursor exposing
 
 -- import Parser.Element exposing (Expression)
 
-import Parser.Data
+import Parser.Data exposing (Data)
 
 
 {-| SourceText structure used by Parser.Loop.run as it progressively "eats" bites of
@@ -57,8 +57,8 @@ empty =
 
 {-| Return a TextCursor with given chunkNumber and text
 -}
-init : Int -> Int -> String -> TextCursor a
-init generation blockIndex text =
+init : Int -> Int -> Data -> String -> TextCursor a
+init generation blockIndex data text =
     { count = 0
     , text = text
     , block = ""
@@ -68,7 +68,7 @@ init generation blockIndex text =
     , stack = []
     , offset = 0
     , generation = generation
-    , data = Parser.Data.init Parser.Data.defaultConfig
+    , data = data
     }
 
 

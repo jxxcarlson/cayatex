@@ -2,7 +2,7 @@ module Parser.Driver exposing (..)
 
 import List.Extra
 import Parser.Advanced as PA
-import Parser.Data
+import Parser.Data as Data exposing (Data)
 import Parser.Element as Element exposing (Element(..))
 import Parser.Error exposing (Context(..), Problem(..))
 import Parser.Getters as Getters
@@ -22,14 +22,14 @@ packet =
     }
 
 
-parseLoop : Int -> Int -> String -> TextCursor Element
-parseLoop generation initialLineNumber str =
-    Loop.parseLoop packet generation initialLineNumber str
+parseLoop : Int -> Int -> Data -> String -> TextCursor Element
+parseLoop generation initialLineNumber data str =
+    Loop.parseLoop packet generation initialLineNumber data str
 
 
 pl : String -> List Element
 pl str =
-    parseLoop 0 0 str |> .parsed
+    parseLoop 0 0 (Data.init Data.defaultConfig) str |> .parsed
 
 
 pl2 str =

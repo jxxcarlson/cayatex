@@ -86,10 +86,6 @@ process generation =
     runloop generation
 
 
-
--- >> toParsed
-
-
 {-| Compute the final State of a string of source text.
 The output field of State holds the AST of the source text.
 
@@ -116,9 +112,8 @@ rl str =
 cl str =
     runloop 0 (String.lines str)
         |> .output
-        |> List.reverse
-        -- |> List.head
-        |> List.map (.data >> .counters)
+        |> List.head
+        |> Maybe.map (.data >> .counters)
 
 
 {-| Return the AST from the State.
@@ -347,13 +342,14 @@ pushBlock_ line state =
 
         tc : TextCursor Element
         tc =
-            Parser.Driver.parseLoop state.generation state.lineNumber str
+            -- TODO: is usage of state.data correct?
+            Parser.Driver.parseLoop state.generation state.lineNumber state.data str
     in
     { state
         | blockType = Start
         , blockContents = []
         , blockLevel = 0
-        , data = updateData tc
+        , data = updateData tc |> Debug.log "UD (pushBlock_)"
 
         -- , laTeXState = Reduce.laTeXState tc.parsed state.laTeXState
         , output = tc :: state.output
@@ -367,7 +363,7 @@ updateData tc =
             tc.data
 
         Just parsand ->
-            Parser.Data.update parsand tc.data |> Debug.log "UD"
+            Parser.Data.update (Debug.log "PARSAND" parsand) tc.data |> Debug.log "UD (f)"
 
 
 {-| (ST 7 Called at ( InElementBlock, LTEndElement )
@@ -384,7 +380,8 @@ popBlockStack currentLine_ state =
                 String.join "\n" (List.reverse (currentLine_ :: state.blockContents))
 
             tc_ =
-                Parser.Driver.parseLoop state.generation state.lineNumber input_
+                -- TODO: is usage of state.data correct?
+                Parser.Driver.parseLoop state.generation state.lineNumber state.data input_
 
             tc =
                 { tc_ | text = input_ }
@@ -394,7 +391,7 @@ popBlockStack currentLine_ state =
             , blockLevel = 0
             , blockContents = currentLine_ :: state.blockContents
             , output = tc :: state.output
-            , data = updateData tc
+            , data = updateData tc |> Debug.log "UD (pushBlockStack)"
 
             --, laTeXState = Reduce.laTeXState tc.parsed state.laTeXState
             , lineNumber = state.lineNumber + (2 + List.length state.blockContents) -- TODO: think about this.  Is it correct?
@@ -422,7 +419,8 @@ flush state =
                 let
                     tc_ : TextCursor Element
                     tc_ =
-                        Parser.Driver.parseLoop state.generation state.lineNumber input
+                        -- TODO: is usage of state.data correct?
+                        Parser.Driver.parseLoop state.generation state.lineNumber state.data input
 
                     tc =
                         { tc_ | text = input }
@@ -433,7 +431,7 @@ flush state =
                 { state
                     | -- laTeXState = laTeXState
                       output = tc :: state.output
-                    , data = updateData tc |> Debug.log "DATA"
+                    , data = updateData tc |> Debug.log "UD (flush)"
                 }
     in
     newState
