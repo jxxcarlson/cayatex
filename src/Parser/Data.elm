@@ -5,7 +5,9 @@ module Parser.Data exposing (..)
 import Dict exposing (Dict)
 import Html exposing (Attribute)
 import Html.Attributes as HA
+import Maybe.Extra
 import Parser.Element as Element exposing (Element(..))
+import Render.Utility
 import Vector exposing (Vector)
 
 
@@ -69,7 +71,7 @@ update element data =
     case element of
         Element name args body _ ->
             if String.left 7 name == "section" then
-                handleSection name data
+                handleSection name body data
 
             else
                 data
@@ -86,8 +88,8 @@ updateList list data =
     List.foldl update data list
 
 
-handleSection : String -> Data -> Data
-handleSection name data =
+handleSection : String -> Element -> Data -> Data
+handleSection name element data =
     let
         name_ =
             if name == "section" then
@@ -110,8 +112,24 @@ handleSection name data =
 
                 newVectorCounters =
                     Dict.update "section" maybeInc data.vectorCounters
+
+                newData =
+                    { data | vectorCounters = newVectorCounters }
+
+                tocItem =
+                    { name = getText element, label = sectionLabel newData, level = level - 1 }
             in
-            { data | vectorCounters = newVectorCounters }
+            { newData | tableOfContents = tocItem :: data.tableOfContents }
+
+
+getText : Element -> String
+getText element =
+    case element of
+        LX list_ _ ->
+            List.map Render.Utility.extractText list_ |> Maybe.Extra.values |> String.join "\n"
+
+        _ ->
+            ""
 
 
 labelElement : Data -> Element -> Element
@@ -128,9 +146,13 @@ labelElement data element =
             element
 
 
+sectionLabel data =
+    Dict.get "section" data.vectorCounters |> Maybe.map Vector.toString |> Maybe.withDefault "??"
+
+
 setSectionLabel : String -> Data -> Element -> Element
 setSectionLabel name_ data element =
-    Element.setLabel (Dict.get "section" data.vectorCounters |> Maybe.map Vector.toString |> Maybe.withDefault "??") element
+    Element.setLabel (sectionLabel data) element
 
 
 

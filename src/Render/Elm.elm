@@ -117,6 +117,7 @@ renderElementDict : RenderElementDict CYTMsg
 renderElementDict =
     Dict.fromList
         [ ( "Error", error )
+        , ( "tableofcontents", tableofcontents )
         , ( "bold", renderStrong )
         , ( "b", renderStrong )
         , ( "italic", renderItalic )
@@ -230,6 +231,17 @@ elementTitle args_ =
 
 titleSize =
     14
+
+
+tableofcontents : FRender CYTMsg
+tableofcontents renderArgs name args_ body meta =
+    E.column [ spacing 4 ]
+        (el [ Font.bold, Font.size 14 ] (text "Table of contents") :: List.map renderTocItem (List.reverse renderArgs.parserData.tableOfContents))
+
+
+renderTocItem : Data.TocEntry -> E.Element CYTMsg
+renderTocItem tocItem =
+    E.paragraph [ E.width E.fill ] [ E.text (tocItem.label ++ " " ++ tocItem.name) ]
 
 
 list : FRender CYTMsg

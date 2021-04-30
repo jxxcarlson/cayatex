@@ -1103,6 +1103,8 @@ text =
 
 By James Carlson and Nicholas Yang
 
+
+
 [italic CaYaTeX is a simple yet powerful markup language that
 compiles to both LaTeX and Html.]
 
@@ -1124,6 +1126,7 @@ among other things, help us to cross-validate the specification.]
 
 The project is open source: [link https://github.com/jxxcarlson/cayatex]
 
+[tableofcontents]
 
 [section1 Design Goals]
 

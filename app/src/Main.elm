@@ -297,12 +297,28 @@ initState k =
     }
 
 
+initStateWithData k data =
+    { generation = k
+    , blockOffset = 0
+    , selectedId = ""
+    , width = 300
+    , parserData = data
+    }
+
+
 render : Int -> String -> Element Msg
 render k str =
     -- CaYaTeX.render "id__" { content = str, generation = k } |> Element.map CYTMsg
-    Parser.Document.runloop k (String.lines str)
+    let
+        state =
+            Parser.Document.runloop k (String.lines str)
+
+        newState =
+            initStateWithData k state.data
+    in
+    state
         |> Parser.Document.toParsed
-        |> List.map (Render.Elm.renderList (initState k))
+        |> List.map (Render.Elm.renderList newState)
         |> column [ spacing 18 ]
         |> Element.map CYTMsg
 
