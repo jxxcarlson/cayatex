@@ -6,6 +6,7 @@ import Dict exposing (Dict)
 import Html exposing (Attribute)
 import Html.Attributes as HA
 import Parser.Element as Element exposing (Element(..))
+import Vector exposing (Vector)
 
 
 {-| SourceText is a composite strucure holding information on section and other
@@ -15,6 +16,7 @@ where it appears as a field in RenderArgs
 -}
 type alias Data =
     { counters : IntegerDict
+    , vectorCounters : VectorDict
     , crossReferences : Dictionary
     , tableOfContents : List TocEntry
     , dictionary : Dictionary
@@ -24,7 +26,8 @@ type alias Data =
 
 init : Config -> Data
 init config =
-    { counters = initialCounters
+    { counters = Dict.empty
+    , vectorCounters = Dict.fromList [ ( "section", Vector.init 6 ) ]
     , crossReferences = Dict.empty
     , tableOfContents = []
     , dictionary = Dict.empty
@@ -34,6 +37,10 @@ init config =
 
 type alias IntegerDict =
     Dict.Dict String Int
+
+
+type alias VectorDict =
+    Dict.Dict String Vector
 
 
 {-| -}

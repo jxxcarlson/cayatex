@@ -341,7 +341,6 @@ renderCode renderArgs _ _ body meta =
             [ Font.typeface "Inconsolata"
             , Font.monospace
             ]
-        , Font.size 14
         , Font.color codeColor
         ]
         (renderElement renderArgs adjustedBody)
@@ -375,10 +374,13 @@ codeblock renderArgs _ _ body meta =
             [ Font.typeface "Inconsolata"
             , Font.monospace
             ]
-        , Font.size 14
+        , Font.size 12
         , Font.color codeColor
         , Render.Utility.htmlAttribute "white-space" "pre"
+
+        --, Render.Utility.htmlAttribute "line-height" "1.5"
         , indentation
+        , spacing 8
         ]
         (List.map text (getLines (getText2 body |> String.trim)))
 
@@ -390,10 +392,11 @@ verbatim renderArgs _ _ body meta =
             [ Font.typeface "Inconsolata"
             , Font.monospace
             ]
-        , Font.size 14
         , Render.Utility.htmlAttribute "white-space" "pre"
-        , Render.Utility.htmlAttribute "line-height" "1.5"
+
+        -- , Render.Utility.htmlAttribute "line-height" "1.5"
         , indentation
+        , spacing 8
         ]
         (List.map text (getLines (getText2 body |> String.trim)))
 
