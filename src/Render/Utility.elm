@@ -72,7 +72,7 @@ getPoints dict body =
             String.toInt str |> Maybe.withDefault default
 
         ( col1, col2 ) =
-            case ( Dict.get "col1" dict, Dict.get "col2" dict ) of
+            case ( Dict.get "x-axis" dict, Dict.get "y-axis" dict ) of
                 ( Just i, Just j ) ->
                     ( toInt_ 0 i - 1, toInt_ 1 j - 1 )
 

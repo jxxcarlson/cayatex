@@ -169,8 +169,7 @@ type alias Data =
 
 [section2 Error recovery]
 
-The [c parseLoop] function handles error recovery by modifiying the parse tree.  After modification, the tree is (a) error free, (b) constructed so that when rendered, information about the error is displayed.  This feature "works," but needs more work in order to provide a pleasant user experience.
-
+The [c parseLoop] function handles error recovery by modifiying the parse tree.  After modification, the tree is (a) error free, (b) constructed so that when rendered, information about the error is displayed.  This feature "works," but is still somewhat primitive.
 [section2 Parser.Document]
 
 The highest level of the parser is handled by [c Parser.Document.runLoop]:
@@ -584,10 +583,10 @@ temperature anomaly 1880-1957|
 
 Use the same syntax as before, but with "scatterplot" in place of "linegraph."
 
-[codeblock raw##[scatterplot |col1:3,  col2:4
+[code raw##[scatterplot |x-axis:3,  y-axis:4
   , caption: Hubble's 1929 data| ...]##]
 
-[scatterplot |col1:3,  col2:4, caption: Hubble's 1929 data|
+[scatterplot |x-axis:3,  y-axis:4, caption: Hubble's 1929 data|
 object,ms,R (Mpc),v (km/sec),mt,Mt,"D from mt,Mt",,,,,,,,,
 S.Mag.,..,0.032,170,1.5,-16.0,0.03,Slope when Intercept set to zero,423.901701290206,km/sec/Mpc,,,,,,
 L.Mag.,..,0.03,290,0.5,-17.2,0.03,,,,,,,,,
