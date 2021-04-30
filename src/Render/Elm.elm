@@ -235,13 +235,17 @@ titleSize =
 
 tableofcontents : FRender CYTMsg
 tableofcontents renderArgs name args_ body meta =
-    E.column [ spacing 4 ]
+    E.column [ spacing 6 ]
         (el [ Font.bold, Font.size 14 ] (text "Table of contents") :: List.map renderTocItem (List.reverse renderArgs.parserData.tableOfContents))
 
 
 renderTocItem : Data.TocEntry -> E.Element CYTMsg
 renderTocItem tocItem =
-    E.paragraph [ E.width E.fill ] [ E.text (tocItem.label ++ " " ++ tocItem.name) ]
+    E.link [ Font.color linkColor, tocPadding tocItem.level ] { label = text (tocItem.label ++ " " ++ tocItem.name), url = "#" ++ Render.Utility.slug tocItem.name }
+
+
+tocPadding k =
+    E.paddingEach { left = k * 10, right = 0, top = 0, bottom = 0 }
 
 
 list : FRender CYTMsg
@@ -460,7 +464,19 @@ docTitle renderArgs name args body meta =
 
 section : FRender CYTMsg
 section renderArgs name args body meta =
-    column [ Font.size sectionFontSize, paddingAbove (round <| 0.8 * sectionFontSize) ] [ text <| getLabel meta ++ " " ++ (getText body |> Maybe.withDefault "no section name found") ]
+    let
+        sectionName =
+            getText body |> Maybe.withDefault "no section name found"
+
+        tag =
+            Render.Utility.slug sectionName
+    in
+    column
+        [ Font.size sectionFontSize
+        , paddingAbove (round <| 0.8 * sectionFontSize)
+        , Render.Utility.htmlAttribute "id" tag
+        ]
+        [ text <| getLabel meta ++ " " ++ sectionName ]
 
 
 section2 : FRender CYTMsg

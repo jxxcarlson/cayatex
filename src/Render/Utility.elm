@@ -12,6 +12,7 @@ module Render.Utility exposing
     , getTextList
     , htmlAttribute
     , makePair
+    , slug
     )
 
 import CYUtility
@@ -22,6 +23,11 @@ import Html.Attributes
 import List.Extra
 import Maybe.Extra
 import Parser.Element exposing (CYTMsg, Element(..))
+
+
+slug : String -> String
+slug str =
+    str |> String.replace " " "-" |> String.toLower
 
 
 htmlAttribute : String -> String -> E.Attribute msg
