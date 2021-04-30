@@ -132,13 +132,13 @@ renderElementDict =
         , ( "verbatim", verbatim )
         , ( "poetry", poetry )
         , ( "title", docTitle )
-        , ( "section", section )
-        , ( "section1", section )
-        , ( "section2", section2 )
-        , ( "section3", section3 )
-        , ( "section4", section4 )
-        , ( "section5", section5 )
-        , ( "section6", section6 )
+        , ( "section", section_ )
+        , ( "section1", section_ )
+        , ( "section2", section_ )
+        , ( "section3", section_ )
+        , ( "section4", section_ )
+        , ( "section5", section_ )
+        , ( "section6", section_ )
         , ( "list", list )
         , ( "data", dataTable )
         , ( "item", item )
@@ -237,7 +237,7 @@ titleSize =
 
 tableofcontents : FRender CYTMsg
 tableofcontents renderArgs name args_ body meta =
-    E.column [ spacing 6 ]
+    E.column [ spacing 6, Render.Utility.htmlAttribute "id" "tableofcontents__" ]
         (el [ Font.bold, Font.size 14 ] (text "Table of contents") :: List.map renderTocItem (List.reverse renderArgs.parserData.tableOfContents))
 
 
@@ -464,9 +464,14 @@ docTitle renderArgs name args body meta =
     column [ Font.size titleFontSize, paddingAbove (round <| 0.8 * sectionFontSize) ] [ text <| getLabel meta ++ " " ++ (getText body |> Maybe.withDefault "no section name found") ]
 
 
-section : FRender CYTMsg
-section renderArgs name args body meta =
+section_ renderArgs name args body meta =
     let
+        level =
+            String.toFloat (String.replace "section" "" name) |> Maybe.withDefault 1.0
+
+        scaleFactor =
+            max (sqrt (1.0 / level)) 0.5
+
         sectionName =
             getText body |> Maybe.withDefault "no section name found"
 
@@ -474,36 +479,12 @@ section renderArgs name args body meta =
             Render.Utility.slug sectionName
     in
     column
-        [ Font.size sectionFontSize
-        , paddingAbove (round <| 0.8 * sectionFontSize)
+        [ Font.size (round (scaleFactor * toFloat sectionFontSize))
+        , paddingAbove (round <| 0.8 * scaleFactor * sectionFontSize)
         , Render.Utility.htmlAttribute "id" tag
         ]
-        [ text <| getLabel meta ++ " " ++ sectionName ]
-
-
-section2 : FRender CYTMsg
-section2 renderArgs name args body meta =
-    column [ Font.size section2FontSize, paddingAbove (round <| 0.8 * section2FontSize) ] [ text <| getLabel meta ++ " " ++ (getText body |> Maybe.withDefault "no subsection name found") ]
-
-
-section3 : FRender CYTMsg
-section3 renderArgs name args body meta =
-    column [ Font.size section3FontSize, paddingAbove (round <| 0.8 * section3FontSize) ] [ text <| getLabel meta ++ " " ++ (getText body |> Maybe.withDefault "no subsubsection name found") ]
-
-
-section4 : FRender CYTMsg
-section4 renderArgs name args body meta =
-    column [ Font.size section3FontSize, paddingAbove (round <| 0.8 * section3FontSize) ] [ text <| getLabel meta ++ " " ++ (getText body |> Maybe.withDefault "no subsubsection name found") ]
-
-
-section5 : FRender CYTMsg
-section5 renderArgs name args body meta =
-    column [ Font.size section3FontSize, paddingAbove (round <| 0.8 * section3FontSize) ] [ text <| getLabel meta ++ " " ++ (getText body |> Maybe.withDefault "no subsubsection name found") ]
-
-
-section6 : FRender CYTMsg
-section6 renderArgs name args body meta =
-    column [ Font.size section3FontSize, paddingAbove (round <| 0.8 * section3FontSize) ] [ text <| getLabel meta ++ " " ++ (getText body |> Maybe.withDefault "no subsubsection name found") ]
+        -- [ text <| getLabel meta ++ " " ++ sectionName ]
+        [ E.link [] { label = el [] (text <| getLabel meta ++ " " ++ sectionName), url = "#tableofcontents__" } ]
 
 
 center : FRender CYTMsg
