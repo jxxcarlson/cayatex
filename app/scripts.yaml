@@ -12,7 +12,7 @@ scripts:
   local: open -a /Applications/Firefox.app http://localhost:8000
 
   publish:
-    - sed 's/800/600/' src/Main.elm | sed 's/Data.test/Data.text/' | sed 's/101/0/' >public/Main.elm
+    - sed 's/800/600/' src/Main.elm | sed 's/101/0/' >public/Main.elm
     - elm make  --optimize public/Main.elm --output=public/Main.js
     - cp public/Main.js /Users/jxxcarlson/dev/jxxcarlson.github.io/app/cayatex/
     - echo 'Copied Main.js to /Users/jxxcarlson/dev/jxxcarlson.github.io/app/cayatex/'
