@@ -12,6 +12,14 @@ init k =
     { size = k, content = List.repeat k 0 }
 
 
+toString : Vector -> String
+toString v =
+    v.content
+        |> List.filter (\x -> x > 0)
+        |> List.map String.fromInt
+        |> String.join "."
+
+
 get : Int -> Vector -> Int
 get k v =
     List.Extra.getAt k v.content |> Maybe.withDefault 0

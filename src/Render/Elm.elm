@@ -133,6 +133,9 @@ renderElementDict =
         , ( "section1", section )
         , ( "section2", section2 )
         , ( "section3", section3 )
+        , ( "section4", section4 )
+        , ( "section5", section5 )
+        , ( "section6", section6 )
         , ( "list", list )
         , ( "data", dataTable )
         , ( "item", item )
@@ -455,7 +458,22 @@ section2 renderArgs name args body meta =
 
 section3 : FRender CYTMsg
 section3 renderArgs name args body meta =
-    column [ Font.size section3FontSize, paddingAbove (round <| 0.8 * section3FontSize) ] [ text (getText body |> Maybe.withDefault "no subsubsection name found") ]
+    column [ Font.size section3FontSize, paddingAbove (round <| 0.8 * section3FontSize) ] [ text <| getLabel meta ++ " " ++ (getText body |> Maybe.withDefault "no subsubsection name found") ]
+
+
+section4 : FRender CYTMsg
+section4 renderArgs name args body meta =
+    column [ Font.size section3FontSize, paddingAbove (round <| 0.8 * section3FontSize) ] [ text <| getLabel meta ++ " " ++ (getText body |> Maybe.withDefault "no subsubsection name found") ]
+
+
+section5 : FRender CYTMsg
+section5 renderArgs name args body meta =
+    column [ Font.size section3FontSize, paddingAbove (round <| 0.8 * section3FontSize) ] [ text <| getLabel meta ++ " " ++ (getText body |> Maybe.withDefault "no subsubsection name found") ]
+
+
+section6 : FRender CYTMsg
+section6 renderArgs name args body meta =
+    column [ Font.size section3FontSize, paddingAbove (round <| 0.8 * section3FontSize) ] [ text <| getLabel meta ++ " " ++ (getText body |> Maybe.withDefault "no subsubsection name found") ]
 
 
 center : FRender CYTMsg

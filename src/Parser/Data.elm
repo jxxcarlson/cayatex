@@ -95,8 +95,23 @@ handleSection name data =
 
             else
                 name
+
+        level_ =
+            String.toInt (String.replace "section" "" name_)
     in
-    incrementOrInsertCounter name_ data
+    case level_ of
+        Nothing ->
+            data
+
+        Just level ->
+            let
+                maybeInc =
+                    Maybe.map (\x -> Vector.increment (level - 1) x)
+
+                newVectorCounters =
+                    Dict.update "section" maybeInc data.vectorCounters
+            in
+            { data | vectorCounters = newVectorCounters }
 
 
 labelElement : Data -> Element -> Element
@@ -104,7 +119,6 @@ labelElement data element =
     case element of
         Element name args body _ ->
             if String.left 7 name == "section" then
-                -- Element.setLabel (String.fromInt (getCounter name data)) element
                 setSectionLabel name data element
 
             else
@@ -116,27 +130,7 @@ labelElement data element =
 
 setSectionLabel : String -> Data -> Element -> Element
 setSectionLabel name_ data element =
-    let
-        name =
-            if name_ == "section" then
-                "section1"
-
-            else
-                name_
-    in
-    case name of
-        "section1" ->
-            Element.setLabel (String.fromInt (getCounter "section1" data)) element
-
-        "section2" ->
-            let
-                label_ =
-                    String.fromInt (getCounter "section1" data) ++ "." ++ String.fromInt (getCounter "section2" data)
-            in
-            Element.setLabel label_ element
-
-        _ ->
-            Element.setLabel "??" element
+    Element.setLabel (Dict.get "section" data.vectorCounters |> Maybe.map Vector.toString |> Maybe.withDefault "??") element
 
 
 
