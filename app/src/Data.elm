@@ -312,7 +312,8 @@ The goals of the CaYaTeX project are for the language to be
 
 [item [b Powerful].  We borrow ideas from functional programming.
 Elements have a Lisp-like syntax with brackets in place of parentheses.
-An element has the form [code raw##[name |argument-list| body]##] or simply  [code raw##[name body]##]
+An element has the basic form [code raw##[name |argument-list| body]##].
+The parts [code raw##|argument-list|##] and [c body] may or may not be present.
 The argument list is a comma-delimited sequence of
 strings.  The body is an element.
 The partial element [code name args] is a function [code Element -> Element].

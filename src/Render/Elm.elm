@@ -314,7 +314,7 @@ renderListItem : E.Element CYTMsg -> RenderArgs -> Element -> E.Element CYTMsg
 renderListItem prefixSymbol renderArgs elt =
     case elt of
         Element "item" _ body _ ->
-            E.row [ E.spacing 8 ] [ prefixSymbol, renderElement renderArgs elt ]
+            E.row [ E.spacing 8 ] [ el [ E.alignTop, E.moveDown 2 ] prefixSymbol, renderElement renderArgs elt ]
 
         Element "list" args body _ ->
             let
