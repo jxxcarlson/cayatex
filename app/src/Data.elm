@@ -295,7 +295,8 @@ is a start.]
 [i We are also working on an implementation in Rust. This will,
 among other things, help us to cross-validate the specification.]
 
-The project is open source: [link https://github.com/jxxcarlson/cayatex]
+The project is open source: [link https://github.com/jxxcarlson/cayatex]. Somewhat related to
+[link https://minilatex.lamdera.app/]
 
 [i  [c You are welcome to edit/delete/replace any of the text here.  It won't be saved.  Comments to jxxcarlson@gmail.com]]
 
