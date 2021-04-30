@@ -13,7 +13,7 @@ import SourceText
 
 
 parseAndRender k str =
-    Parser.Document.runloop k (String.lines str)
+    Parser.Document.runLoop k (String.lines str)
         |> Parser.Document.toParsed
         |> List.map (Render.Elm.renderList (initState k))
 

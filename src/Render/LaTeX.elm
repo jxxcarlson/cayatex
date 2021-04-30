@@ -8,7 +8,7 @@ import Render.Types as Types
 
 render : String -> String
 render sourceText =
-    Parser.Document.runloop 0 (String.lines sourceText)
+    Parser.Document.runLoop 0 (String.lines sourceText)
         |> Parser.Document.toParsed
         |> renderList (initState 0)
 

@@ -34,6 +34,8 @@ type alias Model =
     , renderedText : String
     , mode : Mode
     , count : Int
+    , windowHeight : Int
+    , windowWidth : Int
     }
 
 
@@ -43,6 +45,7 @@ type Msg
     | ClearText
     | GetText
     | GetTest
+    | GetNotes
     | SetMode Mode
     | CYTMsg Parser.CYTMsg
 
@@ -53,7 +56,7 @@ type Mode
 
 
 type alias Flags =
-    {}
+    { width : Int, height : Int }
 
 
 initialText =
@@ -66,6 +69,8 @@ init flags =
       , renderedText = Render.String.renderString initialText
       , mode = RenderedMode
       , count = 0
+      , windowHeight = flags.height
+      , windowWidth = flags.width
       }
     , Cmd.none
     )
@@ -120,6 +125,15 @@ update msg model =
             , Cmd.none
             )
 
+        GetNotes ->
+            ( { model
+                | input = Data.notes
+                , renderedText = Render.String.renderString Data.test
+                , count = model.count + 1
+              }
+            , Cmd.none
+            )
+
         CYTMsg _ ->
             ( model, Cmd.none )
 
@@ -160,19 +174,19 @@ widePanelWidth_ =
 
 
 panelWidth_ =
-    480
+    520
 
 
-panelHeight_ =
-    500
+panelHeight_ model =
+    model.windowHeight - 350
 
 
 parserDisplayPanelHeight_ =
-    101
+    0
 
 
-appHeight_ =
-    panelHeight_ + parserDisplayPanelHeight_ + 130
+appHeight_ model =
+    panelHeight_ model + parserDisplayPanelHeight_ + 130
 
 
 appWidth_ =
@@ -182,11 +196,12 @@ appWidth_ =
 mainColumn : Model -> Element Msg
 mainColumn model =
     column mainColumnStyle
-        [ column [ spacing 48, width (px appWidth_), height (px appHeight_) ]
+        [ column [ spacing 48, width (px appWidth_), height (px (appHeight_ model)) ]
             [ title "CaYaTeX Test App"
             , column [ spacing 12 ]
                 [ row [ spacing 12 ] [ inputElement model, outputDisplay model ]
-                , parserDisplay model
+
+                -- , parserDisplay model
                 ]
             , row [ Font.size 14, Font.color whiteColor ] []
             ]
@@ -195,7 +210,7 @@ mainColumn model =
 
 inputElement model =
     column [ spacing 8, moveUp 9 ]
-        [ row [ spacing 12 ] [ clearTextButton, getTextButton, getTestButton ]
+        [ row [ spacing 12 ] [ clearTextButton, getTextButton, getNotesButton, getTestButton ]
         , inputText model
         ]
 
@@ -233,11 +248,8 @@ parsed model =
 
 parsed_ : a -> List String
 parsed_ pt =
+    -- Paragraph.lines paragraphFormat2 (Debug.toString pt)
     []
-
-
-
--- Paragraph.lines paragraphFormat2 (Debug.toString pt)
 
 
 outputDisplay : Model -> Element Msg
@@ -249,7 +261,7 @@ outputDisplay model =
             , moveUp 9
             , Font.size 14
             ]
-            [ rawModeButton model.mode, renderedModeButton model.mode, text ("generation: " ++ String.fromInt model.count), wordCountElement model.input ]
+            [ dummyButton, text ("generation: " ++ String.fromInt model.count), wordCountElement model.input ]
         , outputDisplay_ model
         ]
 
@@ -271,7 +283,7 @@ outputDisplay_ model =
         , Background.color (Element.rgb 1.0 1.0 1.0)
         , paddingXY 24 36
         , width (px panelWidth_)
-        , height (px panelHeight_)
+        , height (px (panelHeight_ model))
         , scrollbarY
         , moveUp 9
         , Font.size 12
@@ -311,7 +323,7 @@ render k str =
     -- CaYaTeX.render "id__" { content = str, generation = k } |> Element.map CYTMsg
     let
         state =
-            Parser.Document.runloop k (String.lines str)
+            Parser.Document.runLoop k (String.lines str)
 
         newState =
             initStateWithData k state.data
@@ -350,7 +362,7 @@ keyIt k list =
 
 inputText : Model -> Element Msg
 inputText model =
-    Input.multiline [ height (px panelHeight_), width (px panelWidth_), Font.size 14 ]
+    Input.multiline [ height (px (panelHeight_ model)), width (px panelWidth_), Font.size 14 ]
         { onChange = InputText
         , text = model.input
         , placeholder = Nothing
@@ -363,6 +375,10 @@ inputText model =
 
 
 -- BUTTONS
+
+
+defaultButtonColor =
+    Element.rgb255 60 60 60
 
 
 buttonColor buttonMode currentMode =
@@ -385,7 +401,7 @@ getTextButton : Element Msg
 getTextButton =
     Input.button buttonStyle2
         { onPress = Just GetText
-        , label = el [ centerX, centerY, Font.size 14 ] (text "Demo text")
+        , label = el [ centerX, centerY, Font.size 14 ] (text "Announcement")
         }
 
 
@@ -395,6 +411,24 @@ getTestButton =
         { onPress = Just GetTest
         , label = el [ centerX, centerY, Font.size 14 ] (text "Test")
         }
+
+
+getNotesButton : Element Msg
+getNotesButton =
+    Input.button buttonStyle2
+        { onPress = Just GetNotes
+        , label = el [ centerX, centerY, Font.size 14 ] (text "Design Notes")
+        }
+
+
+dummyButton : Element Msg
+dummyButton =
+    row [ Background.color defaultButtonColor ]
+        [ Input.button buttonStyle
+            { onPress = Nothing
+            , label = el [ centerX, centerY, Font.size 14 ] (text "Rendered text")
+            }
+        ]
 
 
 rawModeButton : Mode -> Element Msg
@@ -439,7 +473,7 @@ buttonStyle =
 
 buttonStyle2 =
     [ Font.color (rgb255 255 255 255)
-    , bgGray 0.2
+    , Background.color (rgb255 0 0 180)
     , paddingXY 15 8
     ]
 

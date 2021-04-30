@@ -52,8 +52,11 @@
 		// has a size that is a power of two (4 here).
 		const randInts = getRandomInts(5);
 
+		var windowHeight = window.screen.height
+		var windowWidth = window.screen.width
+
 		var root = document.getElementById('main');
-		var app = Elm.Main.init({node: root, flags:  { seed: randInts[0], width:  1200, height: 900 }});
+		var app = Elm.Main.init({node: root, flags:  { seed: randInts[0], width:  windowWidth, height: windowHeight }});
         init(app);
 
 	 </script>

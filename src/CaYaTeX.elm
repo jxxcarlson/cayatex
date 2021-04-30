@@ -29,7 +29,7 @@ update generation text _ =
 
 render : String -> Data -> List (E.Element Parser.Element.CYTMsg)
 render id data =
-    Parser.Document.runloop data.generation (String.lines data.content)
+    Parser.Document.runLoop data.generation (String.lines data.content)
         |> Parser.Document.toParsed
         |> List.map (Render.Elm.renderList (initState data.generation))
 
