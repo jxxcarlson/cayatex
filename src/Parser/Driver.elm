@@ -129,42 +129,39 @@ handleRightBracketError : TextCursor Element -> Maybe (PA.DeadEnd Context Proble
 handleRightBracketError tc_ mFirstError errorColumn mRecoveryData =
     let
         textLines =
-            String.lines tc_.text
+            String.lines tc_.text |> Debug.log "handle TXT LINES"
 
-        -- |> Debug.log "handle TXT LINES"
         badText =
             case List.head textLines of
                 Nothing ->
                     "Oops, couldn't find your error text"
 
                 Just str ->
-                    str
+                    str |> Debug.log "BAD TEXT"
 
-        -- |> Debug.log "BAD TEXT"
         correctedText =
             badText
                 |> String.replace "[" fakeLeftBracket
                 |> String.replace "|" fakePipeSymbol
-                |> (\s -> s ++ " ?? " ++ fakeRightBracket)
+                |> (\s -> s ++ fakeRightBracket)
+                |> Debug.log "RBE, corrected"
 
-        -- |> Debug.log "RBE, corrected"
         errorRow =
-            Maybe.map .row mFirstError |> Maybe.withDefault 0
+            Maybe.map .row mFirstError |> Maybe.withDefault 0 |> Debug.log "errorRow"
 
-        -- |> Debug.log "errorRow"
         errorLines : List String
         errorLines =
-            List.take errorRow textLines
+            List.take errorRow textLines |> Debug.log "handle ERR LINES"
 
-        --  |> Debug.log "handle ERR LINES"
         replacementText =
             "[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]"
 
         newTextLines =
             -- ("[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]") :: List.drop errorRow textLines
-            List.Extra.setIf (\t -> t == badText) replacementText errorLines |> List.reverse
+            List.Extra.setIf (\t -> t == badText) replacementText errorLines
+                |> List.reverse
+                |> Debug.log "NEW TEXT"
 
-        -- |> Debug.log "NEW TEXT"
         newText =
             String.join "\n" (List.reverse newTextLines)
 
@@ -210,7 +207,7 @@ handlePipeError tc_ mFirstError errorColumn mRecoveryData =
             badText
                 |> String.replace "[" fakeLeftBracket
                 |> String.replace "|" fakePipeSymbol
-                |> (\s -> s ++ " ?? " ++ fakeRightBracket)
+                |> (\s -> s ++ fakeRightBracket)
 
         errorRow : Int
         errorRow =

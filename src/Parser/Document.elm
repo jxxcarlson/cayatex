@@ -454,10 +454,10 @@ countLines list =
 loop : State -> (State -> Step State State) -> State
 loop s nextState_ =
     -- TODO: Uncomment for debugging
-    --let
-    --    _ =
-    --        Debug.log (String.fromInt s.lineNumber) { inp = s.input, cl = Maybe.map classify (List.head s.input), bt = s.blockType, bl = s.blockLevel, bc = s.blockContents }
-    --in
+    let
+        _ =
+            Debug.log (String.fromInt s.lineNumber) { inp = s.input, cl = Maybe.map classify (List.head s.input), bt = s.blockType, bl = s.blockLevel, bc = s.blockContents }
+    in
     case nextState_ s of
         Loop s_ ->
             loop s_ nextState_

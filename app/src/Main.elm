@@ -177,16 +177,16 @@ panelWidth_ =
     520
 
 
+appHeight_ model =
+    model.windowHeight - 300
+
+
 panelHeight_ model =
-    model.windowHeight - 350
+    appHeight_ model - parserDisplayPanelHeight_ - 100
 
 
 parserDisplayPanelHeight_ =
     0
-
-
-appHeight_ model =
-    panelHeight_ model + parserDisplayPanelHeight_ + 130
 
 
 appWidth_ =
@@ -195,7 +195,7 @@ appWidth_ =
 
 mainColumn : Model -> Element Msg
 mainColumn model =
-    column mainColumnStyle
+    column (mainColumnStyle model)
         [ column [ spacing 48, width (px appWidth_), height (px (appHeight_ model)) ]
             [ title "CaYaTeX Test App"
             , column [ spacing 12 ]
@@ -457,11 +457,13 @@ renderedModeButton currentMode =
 --
 
 
-mainColumnStyle =
+mainColumnStyle model =
     [ centerX
     , centerY
     , bgGray 0.5
     , paddingXY 20 20
+    , width (px (appWidth_ + 40))
+    , height (px (appHeight_ model + 40))
     ]
 
 
