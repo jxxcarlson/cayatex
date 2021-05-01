@@ -771,7 +771,7 @@ while the third shows how a list of elements can form an
 element.  In particular, the body of an element can be
 [code LX] of a list of elements.  The [code Meta] component tracks
 location of the corresponding piece of text in the source code and
-othe metadata such as section numbering.
+other metadata such as section numbering.
 
 
 
