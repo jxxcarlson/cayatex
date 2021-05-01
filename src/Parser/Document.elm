@@ -53,6 +53,7 @@ type alias State =
     , blockType : BlockStatus
     , blockContents : List String
     , blockLevel : Int
+    , lastTextCursor : Maybe (TextCursor Element)
     , output : List (TextCursor Element)
     , data : Parser.Data.Data
     }
@@ -152,6 +153,7 @@ init generation strList =
     , blockType = Start
     , blockContents = []
     , blockLevel = 0
+    , lastTextCursor = Nothing
     , output = []
     , data = Parser.Data.init Parser.Data.defaultConfig
     }
@@ -181,13 +183,40 @@ applyNextState stepState =
             Done state
 
 
+noError : State -> Bool
+noError state =
+    let
+        err =
+            Maybe.map .error state.lastTextCursor
+    in
+    err == Nothing || err == Just { status = TextCursor.NoError }
+
+
+handleError : State -> Step State State
+handleError state =
+    let
+        _ =
+            Debug.log "HANDLE ERROR, state" state
+    in
+    Done (flush state)
+
+
 nextState : State -> Step State State
 nextState state_ =
-    case List.head state_.input of
-        Nothing ->
+    -- TODO: working on this
+    let
+        _ =
+            Debug.log "ERR" (Maybe.map .error state_.lastTextCursor)
+    in
+    case ( List.head state_.input, noError state_ ) of
+        ( Nothing, _ ) ->
+            -- TODO: DANGEROUS!!
             Done (flush state_)
 
-        Just currentLine ->
+        ( _, False ) ->
+            handleError state_
+
+        ( Just currentLine, _ ) ->
             let
                 state =
                     { state_ | input = List.drop 1 state_.input }
@@ -359,6 +388,7 @@ pushBlock_ line state =
         , blockContents = []
         , blockLevel = 0
         , data = updateData tc
+        , lastTextCursor = Just tc
         , output = tc :: state.output
         , lineNumber = state.lineNumber + countLines state.blockContents
     }
@@ -397,6 +427,7 @@ popBlockStack currentLine_ state =
             | blockType = Start
             , blockLevel = 0
             , blockContents = currentLine_ :: state.blockContents
+            , lastTextCursor = Just tc
             , output = tc :: state.output
             , data = updateData tc
             , lineNumber = state.lineNumber + (2 + List.length state.blockContents) -- TODO: think about this.  Is it correct?
@@ -412,6 +443,15 @@ popBlockStack currentLine_ state =
 flush : State -> State
 flush state =
     let
+        _ =
+            Debug.log "FLUSH, LTC" <| Maybe.map .parsed state.lastTextCursor
+
+        _ =
+            Debug.log "FLUSH, out (head)" <| Maybe.map .parsed (List.head state.output)
+
+        _ =
+            Debug.log "FLUSH, ERROR (1)" <| Maybe.map .error (List.head state.output)
+
         input =
             String.join "\n" (List.reverse state.blockContents)
 
@@ -435,9 +475,17 @@ flush state =
                 in
                 { state
                     | -- laTeXState = laTeXState
-                      output = tc :: state.output
+                      lastTextCursor = Just tc
+                    , output = tc :: state.output
                     , data = updateData tc
                 }
+    in
+    let
+        _ =
+            Debug.log "FLUSH, TC" <| Maybe.map .parsed (List.head newState.output)
+
+        _ =
+            Debug.log "FLUSH, ERROR (2)" <| Maybe.map .error (List.head newState.output)
     in
     newState
 

@@ -1,4 +1,13 @@
-module Data exposing (notes, test, text)
+module Data exposing (exp, notes, test, text)
+
+
+exp =
+    """[i A]
+
+[i B
+
+[i C]
+"""
 
 
 notes =

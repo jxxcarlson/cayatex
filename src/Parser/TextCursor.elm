@@ -1,6 +1,6 @@
 module Parser.TextCursor exposing
     ( TextCursor, init, incrementBlockIndex, incrementBlockOffset
-    , empty, parseResult
+    , ErrorStatus(..), ParseError, empty, parseResult
     )
 
 {-| TextCursor is the data structure used by Parser.parseLoop.
@@ -32,7 +32,19 @@ type alias TextCursor e =
     , count : Int
     , generation : Int
     , data : Parser.Data.Data
+    , error : ParseError
     }
+
+
+type alias ParseError =
+    { status : ErrorStatus }
+
+
+type ErrorStatus
+    = NoError
+    | PipeError
+    | RightBracketError
+    | UnhandledError
 
 
 parseResult : TextCursor e -> List e
@@ -52,6 +64,7 @@ empty =
     , offset = 0
     , generation = 0
     , data = Parser.Data.init Parser.Data.defaultConfig
+    , error = { status = NoError }
     }
 
 
@@ -69,6 +82,7 @@ init generation blockIndex data text =
     , offset = 0
     , generation = generation
     , data = data
+    , error = { status = NoError }
     }
 
 

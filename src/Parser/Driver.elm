@@ -9,7 +9,7 @@ import Parser.Getters as Getters
 import Parser.Loop as Loop
 import Parser.Metadata as Metadata exposing (Metadata)
 import Parser.RecoveryData as RecoveryData exposing (RecoveryData)
-import Parser.TextCursor exposing (TextCursor)
+import Parser.TextCursor as TextCursor exposing (TextCursor)
 
 
 packet : Loop.Packet Element
@@ -118,6 +118,7 @@ unhandledError tc_ mFirstError errorColumn mRecoveryData lxError errorText =
     , count = tc_.count
     , generation = tc_.generation
     , data = tc_.data
+    , error = { status = TextCursor.UnhandledError }
     }
 
 
@@ -181,6 +182,7 @@ handleRightBracketError tc_ mFirstError errorColumn mRecoveryData =
     , count = tc_.count
     , generation = tc_.generation
     , data = tc_.data
+    , error = { status = TextCursor.RightBracketError }
     }
 
 
@@ -237,6 +239,7 @@ handlePipeError tc_ mFirstError errorColumn mRecoveryData =
     , count = tc_.count
     , generation = tc_.generation
     , data = tc_.data
+    , error = { status = TextCursor.PipeError }
     }
 
 
