@@ -194,20 +194,11 @@ noError state =
 
 handleError : State -> Step State State
 handleError state =
-    let
-        _ =
-            Debug.log "HANDLE ERROR, state" state
-    in
     flush state
 
 
 nextState : State -> Step State State
 nextState state_ =
-    -- TODO: working on this
-    let
-        _ =
-            Debug.log "ERR" (Maybe.map .error state_.lastTextCursor)
-    in
     case ( List.head state_.input, noError state_ ) of
         ( Nothing, _ ) ->
             -- TODO: DANGEROUS!!
@@ -443,17 +434,8 @@ popBlockStack currentLine_ state =
 flush : State -> Step State State
 flush state =
     let
-        _ =
-            Debug.log "FLUSH, LTC" <| Maybe.map .parsed state.lastTextCursor
-
-        _ =
-            Debug.log "XX, FLUSH, out (head)" <| List.map .parsed state.output
-
-        _ =
-            Debug.log "FLUSH, ERROR (1)" <| Maybe.map .error (List.head state.output)
-
         input =
-            String.join "\n" (List.reverse state.blockContents) |> Debug.log "XX FLUSH, text of BC"
+            String.join "\n" (List.reverse state.blockContents)
 
         -- If the remaining input is nontrivial (/= ""), process it and update the state
         newState =
@@ -481,15 +463,9 @@ flush state =
                 }
     in
     let
-        _ =
-            Debug.log "FLUSH, TC" <| Maybe.map .parsed (List.head newState.output)
-
         errorStatus : Maybe TextCursor.ParseError
         errorStatus =
-            Debug.log "FLUSH, ERROR (2)" <| Maybe.map .error (List.head newState.output)
-
-        _ =
-            Debug.log "NO ERROR" (noError newState)
+            Maybe.map .error (List.head newState.output)
     in
     if noError newState then
         Done newState
@@ -497,9 +473,12 @@ flush state =
     else
         let
             correctedText =
-                Maybe.map .correctedText errorStatus |> Maybe.withDefault [ "Could not correct the error" ]
+                Maybe.map .correctedText errorStatus |> Maybe.withDefault [ "Could not correct the error" ] |> List.reverse
+
+            correctedState =
+                { state | input = correctedText, blockContents = [], blockLevel = 0, blockType = Start }
         in
-        Done { state | input = correctedText }
+        Loop correctedState
 
 
 countLines : List String -> Int
@@ -514,10 +493,10 @@ countLines list =
 loop : State -> (State -> Step State State) -> State
 loop s nextState_ =
     -- TODO: Uncomment for debugging
-    let
-        _ =
-            Debug.log (String.fromInt s.lineNumber) { inp = s.input, cl = Maybe.map classify (List.head s.input), bt = s.blockType, bl = s.blockLevel, bc = s.blockContents }
-    in
+    --let
+    --    _ =
+    --        Debug.log (String.fromInt s.lineNumber) { inp = s.input, cl = Maybe.map classify (List.head s.input), bt = s.blockType, bl = s.blockLevel, bc = s.blockContents }
+    --in
     case nextState_ s of
         Loop s_ ->
             loop s_ nextState_
