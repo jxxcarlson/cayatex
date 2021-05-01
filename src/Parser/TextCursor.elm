@@ -37,7 +37,7 @@ type alias TextCursor e =
 
 
 type alias ParseError =
-    { status : ErrorStatus }
+    { status : ErrorStatus, correctedText : List String }
 
 
 type ErrorStatus
@@ -64,7 +64,7 @@ empty =
     , offset = 0
     , generation = 0
     , data = Parser.Data.init Parser.Data.defaultConfig
-    , error = { status = NoError }
+    , error = { status = NoError, correctedText = [] }
     }
 
 
@@ -82,7 +82,7 @@ init generation blockIndex data text =
     , offset = 0
     , generation = generation
     , data = data
-    , error = { status = NoError }
+    , error = { status = NoError, correctedText = [] }
     }
 
 

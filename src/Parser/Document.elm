@@ -189,7 +189,7 @@ noError state =
         err =
             Maybe.map .error state.lastTextCursor
     in
-    err == Nothing || err == Just { status = TextCursor.NoError }
+    err == Nothing || Maybe.map .status err == Just TextCursor.NoError
 
 
 handleError : State -> Step State State
@@ -198,7 +198,7 @@ handleError state =
         _ =
             Debug.log "HANDLE ERROR, state" state
     in
-    Done (flush state)
+    flush state
 
 
 nextState : State -> Step State State
@@ -211,7 +211,7 @@ nextState state_ =
     case ( List.head state_.input, noError state_ ) of
         ( Nothing, _ ) ->
             -- TODO: DANGEROUS!!
-            Done (flush state_)
+            flush state_
 
         ( _, False ) ->
             handleError state_
@@ -440,20 +440,20 @@ popBlockStack currentLine_ state =
         }
 
 
-flush : State -> State
+flush : State -> Step State State
 flush state =
     let
         _ =
             Debug.log "FLUSH, LTC" <| Maybe.map .parsed state.lastTextCursor
 
         _ =
-            Debug.log "FLUSH, out (head)" <| Maybe.map .parsed (List.head state.output)
+            Debug.log "XX, FLUSH, out (head)" <| List.map .parsed state.output
 
         _ =
             Debug.log "FLUSH, ERROR (1)" <| Maybe.map .error (List.head state.output)
 
         input =
-            String.join "\n" (List.reverse state.blockContents)
+            String.join "\n" (List.reverse state.blockContents) |> Debug.log "XX FLUSH, text of BC"
 
         -- If the remaining input is nontrivial (/= ""), process it and update the state
         newState =
@@ -484,10 +484,22 @@ flush state =
         _ =
             Debug.log "FLUSH, TC" <| Maybe.map .parsed (List.head newState.output)
 
-        _ =
+        errorStatus : Maybe TextCursor.ParseError
+        errorStatus =
             Debug.log "FLUSH, ERROR (2)" <| Maybe.map .error (List.head newState.output)
+
+        _ =
+            Debug.log "NO ERROR" (noError newState)
     in
-    newState
+    if noError newState then
+        Done newState
+
+    else
+        let
+            correctedText =
+                Maybe.map .correctedText errorStatus |> Maybe.withDefault [ "Could not correct the error" ]
+        in
+        Done { state | input = correctedText }
 
 
 countLines : List String -> Int

@@ -118,7 +118,7 @@ unhandledError tc_ mFirstError errorColumn mRecoveryData lxError errorText =
     , count = tc_.count
     , generation = tc_.generation
     , data = tc_.data
-    , error = { status = TextCursor.UnhandledError }
+    , error = { status = TextCursor.UnhandledError, correctedText = [] }
     }
 
 
@@ -182,7 +182,7 @@ handleRightBracketError tc_ mFirstError errorColumn mRecoveryData =
     , count = tc_.count
     , generation = tc_.generation
     , data = tc_.data
-    , error = { status = TextCursor.RightBracketError }
+    , error = { status = TextCursor.RightBracketError, correctedText = newTextLines }
     }
 
 
@@ -239,7 +239,7 @@ handlePipeError tc_ mFirstError errorColumn mRecoveryData =
     , count = tc_.count
     , generation = tc_.generation
     , data = tc_.data
-    , error = { status = TextCursor.PipeError }
+    , error = { status = TextCursor.PipeError, correctedText = newTextLines }
     }
 
 
