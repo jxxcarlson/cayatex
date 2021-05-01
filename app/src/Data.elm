@@ -178,7 +178,11 @@ type alias Data =
 
 [section2 Error recovery]
 
-The [c parseLoop] function handles error recovery by modifiying the parse tree.  After modification, the tree is (a) error free, (b) constructed so that when rendered, information about the error is displayed.  This feature "works," but is still somewhat primitive.
+The [c parseLoop] function handles error recovery by modifiying the parse tree so as
+to (a) correct the error (b) highlight it in the rendered text.  A comment on the nature of the error
+is inserted in the TextCursor.  This comment is used by the supervising Parser.Document runLoop
+function which backtracks as needed to properly reparse the remaining text.
+
 [section2 Parser.Document]
 
 The highest level of the parser is handled by [c Parser.Document.runLoop]:
