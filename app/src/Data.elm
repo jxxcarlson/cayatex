@@ -288,31 +288,14 @@ By James Carlson and Nicholas Yang
 
 
 [italic CaYaTeX is a simple yet powerful markup language that
-compiles to both LaTeX and Html.]
+compiles to both LaTeX and Html. The implementation you see
+here is written in Elm: [link |github.com/jxxcarlson/cayatex| https://github.com/jxxcarlson/cayatex]].
+
+[i  Please do edit/delete/replace any of the text here. It won't be saved]
 
 
-% Note that instead of saying [italic ... ], we can say [i .... ]
-% There are shortcuts for a few other common elements:
-% [b ... ] instead of [bold ... ]
-% [m ...] instead of [math ... ]
-% [dm ... ] instead of [displaymath ...]
-% Note also how comments are made.
-
-[i The present document, written entirely in CaYaTeX,
-lays out our design goals and demonstrates some of the
-progress we have made towards specifiying the language and implementing it in Elm. While our work
-is incomplete, it
-is a start.]
-
-[i We are also working on an implementation in Rust. This will,
-among other things, help us to cross-validate the specification.]
-
-The project is open source: [link https://github.com/jxxcarlson/cayatex]. Somewhat related to
-[link https://minilatex.lamdera.app/]
-
-[i  [c You are welcome to edit/delete/replace any of the text here.  It won't be saved.  Comments to jxxcarlson@gmail.com]]
-
-
+[i  [c Of special importance: make syntax errors (missing brackets, extra brackets, etc.)
+We are working to handle all errors gracefully and would like to know about the bugs.  Comments to jxxcarlson@gmail.com]]
 [tableofcontents]
 
 [section1 Design Goals]

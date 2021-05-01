@@ -50,7 +50,7 @@ type alias State =
     { input : List String
     , lineNumber : Int
     , generation : Int
-    , blockType : BlockStatus
+    , blockStatus : BlockStatus
     , blockContents : List String
     , blockLevel : Int
     , lastTextCursor : Maybe (TextCursor Element)
@@ -150,7 +150,7 @@ init generation strList =
     { input = strList
     , lineNumber = 0
     , generation = generation
-    , blockType = Start
+    , blockStatus = Start
     , blockContents = []
     , blockLevel = 0
     , lastTextCursor = Nothing
@@ -194,14 +194,66 @@ noError state =
 
 handleError : State -> Step State State
 handleError state =
-    flush state
+    if state.input == [] then
+        flush state
+
+    else
+        let
+            err_ =
+                Maybe.map .error state.lastTextCursor
+
+            _ =
+                Maybe.map .error state.lastTextCursor |> Maybe.map .status
+        in
+        case err_ of
+            Nothing ->
+                Done state
+
+            Just err ->
+                case err.status of
+                    TextCursor.LeftBracketError ->
+                        let
+                            correctedText =
+                                err.correctedText |> List.head |> Maybe.withDefault "Could not get corrected text"
+
+                            foo =
+                                1
+                        in
+                        Loop
+                            { state
+                                | blockStatus = Start
+                                , blockLevel = 0
+                                , lastTextCursor = Maybe.map resetError state.lastTextCursor
+                            }
+
+                    _ ->
+                        Done state
 
 
+resetError : TextCursor e -> TextCursor e
+resetError tc =
+    { tc | error = { status = TextCursor.NoError, correctedText = [] } }
+
+
+type alias OO =
+    { input : List String
+    , lineNumber : Int
+    , generation : Int
+    , blockStatus : BlockStatus
+    , blockContents : List String
+    , blockLevel : Int
+    , lastTextCursor : Maybe (TextCursor Element)
+    , output : List (TextCursor Element)
+    , data : Parser.Data.Data
+    }
+
+
+{-| NEXTSTATE
+-}
 nextState : State -> Step State State
 nextState state_ =
     case ( List.head state_.input, noError state_ ) of
         ( Nothing, _ ) ->
-            -- TODO: DANGEROUS!!
             flush state_
 
         ( _, False ) ->
@@ -212,7 +264,7 @@ nextState state_ =
                 state =
                     { state_ | input = List.drop 1 state_.input }
             in
-            case ( state.blockType, classify currentLine ) of
+            case ( state.blockStatus, classify currentLine ) of
                 -- COMMENT
                 ( _, LTComment ) ->
                     Loop { state | input = List.drop 1 state.input }
@@ -222,7 +274,7 @@ nextState state_ =
                     Loop (start state)
 
                 ( Start, LTBeginElement ) ->
-                    Loop (startBlock currentLine { state | blockType = InElementBlock })
+                    Loop (startBlock currentLine { state | blockStatus = InElementBlock })
 
                 ( Start, LTEndElement ) ->
                     Loop (initBlock InTextBlock ("Error: " ++ currentLine) state)
@@ -285,14 +337,14 @@ ST uses: 10 uses, 5 functions in 3x4 + 1 state transitions
 -}
 start : State -> State
 start state =
-    { state | blockType = Start, blockLevel = 0, blockContents = [] }
+    { state | blockStatus = Start, blockLevel = 0, blockContents = [] }
 
 
 {-| (ST 2) Two uses: ( Start, LTEndElement ) and ( Start, LTTextBlock )
 -}
 initBlock : BlockStatus -> String -> State -> State
 initBlock blockType_ currentLine_ state =
-    { state | blockType = blockType_, blockContents = [ currentLine_ ] }
+    { state | blockStatus = blockType_, blockContents = [ currentLine_ ] }
 
 
 {-| (ST 3) Three uses: ( InTextBlock, LTEndElement ),( InTextBlock, LTTextBlock ), ( InElementBlock, LTTextBlock )
@@ -304,7 +356,7 @@ addToBlockContents currentLine_ state =
             differentialBlockLevel currentLine_
 
         newBlockLevel =
-            state.blockLevel + deltaBlockLevel
+            state.blockLevel + deltaBlockLevel |> max 0
     in
     if newBlockLevel == 0 && deltaBlockLevel < 0 then
         pushBlock_ ("\n" ++ currentLine_) state
@@ -322,7 +374,7 @@ pushBlockStack currentLine_ state =
             differentialBlockLevel currentLine_
 
         newBlockLevel =
-            state.blockLevel + deltaBlockLevel
+            state.blockLevel + deltaBlockLevel |> max 0
     in
     if newBlockLevel == 0 then
         pushBlock_ ("\n" ++ currentLine_) state
@@ -343,12 +395,12 @@ startBlock currentLine_ state =
             differentialBlockLevel currentLine_
 
         newBlockLevel =
-            state.blockLevel + deltaBlockLevel
+            state.blockLevel + deltaBlockLevel |> max 0
     in
     { state
         | blockContents = currentLine_ :: state.blockContents
         , blockLevel = newBlockLevel
-        , blockType = InElementBlock
+        , blockStatus = InElementBlock
     }
 
 
@@ -375,7 +427,7 @@ pushBlock_ line state =
             Parser.Driver.parseLoop state.generation state.lineNumber state.data str
     in
     { state
-        | blockType = Start
+        | blockStatus = Start
         , blockContents = []
         , blockLevel = 0
         , data = updateData tc
@@ -400,7 +452,7 @@ popBlockStack : String -> State -> State
 popBlockStack currentLine_ state =
     let
         newBlockLevel =
-            state.blockLevel + differentialBlockLevel currentLine_
+            state.blockLevel + differentialBlockLevel currentLine_ |> max 0
     in
     if newBlockLevel == 0 then
         let
@@ -415,7 +467,7 @@ popBlockStack currentLine_ state =
                 { tc_ | text = input_ }
         in
         { state
-            | blockType = Start
+            | blockStatus = Start
             , blockLevel = 0
             , blockContents = currentLine_ :: state.blockContents
             , lastTextCursor = Just tc
@@ -471,14 +523,19 @@ flush state =
         Done newState
 
     else
-        let
-            correctedText =
-                Maybe.map .correctedText errorStatus |> Maybe.withDefault [ "Could not correct the error" ] |> List.reverse
+        case Maybe.map .status errorStatus of
+            Just TextCursor.RightBracketError ->
+                let
+                    correctedText =
+                        Maybe.map .correctedText errorStatus |> Maybe.withDefault [ "Could not correct the error" ] |> List.reverse
 
-            correctedState =
-                { state | input = correctedText, blockContents = [], blockLevel = 0, blockType = Start }
-        in
-        Loop correctedState
+                    correctedState =
+                        { state | input = correctedText, blockContents = [], blockLevel = 0, blockStatus = Start }
+                in
+                Loop correctedState
+
+            _ ->
+                Done newState
 
 
 countLines : List String -> Int
@@ -495,7 +552,7 @@ loop s nextState_ =
     -- TODO: Uncomment for debugging
     --let
     --    _ =
-    --        Debug.log (String.fromInt s.lineNumber) { inp = s.input, cl = Maybe.map classify (List.head s.input), bt = s.blockType, bl = s.blockLevel, bc = s.blockContents }
+    --        Debug.log (String.fromInt s.lineNumber) { inp = s.input, err = Maybe.map .error s.lastTextCursor, bt = s.blockStatus, bl = s.blockLevel, bc = s.blockContents }
     --in
     case nextState_ s of
         Loop s_ ->

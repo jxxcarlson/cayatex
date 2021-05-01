@@ -44,6 +44,7 @@ type ErrorStatus
     = NoError
     | PipeError
     | RightBracketError
+    | LeftBracketError
     | UnhandledError
 
 

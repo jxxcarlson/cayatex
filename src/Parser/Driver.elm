@@ -99,6 +99,9 @@ handleError tc_ e =
         ExpectingRightBracket ->
             handleRightBracketError tc_ mFirstError errorColumn mRecoveryData
 
+        ExpectingLeftBracket ->
+            handleLeftBracketError tc_ mFirstError errorColumn mRecoveryData
+
         ExpectingPipe ->
             handlePipeError tc_ mFirstError errorColumn mRecoveryData
 
@@ -174,6 +177,55 @@ handleRightBracketError tc_ mFirstError errorColumn mRecoveryData =
     , generation = tc_.generation
     , data = tc_.data
     , error = { status = TextCursor.RightBracketError, correctedText = newTextLines }
+    }
+
+
+handleLeftBracketError : TextCursor Element -> Maybe (PA.DeadEnd Context Problem) -> Int -> Maybe RecoveryData -> TextCursor Element
+handleLeftBracketError tc_ mFirstError errorColumn mRecoveryData =
+    let
+        textLines =
+            String.lines tc_.text
+
+        badText =
+            case List.head textLines of
+                Nothing ->
+                    "Oops, couldn't find your error text"
+
+                Just str ->
+                    str
+
+        name =
+            String.replace "[" "" tc_.block |> String.words |> List.head |> Maybe.withDefault "NAME"
+
+        errorRow =
+            Maybe.map .row mFirstError |> Maybe.withDefault 0
+
+        errorLines : List String
+        errorLines =
+            List.take errorRow textLines
+
+        replacementText =
+            "[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ fakeLeftBracket ++ " " ++ name ++ " " ++ tc_.block ++ " " ++ fakeRightBracket ++ "]"
+
+        newTextLines =
+            -- ("[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]") :: List.drop errorRow textLines
+            List.Extra.setIf (\t -> t == badText) replacementText errorLines
+                |> List.reverse
+
+        newText =
+            String.join "\n" (List.reverse newTextLines)
+    in
+    { text = newText
+    , block = "?? TO DO" --
+    , blockIndex = tc_.blockIndex --
+    , parsand = Nothing
+    , parsed = List.drop 1 tc_.parsed -- throw away the erroneous parsand
+    , stack = [] -- not used
+    , offset = newOffset tc_ errorColumn mRecoveryData
+    , count = tc_.count
+    , generation = tc_.generation
+    , data = tc_.data
+    , error = { status = TextCursor.LeftBracketError, correctedText = newTextLines }
     }
 
 
