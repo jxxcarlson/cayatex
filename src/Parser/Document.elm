@@ -1,7 +1,7 @@
 module Parser.Document exposing
     ( process, toParsed, toText
     , State, Block, LineType(..)
-    , BlockStatus(..), Step(..), applyNextState, cl, classify, differentialBlockLevel, getParseResult, init, nextState, rl, rl_, runLoop, toc
+    , BlockStatus(..), Step(..), applyNextState, bl, cl, classify, differentialBlockLevel, getParseResult, init, nextState, rl, rl_, runLoop, toc
     )
 
 {-| The main function in this module is process, which takes as input
@@ -110,6 +110,54 @@ rl str =
     runLoop 0 (String.lines str) |> toParsed |> List.map (List.map Parser.Getters.strip)
 
 
+{-| Return the block decomposition of a string:
+
+    > bl "abc\n\n[x\n\nQ\n\n[k Q]]\n\ndef"
+    ["abc\n","[x\n\nQ\n\n[k Q]]\n\n","def"]
+
+    Anomaly:
+    > bl "[x\n\nQ\n\n]"
+    ["[x\n\nQ\n\n]","[x\n\nQ\n\n]"]
+
+    Anomaly:
+    > bl "[x\n\nQ\n\nQ]"
+    ["[x\n\nQ\n\n\nQ]"]
+
+-}
+bl str =
+    runLoop 0 (String.lines str) |> toBlocks
+
+
+{-|
+
+    > bbl "abc\n\n[x\n\nQ\n\n[k Q]]\n\ndef"
+    ["abc\n","[x\n\nQ\n\n[k Q]]\n\n","def"]
+
+-}
+bbl str =
+    bl (bl str |> String.join "\n")
+
+
+{-| For all well-formed strings, bl str == str only modulo some newlines
+
+    > test "abc\n\n[x\n\nQ\n\n[k Q]]\n\ndef"
+    False
+
+-}
+test str =
+    (bl str |> String.join "\n") == str
+
+
+{-| Idempotency: for all well-formed strings, bbl st
+
+    > test2 "abc\n\n[x\n\nQ\n\n[k Q]]\n\ndef"
+    True
+
+-}
+test2 str =
+    bbl str == bl str
+
+
 toc str =
     runLoop 0 (String.lines str)
         |> (.data >> .tableOfContents)
@@ -131,6 +179,13 @@ cl str =
 toParsed : State -> List (List Element)
 toParsed state =
     state.output |> List.map .parsed |> List.reverse
+
+
+{-| Return the AST from the State.
+-}
+toBlocks : State -> List String
+toBlocks state =
+    state.output |> List.map .block |> List.reverse
 
 
 

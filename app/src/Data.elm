@@ -13,11 +13,13 @@ exp =
 notes =
     """
 
+
+
 [title Design Notes]
 
-Following are some random notes on the structure of the cayatex compiler.  The idea is to capture
+Following are some random notes on the structure of the cayatex compiler.  Our aim is to capture
 the main ideas of the design while they are still in current memory.
-Subject to radical revision, as the project is still in a high-flux experimental state.
+All is subject to radical revision, as the project is still in a high-flux experimental state.
 
 [tableofcontents]
 
@@ -44,7 +46,7 @@ It renders as "Whiskey is [b very] strong stuff."  All CaYaTeX source text consi
 
 ]
 
-where [code ARGS] is a comma-separated list of strings. Below is an example of the third form.
+where [code ARGS] is a comma-separated list of strings. Below is an example of the third form, where the data is in CSV format.
 
 [codeblock
 
@@ -70,15 +72,15 @@ raw###
 ]
 
 As an example of the first form, the table of contents is constructed via the element [code raw#[tableofcontents]#].
-As to the structure of a general element, we have the following three rules:
+As to the structure of a general syntactic element, we have the following three formation rules:
 
 [list |s: numbered|
 
-[item Plain text is an element]
+[item Plain text is a syntactic element]
 
-[item Basic elements are elements and the body of an element is an element]
+[item Basic elements are syntactic elements and the body of a syntactic element is a syntactic element]
 
-[item A sequence [i a b c d ...] where each of [i a, b, c, d, ...] is an element is also an element]
+[item A sequence [i a b c d ...] where each of [i a, b, c, d, ...] is a syntactic element is also a syntactic element]
 
 ]
 
@@ -96,20 +98,41 @@ type Element
 ###
 ]
 
+The [c Metadata] component is carries data used in rendering the element or in interacting with an editor: section numbers, cross-refrences, location of the corresponding text in in the source, etc.
+
+Note the distinction between syntactic element and Element.  The first is a decription of text formed by certain rules.  The second, while it reflects the first, is a type.
+
 [section Parser]
 
-Parsing, which is intended to be robust in the face of errors in the source text, occurs at three levels:
+Parsing, which is intended gracefully handle errors in the source text, such as unmatched brackets, is described below.  It is a three-stage process that produces a valid syntax tree despite the presence of error:  errors are both corrected and annotated.  Thus, when rendered, the text is readable and errors called out in-line in color so that the author can more easily understand and correct them.
 
-[list |s: numbered|
+The first step in parsing a document is to attempt to break the input text, given as a list of lines, into a list of special strings called [i blocks].  A block is string which is valid syntactic element.  Thus 
+
+[cb raw#abc [x 1] def [y[z 2]] ghi#] 
+
+is a block  as is the multi-line text
+
+[cb raw#abc [x 1]
+ def [y[z
+ 2]] ghi#] 
+
+The previous text with the rightmost brace removed is not a block.  
+
+Division of the text into blocks can fail, as it does with the last example of unbalanced brackets.  When this occurs, the parser invokes a backtracking strategy to  correct the text and then divide it into blocks.
+
+
+[list | s: numbered |
+
+[item Decompose the source text into blocks and feed these to [code Parser.Driver.parseLoop] using [code Parser.Document.runLoop]].  Here is a synopsis of the parsing process:
+
+
+[item Parse a list of elements from a block of input text using [code Parser.Driver.parseLoop].  The [c parseLoop] function does this by repeatedly running  [code Parser.Element.parser], truncating the input text each time.
+]
 
 [item Parse one element from the input text using [code Parser.Element.parser]]
 
-[item Parse a list of elements from a block of input text using [code Parser.Driver.parseLoop]]
-
-[item Decompose the source text into logical elements and feed these to [code Parser.Driver.parseLoop]
- using [code Parser.Document.runLoop]]
-
 ]
+
 
 [section2 Parser.Element]
 
@@ -225,6 +248,8 @@ state
 #  ]
 
 produces a value of type [c List (List Element)] which can then be fed to the rendering machine.  The renderer also requires the [c state.data] field.
+
+
 """
 
 
@@ -281,22 +306,25 @@ Donec ultrices magna iaculis augue porta dignissim. Aenean dui felis, molestie u
 
 text =
     """
+
 [title Announcing CaYaTeX]
 
 By James Carlson and Nicholas Yang
 
 
 
-[italic CaYaTeX is a simple yet powerful markup language that
+[italic CaYaTeX, an experiment-in-progress, is a simple yet powerful markup language that
 compiles to both LaTeX and Html. The implementation you see
 here is written in Elm: [link |github.com/jxxcarlson/cayatex| https://github.com/jxxcarlson/cayatex]].
 
-[i  Please do edit/delete/replace any of the text here. It won't be saved]
-
+[i  Please do edit/delete/replace any of the text here. It won't be saved.]
 
 [i  [c Of special importance: make syntax errors (missing brackets, extra brackets, etc.)
 We are working to handle all errors gracefully and would like to know about the bugs.  Comments to jxxcarlson@gmail.com]]
 [tableofcontents]
+
+[i [fontRGB |60, 60, 60| Click on an item in the table of contents to go to the corresponding section.  Click on a section title
+to return to the table of contents.]]
 
 [section1 Design Goals]
 
@@ -336,7 +364,11 @@ Our goal is to have a convenient  tool for writing technical documents that are 
 [b Note.] [fontRGB |50, 0, 200| The above are desiderata.  Among the missing items: compile to LaTeX and differential compilation, which is needed for snappy, real-time rendering of the source text while editing. Our first objectives
 are a decent proof-of-concept and error-handling that is both robust and graceful. All in due time!]
 
-[section1 Mathematics]
+[section1 Showcase]
+
+Below are examples of what is currently possible with CaYaTeXs.
+
+[section2 Mathematics]
 
 
 Pythagoras says that [math a^2 + b^2 = c^2].
@@ -361,7 +393,7 @@ And of course, we can also do theorems:
 
 
 
-[section1 Color]
+[section2 Color]
 
 Example:  [highlightRGB |252, 178, 50| [fontRGB |23, 57, 156| [b What color is this?]]]
 
@@ -371,7 +403,7 @@ Example:  [highlightRGB |252, 178, 50| [fontRGB |23, 57, 156| [b What color is t
 Note the nesting of elements, aka function composition. When we have our macro facility up and running,  users can abbreviate constructs like
 this one, e.g., just say [code raw##[myhighlight| What color is this?]##]
 
-[section1 Data]
+[section2 Data]
 
 One can design elements which manipulate data (numerical computations, visualization).  Here are some data computations:
 
@@ -390,11 +422,11 @@ or
 [codeblock raw##[stdev |precision:3| 1.2, 2, 3.4, 4]## ]
 
 
-[section1 Graphs]
+[section2 Graphs]
 
 Below are three simple data visualizations. We plan more, and more configurability of what you see here.
 
-[section2 Bar graphs]
+[section3 Bar graphs]
 
 [bargraph |column:2, yShift: 0.2, caption: Global temperature anomaly 1880-1957|
 1880,-0.12
@@ -485,7 +517,7 @@ The bargraph code:
 1881,-0.07
 ...]## ]
 
-[section2 Line graphs]
+[section3 Line graphs]
 
 [linegraph |caption: Global temperature anomaly 1880-1957|
 1880,-0.12
@@ -576,7 +608,7 @@ temperature anomaly 1880-1957|
 1881,-0.0]
 ##]
 
-[section2 Scatter plots]
+[section3 Scatter plots]
 
 Use the same syntax as before, but with "scatterplot" in place of "linegraph."
 
@@ -612,7 +644,7 @@ N.G.C.6822,..,0.214,-130,9,-12.7,0.22,Slope,453.85999408475,km/sec/Mpc,,,,,,
 Table 1,,,,,-15.5,,,,,,,,,,
 ]
 
-[section1 Tables]
+[section2 Tables]
 
 [data |title:Atomic weights, header|
 
@@ -641,7 +673,7 @@ N,  Symbol,  Name, W
 ]
 
 
-[section1 Table of contents]
+[section2 Table of contents]
 
 A table contents is generated automatically if you place
 the element [c raw#[tableofcontents]#] in the source text.
@@ -649,8 +681,10 @@ Entries in the table of contents are active links to the
 indicated sections.  Conversely, section titles act
 as active links back to the table of contents.
 
+Sections up to six levels deep are available.
 
-[section1 Unicode]
+
+[section2 Unicode]
 
 You can freely use unicode characters, as in this poetry element:
 
@@ -663,7 +697,7 @@ You can freely use unicode characters, as in this poetry element:
 — Анна Ахматова
 ]
 
-[section1 Shortcuts]
+[section2 Shortcuts]
 
 [verbatim
 
@@ -680,7 +714,7 @@ other common elements:
 
 ]
 
-[section1 Code]
+[section2 Code]
 
 Time for some code: [code raw##col :: Int -> Matrix a -> [a]##].
 Do you recognize the language (ha ha)?
@@ -705,13 +739,13 @@ cols m =
 
 
 
-[section1 Images]
+[section2 Images]
 
 [image |caption: Rotkehlchen aufgeplustert, width: 200, placement: center|https://i.pinimg.com/originals/d4/07/a4/d407a45bcf3ade18468ac7ba633244b9.jpg]
 
 [code raw##[image |caption: Rotkehlchen aufgeplustert, width: 200, placement: center| https://..jpg]##]
 
-[section1 Lists]
+[section2 Lists]
 
 Note that lists can be nested and can be given a title if desired.  The symbol for "bulleted" lists is • by default, but can be specified by the user.
 A numbered list has "numbered" as its first argument, as in the example below.
@@ -730,12 +764,33 @@ A numbered list has "numbered" as its first argument, as in the example below.
 
         [list |§, title:Greek symbols|
 
-            [item [math \\alpha = 0.123]]
+            [item [math \u{0007}lpha = 0.123]]
 
-            [item  [math \\beta = 4.567]]
+            [item  [math \u{0008}eta = 4.567]]
 
 ]]]
 
+[section1 Road map]
+
+[list | s: numbered |
+
+[item Improve error handling.]
+
+[item As with section numbering, implement theorem numbering, cross-references, etc.]
+
+[item Implement export to LaTeX]
+
+[item Integrate bracket-matching editor.]
+
+[item Implement macro expansion]
+
+[item Add CaYaTeX as a markup language option
+for [link https://minilatex.lamdera.app]. Presently MiniLaTeX,
+Math+Markdown, and plain text are supported.
+]
+
+
+]
 
 [section1 Appendix: Technical Stuff]
 
@@ -751,11 +806,14 @@ raw##type Element
 
 The first variant, [code Text String] accounts for plain text.
 The second is of the form [code Element name args body],
-while the third shows how a list of elements can form an
+while the third shows how a list of elements combine to form an
 element.  In particular, the body of an element can be
 [code LX] of a list of elements.  The [code Meta] component tracks
-location of the corresponding piece of text in the source code and
+location of the corresponding piece of text in the source code as well as
 other metadata such as section numbering.
+
+For more technical details, see the [c Design Notes] tab.
+
 
 
 

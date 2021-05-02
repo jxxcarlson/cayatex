@@ -1,0 +1,235 @@
+
+
+
+[title Design Notes]
+
+Following are some random notes on the structure of the cayatex compiler.  Our aim is to capture
+the main ideas of the design while they are still in current memory.
+All is subject to radical revision, as the project is still in a high-flux experimental state.
+
+[tableofcontents]
+
+[section  Syntax]
+
+The syntax of CaYaTeX is as in the example below:
+
+[codeblock
+
+raw###
+Whiskey is [b very] strong stuff.
+###
+]
+
+It renders as "Whiskey is [b very] strong stuff."  All CaYaTeX source text consists of ordinary text, which may contain unicode characters, and [i basic elements], which are of one of three forms:
+
+[list
+
+[item [code raw##[NAME]##]]
+
+[item [code raw##[NAME BODY]##]]
+
+[item [code raw##[NAME |ARGS| BODY]##]]
+
+]
+
+where [code ARGS] is a comma-separated list of strings. Below is an example of the third form, where the data is in CSV format.
+
+[codeblock
+
+raw###
+[bargraph | column:2, yShift: 0.2,
+  caption: Sales of XYZ |
+1, 2.1
+2, 2.9
+...
+]
+###
+]
+
+[bargraph | column:2, yShift: 0.2,
+  caption: Sales of XYZ |
+1, 2.1
+2, 2.9
+3, 4.4
+4, 6.8
+5, 7.1
+6, 7.8
+7, 5.9
+]
+
+As an example of the first form, the table of contents is constructed via the element [code raw#[tableofcontents]#].
+As to the structure of a general syntactic element, we have the following three formation rules:
+
+[list |s: numbered|
+
+[item Plain text is a syntactic element]
+
+[item Basic elements are syntactic elements and the body of a syntactic element is a syntactic element]
+
+[item A sequence [i a b c d ...] where each of [i a, b, c, d, ...] is a syntactic element is also a syntactic element]
+
+]
+
+[section Parse Tree]
+
+
+Cayatex is built around the type of the parse tree.  This type captures the syntax of the source text as described above.
+
+[codeblock
+raw###
+type Element
+    = Text String (Maybe Metadata)
+    | Element String (List String) Element (Maybe Metadata)
+    | LX (List Element) (Maybe Metadata)
+###
+]
+
+The [c Metadata] component is carries data used in rendering the element or in interacting with an editor: section numbers, cross-refrences, location of the corresponding text in in the source, etc.
+
+Note the distinction between syntactic element and Element.  The first is a decription of text formed by certain rules.  The second, while it reflects the first, is a type.
+
+[section Parser]
+
+Parsing, which is intended gracefully handle errors in the source text, such as unmatched brackets, is described below.  It is a three-stage process that produces a valid syntax tree despite the presence of error:  errors are both corrected and annotated.  Thus, when rendered, the text is readable and errors called out in-line in color so that the author can more easily understand and correct them.
+
+The first step in parsing a document is to attempt to break the input text, given as a list of lines, into a list of special strings called [i blocks].  A block is string which is valid syntactic element.  Thus
+
+[cb raw#abc [x 1] def [y[z 2]] ghi#]
+
+is a block  as is the multi-line text
+
+[cb raw#abc [x 1]\n def [y[z\n 2]] ghi#]
+
+The previous text with the rightmost brace removed is not a block.
+
+Division of the text into blocks can fail, as it does with the last example of unbalanced brackets.  When this occurs, the parser invokes a backtracking strategy to  correct the text and then divide it into blocks.
+
+
+[list | s: numbered |
+
+[item Decompose the source text into blocks and feed these to [code Parser.Driver.parseLoop] using [code Parser.Document.runLoop]].  Here is a synopsis of the parsing process:
+
+
+[item Parse a list of elements from a block of input text using [code Parser.Driver.parseLoop].  The [c parseLoop] function does this by repeatedly running  [code Parser.Element.parser], truncating the input text each time.
+]
+
+[item Parse one element from the input text using [code Parser.Element.parser]]
+
+]
+
+
+[section2 Parser.Element]
+
+Low-level parsing is handled by the function [code Parser.Element.parser]:
+
+[codeblock
+parser : Int -> Int -> Parser Element
+]
+
+The first two arguments are [code generation] and [code blockOffset].  These are "fed" to the parser by [code Parser.Driver.parseLoop].  The [c generation] argument is used for live editing-rendering and is incremented on each character stroke.  It is used downstream to manage updates to the virtual DOM.  The [c blockOffset] field is an index in the source text of the text parsed.
+
+Note every variant of type [c Element] has a component of type [c Meta].
+This metadata component is a record of the following type.
+
+[cb type alias Metadata =
+    { blockOffset : Int
+    , offset : Int
+    , length : Int
+    , generation : Int
+    , label : String
+    }
+]
+
+The first three fields are used to locate the text parsed in the source text.  The last, [c label], is computed when the text is parsed.  For example, if the element is  [c raw#[section3 Foo]#], the label might be the string [c 5.2.1].  Labels are used to render the output of the parser.
+
+[section2 Parser.Driver]
+
+The next level up in parsing text is handled by [c parseLoop], whose type is given below. [i Grosso modo], it functions by applying [c Element.parser] to the input string, analyzing the result, doing some computations, and  dropping the substring just parsed from the input text, and adding the parsed result to a field of [c TextCursor].
+
+
+[cb
+parseLoop : Int -> Int -> Data -> String -> TextCursor Element
+parseLoop generation initialLineNumber data str = ...
+]
+
+Let's look at this in more detail.  The [c TextCursor] type, which we use as [c TextCursor Element], is as laid out below. Many of the fields have already been discussed already
+
+[cb
+type alias TextCursor a =
+    { text : String           -- text remaining to be processed
+    , block : String
+    , parsand : Maybe a       -- element just parsed
+    , parsed : List a         -- elements parsed so far
+    , stack : List String
+    , blockIndex : Int
+    , offset : Int
+    , count : Int
+    , generation : Int
+    , data : Parser.Data.Data  -- data accumulated so far
+    }
+
+]
+
+The [c data] field is of particular interest.  Its type is as listed below.  In it, the parser accumulates information about the source text that is used in rendering.  The [c vectorCounters] field, for example is used to set the label of a section element.
+
+[cb
+type alias Data =
+    { counters : IntegerDict
+    , vectorCounters : VectorDict
+    , crossReferences : Dictionary
+    , tableOfContents : List TocEntry
+    , dictionary : Dictionary
+    , config : Config
+    }
+]
+
+[section2 Error recovery]
+
+The [c parseLoop] function handles error recovery by modifiying the parse tree so as
+to (a) correct the error (b) highlight it in the rendered text.  A comment on the nature of the error
+is inserted in the TextCursor.  This comment is used by the supervising Parser.Document runLoop
+function which backtracks as needed to properly reparse the remaining text.
+
+[section2 Parser.Document]
+
+The highest level of the parser is handled by [c Parser.Document.runLoop]:
+
+[cb
+runLoop : Int -> List String -> State
+runLoop generation strList = ...
+]
+
+This function takes as input data supplied by the editor: the generation number and the source text presented as a list of strings.  Its output is a value of type [c State], as described below.  The [c input] field is the source text, which is progresselvely truncated as [c runLoop] proceeds, building up (
+i) a [c Data] value, (ii) a list of [c TextCursor].  The [c parsed] field of a text cursor holds the parsed text.
+
+The task of the function [c runLoop] is to divide the input text into logical elements (strings), which are then fed to [c Driver.parseLoop].  The return value of [c Driver.parseLoop] is used to compute the new [c State].  A logical element is either (i) a paragraph, defined as an element sequence beginning with plain text and bounded above and below
+by blank lines or (ii) an element of the form [c NAME ... ] bounded above and below by blanke lines.
+
+
+[cb
+
+type alias State =
+    { input : List String
+    , blockOffset : Int
+    , generation : Int
+    , blockType : BlockStatus
+    , blockContents : List String
+    , blockLevel : Int
+    , output : List (TextCursor Element)
+    , data : Parser.Data.Data
+    }
+
+]
+
+
+If [c state] is the final value computed by [c runLoop], then the code
+
+[cb raw#
+state
+   |> .output
+   |> List.map .parsed
+   |> List.reverse
+#  ]
+
+produces a value of type [c List (List Element)] which can then be fed to the rendering machine.  The renderer also requires the [c state.data] field.
+
