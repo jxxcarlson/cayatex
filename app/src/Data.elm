@@ -465,7 +465,7 @@ By James Carlson and Nicholas Yang
 compiles to both LaTeX and Html. The implementation you see
 here is written in Elm: [link |github.com/jxxcarlson/cayatex| https://github.com/jxxcarlson/cayatex]].
 
-[i Credits  to Matt Griffith and Rob Simmons for some of the ideas that inspired our error recovery scheme.]
+[i Credits and thanks to Matt Griffith and Rob Simmons whose error recovery work inspired what is done here.]
 
 [i  Please do edit/delete/replace any of the text here. It won't be saved.]
 
@@ -568,7 +568,8 @@ When you add the macro definition, you will not see anything rendered. Now add t
 
 [section3 Composability]
 
-One use macro instances pretty much as one uses elements.  Elements can be applied to macro instances, as with
+
+One can use macro instances pretty much as one uses elements.  Elements can be applied to macro instances, as with
 
 [indent [i [blue light blue bird's eggs]]]
 
