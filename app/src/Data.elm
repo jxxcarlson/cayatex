@@ -317,6 +317,8 @@ By James Carlson and Nicholas Yang
 compiles to both LaTeX and Html. The implementation you see
 here is written in Elm: [link |github.com/jxxcarlson/cayatex| https://github.com/jxxcarlson/cayatex]].
 
+[i Credits and thanks  to Matt Griffith and Rob Simmons for some of the ideas that inspired our error recovery scheme.]
+
 [i  Please do edit/delete/replace any of the text here. It won't be saved.]
 
 [i  [c Of special importance: make syntax errors (missing brackets, extra brackets, etc.)
