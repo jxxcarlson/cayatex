@@ -106,8 +106,8 @@ renderWithDictionary renderArgs name args body meta =
 
 expandMacro : Data.MacroForm -> Element -> Element
 expandMacro macroForm body =
-    -- Text ("Trying to expand macro '" ++ macroForm.name ++ "' width body" ++ getText2 body) Nothing
-    Element macroForm.name macroForm.args (Text (getText2 body) Nothing) Nothing
+    --  Element macroForm.name macroForm.args (Text (getText2 body) Nothing) Nothing
+    Element macroForm.name macroForm.args body Nothing
 
 
 renderMissingElement : String -> Element -> E.Element CYTMsg
@@ -115,7 +115,7 @@ renderMissingElement name body =
     paragraph []
         [ el [ Font.bold ] (text "[")
         , el [ Font.color blueColor, Font.bold ] (text (name ++ " "))
-        , el [ Font.color violetColor ] (text (getText body |> Maybe.withDegfault ""))
+        , el [ Font.color violetColor ] (text (getText body |> Maybe.withDefault ""))
         , el [ Font.color redColor ] (text " << element misstyped or unimplemented")
         , el [ Font.bold ] (text "]")
         ]

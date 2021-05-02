@@ -396,6 +396,7 @@ And of course, we can also do theorems:
 
 
 
+
 [section2 Macros]
 
 We have implemented a primitive version of macro expansion. To show how it works, begin by writing the macro definition
@@ -417,7 +418,9 @@ When you add the macro definition, you will not see anything rendered. Now add t
 
 [indent [blue light blue bird's eggs]]
 
-One can apply other elements to macro instances, e.g.
+[section3 Composability]
+
+One use macro instances pretty much as one uses elements.  Elements can be applied to macro instances, as with
 
 [indent [i [blue light blue bird's eggs]]]
 
@@ -425,11 +428,25 @@ where the source text  is
 
 [cb raw#[i [blue light blue bird's eggs]]#]
 
+The body of a macro instance can also be an element:  [blue light [b blue] bird's eggs], where the source text is
 
+[cb raw#[blue light [b blue] bird's eggs]#]
 
-However, at the present time the body of a macro instance must be pure text, as in the example.
+Finally, one can compose macro instances.  Make the definition
+
+[cb raw#[macro [red [fontRGB |200, 0, 0| ]]]#]
+
+and then say
+
+[cb raw#[blue light blue with [red red spotted] bird's eggs]# ]
+
+to obtain
+
+[indent [blue light blue and [red red spotted] bird's eggs]]
 
 [macro [blue [fontRGB |0, 80, 200| ]]]
+
+[macro [red [fontRGB |200, 0, 0| ]]]
 
 
 
@@ -823,7 +840,6 @@ A numbered list has "numbered" as its first argument, as in the example below.
 
 [item Integrate bracket-matching editor.]
 
-[item Expand the scope of macro expansion.]
 
 [item Add CaYaTeX as a markup language option
 for [link https://minilatex.lamdera.app]. Presently MiniLaTeX,
