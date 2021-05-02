@@ -131,6 +131,8 @@ unhandledError tc_ mFirstError errorColumn mRecoveryData lxError errorText =
 handleRightBracketError : TextCursor Element -> Maybe (PA.DeadEnd Context Problem) -> Int -> Maybe RecoveryData -> TextCursor Element
 handleRightBracketError tc_ mFirstError errorColumn mRecoveryData =
     let
+        --_ =
+        --    Debug.log "Parser.Document.FLUSH, RightBracketError"
         textLines =
             String.lines tc_.text
 

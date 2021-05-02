@@ -124,6 +124,7 @@ rl str =
     ["[x\n\nQ\n\n\nQ]"]
 
 -}
+bl : String -> List String
 bl str =
     runLoop 0 (String.lines str) |> toBlocks
 
@@ -268,6 +269,23 @@ handleError state =
                 case err.status of
                     TextCursor.LeftBracketError ->
                         let
+                            correctedText =
+                                err.correctedText |> List.head |> Maybe.withDefault "Could not get corrected text"
+
+                            foo =
+                                1
+                        in
+                        Loop
+                            { state
+                                | blockStatus = Start
+                                , blockLevel = 0
+                                , lastTextCursor = Maybe.map resetError state.lastTextCursor
+                            }
+
+                    TextCursor.RightBracketError ->
+                        let
+                            --_ =
+                            --    Debug.log "Parser.Document.handleError, RightBracketError"
                             correctedText =
                                 err.correctedText |> List.head |> Maybe.withDefault "Could not get corrected text"
 
@@ -581,6 +599,8 @@ flush state =
         case Maybe.map .status errorStatus of
             Just TextCursor.RightBracketError ->
                 let
+                    --_ =
+                    --    Debug.log "Parser.Document.FLUSH, RightBracketError"
                     correctedText =
                         Maybe.map .correctedText errorStatus |> Maybe.withDefault [ "Could not correct the error" ] |> List.reverse
 

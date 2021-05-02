@@ -320,7 +320,7 @@ here is written in Elm: [link |github.com/jxxcarlson/cayatex| https://github.com
 [i  Please do edit/delete/replace any of the text here. It won't be saved.]
 
 [i  [c Of special importance: make syntax errors (missing brackets, extra brackets, etc.)
-We are working to handle all errors gracefully and would like to know about the bugs.  Comments to jxxcarlson@gmail.com]]
+We are working to handle all errors gracefully and would like to know about the bugs, cases missed, etc.  Comments to jxxcarlson@gmail.com]]
 [tableofcontents]
 
 [i [fontRGB |60, 60, 60| Click on an item in the table of contents to go to the corresponding section.  Click on a section title
