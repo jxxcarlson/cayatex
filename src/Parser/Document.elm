@@ -299,6 +299,23 @@ handleError state =
                                 , lastTextCursor = Maybe.map resetError state.lastTextCursor
                             }
 
+                    TextCursor.PipeError ->
+                        let
+                            --_ =
+                            --    Debug.log "Parser.Document.handleError, RightBracketError"
+                            correctedText =
+                                err.correctedText |> List.head |> Maybe.withDefault "Could not get corrected text"
+
+                            foo =
+                                1
+                        in
+                        Loop
+                            { state
+                                | blockStatus = Start
+                                , blockLevel = 0
+                                , lastTextCursor = Maybe.map resetError state.lastTextCursor
+                            }
+
                     _ ->
                         Done state
 
