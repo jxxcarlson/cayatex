@@ -1,0 +1,130 @@
+
+[macro [ds [fontRGB |0, 0, 200| ]]]
+
+[i [code This document is a draft-in-progress of a manual for CaYaTeX]]
+
+[title CaYaTeX Manual]
+
+[tableofcontents]
+
+[section1 Standard Elements]
+
+
+
+[section2 Text]
+
+[def | bold; b |
+Render text as bold, e.g, [c raw#[bold Bold!]#] renders as [ds [bold Bold!]] Short form: [c raw#[b Bold!]#] .
+]
+
+[section2 Code]
+
+[def | code; c|
+Render text in-line as code, e.g, [c raw#[code a <- b]#] renders as
+[ds [code a <- b]] Short form: [c raw#[c a <- b]#] .
+]
+
+[def |  codeblock; cb |
+Render text as displayed code, e.g, [c raw#[codeblock a <- b]#] renders as
+
+[ds [codeblock a <- b]]
+
+Short form: [c raw#[c a <- b]#] .
+]
+
+
+[section2 Mathematics]
+
+[def | math; m |
+Render math in-line, e.g, [c raw#[math a^2 + b^2 = c^2]#] renders as
+[ds [math a^2 + b^2 = c^2]] Short form: [c raw#[m a^2 + b^2 = c^2]#] .
+]
+
+[def |  mathblock; mb |
+Render math as centered block, e.g, [c raw#[mathblock \int_0^1 x^n dx = \frac{1}{n+1}]#] renders as
+
+[mathblock \int_0^1 x^n dx = \frac{1}{n+1}]
+
+Short form: [c raw#[mb \int_0^1 x^n dx = \frac{1}{n+1}]#] .
+]
+
+
+[section2 Structure]
+
+[def | tableofcontents |
+Render a numbered table of contents as displayed above.]
+
+[def | section; section1; section2; ... |
+Render a numbered section heading as you see here.  For example,
+[c raw#[section2 Structure]#] produces the heading for this section.  It is a level two heading and therefore is labeled with two numbers. [c section] is a synonym for [c section1], which produces a level 1 section heading.
+
+]
+
+section
+section1
+section2
+section3
+section4
+section5
+section6
+
+[section2 Data]
+
+[def | average |
+  Compute average of a list of numbers, e.g., [c raw#[average 1, 2, 3]#] renders as [ds [average 1, 2, 3]].]
+
+
+[section2 Graphs and Charts]
+
+[def | bargraph |
+
+Construct a bar graph from data in CSV format, e.g., the text
+
+[cb raw#[bargraph
+1
+1.5
+3
+0.2
+]#
+]]
+
+renders as
+
+[bargraph
+1
+1.5
+3
+0.2
+]
+
+]
+
+
+
+bargraph
+center
+data
+fontRGB
+highlight
+highlightRGB
+i
+image
+indent
+italic
+item
+linegraph
+link
+list
+macro
+poetry
+scatterplot
+stdev
+sum
+title
+verbatim
+
+
+
+
+
+

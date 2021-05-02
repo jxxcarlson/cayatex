@@ -140,6 +140,7 @@ renderElementDict =
         , ( "fontRGB", fontRGB )
         , ( "code", renderCode )
         , ( "c", renderCode )
+        , ( "def", defitem )
         , ( "codeblock", codeblock )
         , ( "cb", codeblock )
         , ( "verbatim", verbatim )
@@ -159,8 +160,8 @@ renderElementDict =
         , ( "image", image )
         , ( "math", renderMath )
         , ( "m", renderMath )
-        , ( "displaymath", renderMathDisplay )
-        , ( "dm", renderMathDisplay )
+        , ( "mathblock", renderMathDisplay )
+        , ( "mb", renderMathDisplay )
         , ( "center", center )
         , ( "indent", indent )
 
@@ -281,6 +282,18 @@ list renderArgs name args_ body meta =
 
         _ ->
             el [ Font.color redColor ] (text "Malformed list")
+
+
+defitem : FRender CYTMsg
+defitem renderArgs name args_ body meta =
+    let
+        itemName =
+            CYUtility.entities args_ |> List.head |> Maybe.withDefault "ITEM"
+    in
+    E.column []
+        [ el [ Font.bold, Font.size 14 ] (E.text itemName)
+        , E.paragraph [ listPadding ] [ renderElement renderArgs body ]
+        ]
 
 
 dataTable : FRender CYTMsg

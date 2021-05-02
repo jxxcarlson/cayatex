@@ -43,9 +43,7 @@ type Msg
     = NoOp
     | InputText String
     | ClearText
-    | GetText
-    | GetTest
-    | GetNotes
+    | GetDocument String
     | SetMode Mode
     | CYTMsg Parser.CYTMsg
 
@@ -60,7 +58,7 @@ type alias Flags =
 
 
 initialText =
-    Data.text
+    Data.get "announcement"
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -107,28 +105,10 @@ update msg model =
             , Cmd.none
             )
 
-        GetText ->
+        GetDocument docName ->
             ( { model
-                | input = Data.text
-                , renderedText = Render.String.renderString Data.text
-                , count = model.count + 1
-              }
-            , Cmd.none
-            )
-
-        GetTest ->
-            ( { model
-                | input = Data.test
-                , renderedText = Render.String.renderString Data.test
-                , count = model.count + 1
-              }
-            , Cmd.none
-            )
-
-        GetNotes ->
-            ( { model
-                | input = Data.notes
-                , renderedText = Render.String.renderString Data.test
+                | input = Data.get docName
+                , renderedText = Render.String.renderString (Data.get docName)
                 , count = model.count + 1
               }
             , Cmd.none
@@ -210,7 +190,7 @@ mainColumn model =
 
 inputElement model =
     column [ spacing 8, moveUp 9 ]
-        [ row [ spacing 12 ] [ clearTextButton, getTextButton, getNotesButton, getTestButton ]
+        [ row [ spacing 12 ] [ clearTextButton, getDocumentButton "announcement", getDocumentButton "notes", getDocumentButton "manual" ]
         , inputText model
         ]
 
@@ -393,31 +373,15 @@ clearTextButton : Element Msg
 clearTextButton =
     Input.button buttonStyle2
         { onPress = Just ClearText
-        , label = el [ centerX, centerY, Font.size 14 ] (text "Clear")
+        , label = el [ centerX, centerY, Font.size 14 ] (text "clear")
         }
 
 
-getTextButton : Element Msg
-getTextButton =
+getDocumentButton : String -> Element Msg
+getDocumentButton docName =
     Input.button buttonStyle2
-        { onPress = Just GetText
-        , label = el [ centerX, centerY, Font.size 14 ] (text "Announcement")
-        }
-
-
-getTestButton : Element Msg
-getTestButton =
-    Input.button buttonStyle2
-        { onPress = Just GetTest
-        , label = el [ centerX, centerY, Font.size 14 ] (text "Test")
-        }
-
-
-getNotesButton : Element Msg
-getNotesButton =
-    Input.button buttonStyle2
-        { onPress = Just GetNotes
-        , label = el [ centerX, centerY, Font.size 14 ] (text "Design Notes")
+        { onPress = Just (GetDocument docName)
+        , label = el [ centerX, centerY, Font.size 14 ] (text docName)
         }
 
 
