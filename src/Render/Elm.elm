@@ -115,7 +115,7 @@ renderMissingElement name body =
     paragraph []
         [ el [ Font.bold ] (text "[")
         , el [ Font.color blueColor, Font.bold ] (text (name ++ " "))
-        , el [ Font.color violetColor ] (text (getText body |> Maybe.withDefault ""))
+        , el [ Font.color violetColor ] (text (getText body |> Maybe.withDegfault ""))
         , el [ Font.color redColor ] (text " << element misstyped or unimplemented")
         , el [ Font.bold ] (text "]")
         ]
