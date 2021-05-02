@@ -22,8 +22,17 @@ type alias Data =
     , crossReferences : Dictionary
     , tableOfContents : List TocEntry
     , dictionary : Dictionary
+    , macroDict : MacroDict
     , config : Config
     }
+
+
+type alias MacroForm =
+    { name : String, args : List String }
+
+
+type alias MacroDict =
+    Dict String MacroForm
 
 
 init : Config -> Data
@@ -33,6 +42,7 @@ init config =
     , crossReferences = Dict.empty
     , tableOfContents = []
     , dictionary = Dict.empty
+    , macroDict = Dict.empty
     , config = config
     }
 
@@ -128,26 +138,18 @@ handleSection name element data =
 
 
 handleMacro : String -> Element -> Data -> Data
-handleMacro _ element data =
-    let
-        ( name, args, body ) =
-            case element of
-                LX [ Element name_ args_ body_ _ ] _ ->
-                    ( name_, args_, body_ )
+handleMacro str element data =
+    { data | macroDict = handleMacro_ str element data.macroDict |> Debug.log "MACRO DICT" }
 
-                _ ->
-                    ( "_name_", [], Text "_body_" Nothing )
 
-        _ =
-            Debug.log "MACRO NAME" name
+handleMacro_ : String -> Element -> MacroDict -> MacroDict
+handleMacro_ _ element dict =
+    case element of
+        LX [ Element macroName_ _ (LX [ Element name_ args_ _ _ ] _) _ ] _ ->
+            Dict.insert macroName_ { name = name_, args = args_ } dict
 
-        _ =
-            Debug.log "MACRO ARGS" args
-
-        _ =
-            Debug.log "MACRO BODY" body
-    in
-    data
+        _ ->
+            dict
 
 
 
