@@ -332,8 +332,9 @@ Certain tasks are particularly simple with cayatex: insertion of images referenc
 
 Our goal is to have a convenient  tool for writing technical documents that are immediately publishasble on the web while at the same time offering export to conventional formats such as LaTeX (and therefore also) PDF.
 
-[b Note.] [fontRGB |50, 0, 200| At the moment  we have not yet implemented differential compilation, which greatly
-speeds up compilation during editing.  All in due time!]
+
+[b Note.] [fontRGB |50, 0, 200| The above are desiderata.  Among the missing items: compile to LaTeX and differential compilation, which is needed for snappy, real-time rendering of the source text while editing. Our first objectives
+are a decent proof-of-concept and error-handling that is both robust and graceful. All in due time!]
 
 [section1 Mathematics]
 
