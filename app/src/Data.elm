@@ -347,7 +347,7 @@ Such functions can be composed, as in mathematics or as in languages such as Has
 ]
 
 
-[item [b Extensible]. [i Via a macro facility].]
+[item [b Extensible] via macro definitions made in the source text.]
 
 [item [b Multiple inputs and outputs.] Documents written in CaYaTeX can be compiled to LaTeX, Markdown, and HTML. Markdown documents can be compiled to CaYaTeX.]
 
@@ -392,6 +392,45 @@ And of course, we can also do theorems:
 [theorem There are infinitely many primes [math p \\equiv 1 \\text{ mod } 4.]]
 
 [corollary |Euclid| There are infinitely many primes.]
+
+
+
+
+[section2 Macros]
+
+We have implemented a primitive version of macro expansion. To show how it works, begin by writing the macro definition
+
+[cb raw#[macro [
+    blue [ fontRGB |0, 80, 200| ]
+]]#]
+
+in the source text. Such a definition has the form
+
+[cb raw#[macro [
+  MACRO-NAME [ NAME |ARGS| ]
+]]#]
+
+where [c NAME] is the name of a standard element like [c fontRGB] and where
+[c ARGS] is the actual list of arguments that the standard element will use.
+
+When you add the macro definition, you will not see anything rendered. Now add this to the source "[c raw#[blue light blue bird's eggs]#]". You will see this:
+
+[indent [blue light blue bird's eggs]]
+
+One can apply other elements to macro instances, e.g.
+
+[indent [i [blue light blue bird's eggs]]]
+
+where the source text  is
+
+[cb raw#[i [blue light blue bird's eggs]]#]
+
+
+
+However, at the present time the body of a macro instance must be pure text, as in the example.
+
+[macro [blue [fontRGB |0, 80, 200| ]]]
+
 
 
 
@@ -784,7 +823,7 @@ A numbered list has "numbered" as its first argument, as in the example below.
 
 [item Integrate bracket-matching editor.]
 
-[item Implement macro expansion]
+[item Expand the scope of macro expansion.]
 
 [item Add CaYaTeX as a markup language option
 for [link https://minilatex.lamdera.app]. Presently MiniLaTeX,

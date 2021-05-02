@@ -139,7 +139,7 @@ handleSection name element data =
 
 handleMacro : String -> Element -> Data -> Data
 handleMacro str element data =
-    { data | macroDict = handleMacro_ str element data.macroDict |> Debug.log "MACRO DICT" }
+    { data | macroDict = handleMacro_ str element data.macroDict }
 
 
 handleMacro_ : String -> Element -> MacroDict -> MacroDict

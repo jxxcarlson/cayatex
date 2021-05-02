@@ -92,10 +92,22 @@ renderWithDictionary renderArgs name args body meta =
                 renderaAsTheoremLikeElement renderArgs name args body meta
 
             else
-                renderMissingElement name body
+                case Dict.get name renderArgs.parserData.macroDict of
+                    Just macroForm ->
+                        -- TODO: finish expandMacro
+                        renderElement renderArgs (expandMacro macroForm body)
+
+                    _ ->
+                        renderMissingElement name body
 
         Just f ->
             f renderArgs name args body meta
+
+
+expandMacro : Data.MacroForm -> Element -> Element
+expandMacro macroForm body =
+    -- Text ("Trying to expand macro '" ++ macroForm.name ++ "' width body" ++ getText2 body) Nothing
+    Element macroForm.name macroForm.args (Text (getText2 body) Nothing) Nothing
 
 
 renderMissingElement : String -> Element -> E.Element CYTMsg
