@@ -74,7 +74,12 @@ update element data =
                 handleSection name body data
 
             else
-                data
+                case name of
+                    "macro" ->
+                        handleMacro name body data
+
+                    _ ->
+                        data
 
         LX list _ ->
             List.foldl update data list
@@ -120,6 +125,36 @@ handleSection name element data =
                     { name = getText element, label = sectionLabel newData, level = level - 1 }
             in
             { newData | tableOfContents = tocItem :: data.tableOfContents }
+
+
+handleMacro : String -> Element -> Data -> Data
+handleMacro _ element data =
+    let
+        ( name, args, body ) =
+            case element of
+                LX [ Element name_ args_ body_ _ ] _ ->
+                    ( name_, args_, body_ )
+
+                _ ->
+                    ( "_name_", [], Text "_body_" Nothing )
+
+        _ =
+            Debug.log "MACRO NAME" name
+
+        _ =
+            Debug.log "MACRO ARGS" args
+
+        _ =
+            Debug.log "MACRO BODY" body
+    in
+    data
+
+
+
+--LX
+--[ Element "blue" [] (LX [ Element "fontRGB" [ "0", "80", "200" ]
+--   (LX [ Text "body" (Just { blockOffset = 2, generation = 2, label = "", length = 4, offset = 35 }) ] Nothing) (Just { blockOffset = 2, generation = 2, label = "", length = 27, offset = 13 }) ] Nothing) (Just { blockOffset = 2, generation = 2, label = "", length = 34, offset = 7 }) ]
+--Nothing
 
 
 getText : Element -> String

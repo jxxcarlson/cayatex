@@ -117,6 +117,7 @@ renderElementDict : RenderElementDict CYTMsg
 renderElementDict =
     Dict.fromList
         [ ( "Error", error )
+        , ( "macro", macro )
         , ( "tableofcontents", tableofcontents )
         , ( "bold", renderStrong )
         , ( "b", renderStrong )
@@ -233,6 +234,11 @@ elementTitle args_ =
 
 titleSize =
     14
+
+
+macro : FRender CYTMsg
+macro renderArgs name args_ body meta =
+    E.none
 
 
 tableofcontents : FRender CYTMsg
