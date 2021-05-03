@@ -19,6 +19,7 @@ import Parser.TextCursor
 import Render.Types exposing (DisplayMode(..), FRender, RenderArgs, RenderElementDict)
 import Render.Utility
 import String.Extra
+import SvgParser
 import Widget.Data
 
 
@@ -158,6 +159,7 @@ renderElementDict =
         , ( "item", item )
         , ( "link", link )
         , ( "image", image )
+        , ( "svg", svg )
         , ( "math", renderMath )
         , ( "m", renderMath )
         , ( "mathblock", renderMathDisplay )
@@ -623,6 +625,67 @@ image renderArgs name args body meta =
             { src = getText body |> Maybe.withDefault "no image url", description = description }
         , caption
         ]
+
+
+svg : FRender CYTMsg
+svg renderArgs _ args body meta =
+    case SvgParser.parse (getText2 body) of
+        Ok html_ ->
+            let
+                dict =
+                    CYUtility.keyValueDict args
+
+                description =
+                    Dict.get "caption" dict |> Maybe.withDefault ""
+
+                caption =
+                    case Dict.get "caption" dict of
+                        Nothing ->
+                            E.none
+
+                        Just c ->
+                            E.row [ placement ] [ el [] (text c) ]
+
+                width =
+                    case Dict.get "width" dict of
+                        Nothing ->
+                            px displayWidth
+
+                        Just w_ ->
+                            case String.toInt w_ of
+                                Nothing ->
+                                    px displayWidth
+
+                                Just w ->
+                                    E.px w
+
+                placement =
+                    case Dict.get "placement" dict of
+                        Nothing ->
+                            E.centerX
+
+                        Just "left" ->
+                            E.alignLeft
+
+                        Just "right" ->
+                            E.alignRight
+
+                        Just "center" ->
+                            E.centerX
+
+                        _ ->
+                            E.centerX
+
+                displayWidth =
+                    renderArgs.parserData.config.displayWidth
+            in
+            E.column [ spacing 8, E.width width, placement ]
+                [ E.column [ E.width width, placement, Render.Utility.htmlAttribute "text-align" "cener" ] [ html_ |> E.html ]
+                , caption
+                ]
+
+        Err _ ->
+            E.el [] (E.text "SVG parse error")
 
 
 renderStrong : FRender CYTMsg

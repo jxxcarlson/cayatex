@@ -23,8 +23,25 @@ type alias Data =
     , tableOfContents : List TocEntry
     , dictionary : Dictionary
     , macroDict : MacroDict
+    , bindings : Bindings
     , config : Config
     }
+
+
+type alias Bindings =
+    Dict String Value
+
+
+type alias Value =
+    { name : String, vtype : VType }
+
+
+type VType
+    = VString
+    | VInt
+    | VFloat
+    | VAtom
+    | VSExpr
 
 
 type alias MacroForm =
@@ -43,6 +60,7 @@ init config =
     , tableOfContents = []
     , dictionary = Dict.empty
     , macroDict = Dict.empty
+    , bindings = Dict.empty
     , config = config
     }
 
