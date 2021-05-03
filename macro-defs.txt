@@ -1,4 +1,5 @@
 
+
 [macro [ds [fontRGB |0, 0, 200| ]]]
 
 [i [code This document is a draft-in-progress of a manual for CaYaTeX]]
@@ -15,6 +16,28 @@
 
 [def | bold; b |
 Render text as bold, e.g, [c raw#[bold Bold!]#] renders as [ds [bold Bold!]] Short form: [c raw#[b Bold!]#] .
+]
+
+[def | italic; i |
+Render text as italic, e.g, [c raw#[italic Italic!]#] renders as [ds [italic Italic!]] Short form: [c raw#[i Italic!]#] .
+]
+
+[def | fontRGB | Render text in color with given RGB values, e.g., [c raw#[fontRGB |214, 11, 184| This is a test!]#] renders as
+[fontRGB |214, 11, 184| This is a test!]
+
+]
+
+
+[def | highlight |
+Highlight the text, e.g, [c raw#[highlight This is important!]#] renders as [ds [highlight This is important!]].
+]
+
+[def | link |
+Make a hyperlink.  For example, the text, e.g, [c raw#[link http://nytimes.com]#] renders as [ds[link http://nytimes.com]].  One can also specify the link text, e.g., [c raw#[link | New York Times | http://nytimes.com]#] renders as [ds[link | New York Times | http://nytimes.com]].
+]
+
+[def | highlightRGB |
+Highlight the text with a given color, e.g, [c raw# [highlightRGB | 255, 200, 200 | This is important!]#] renders as [ds [highlightRGB | 255, 200, 200 | This is important!]].
 ]
 
 [section2 Code]
@@ -41,15 +64,17 @@ Render math in-line, e.g, [c raw#[math a^2 + b^2 = c^2]#] renders as
 ]
 
 [def |  mathblock; mb |
-Render math as centered block, e.g, [c raw#[mathblock \int_0^1 x^n dx = \frac{1}{n+1}]#] renders as
+Render math as centered block, e.g, [c raw#[mathblock \\int_0^1 x^n dx = \\frac{1}{n+1}]#] renders as
 
-[mathblock \int_0^1 x^n dx = \frac{1}{n+1}]
+[mathblock \\int_0^1 x^n dx = \\frac{1}{n+1}]
 
-Short form: [c raw#[mb \int_0^1 x^n dx = \frac{1}{n+1}]#] .
+Short form: [c raw#[mb \\int_0^1 x^n dx = \\frac{1}{n+1}]#] .
 ]
 
 
 [section2 Structure]
+
+[def | title | Construct a document title, e.g. as [c raw#[title Tales of Yore]#] ].
 
 [def | tableofcontents |
 Render a numbered table of contents as displayed above.]
@@ -68,11 +93,82 @@ section4
 section5
 section6
 
+[section2 Format]
+
+[def | center | Center the body of the element [c raw#[center BODY]#]].
+
+[def | indent | Indent the body of the element [c raw#[indent BODY]#]].
+
+[def | poetry | Format the body of the element as poetry, that is, obey line endings. [c raw#[poetry BODY]#]].
+
+[def | verbatim | No formatting at all: obey line endings and white space. [c raw#[poetry BODY]#]].
+
+[def | list | Construct a list of items using the form [c raw#[list [tem ...] [item ...] ...]#]  The default is a bulleted list.  To change the "item symbol", add the argument [c raw#|s : SYMBOL-NAME|#], e.g., write [c raw#[list | s: ‡ | ...]#] to produce the example below.  For a numbered list, use the special form [c raw#[list | s: numbered | ...]#]
+]
+
+
+[b Example]
+
+To produce the list
+
+[list  | s: ‡ |
+
+  [item Conservation of momentum]
+
+  [item  Conservation of energy]
+
+]
+
+write
+
+[cb raw##
+[list  | s: ‡ |
+
+  [item Conservation of momentum]
+
+  [item  Conservation of energy]
+
+]
+##]
+
+[section2 Images]
+
+Insert an image using the format [c raw#[image URL]#], where
+ [c URL] is a link to the image.  The image below was inserted using the source text
+[c raw#[image https://pcd ... jpg] #]
+
+[image https://pcdn.columbian.com/wp-content/uploads/2018/04/0427_LIF_kidspost-herons-1226x0-c-default.jpg]
+
+
+To change the width of an image to 150 pixels, say [c raw#[image | width: 150 | URL]#]
+
+
+[image | width: 150| https://pcdn.columbian.com/wp-content/uploads/2018/04/0427_LIF_kidspost-herons-1226x0-c-default.jpg]
+
+To add a caption, say [c raw#[image | width: 150, caption Egrets | URL]#]
+
+
+[image | width: 150, caption: Egrets | https://pcdn.columbian.com/wp-content/uploads/2018/04/0427_LIF_kidspost-herons-1226x0-c-default.jpg]
+
+The arguments to the image element are a comma-separated list of key-value pairs, [c key:value].  You have seen how the width key is used with a numeric value.  You can also say [c width: fill] to make the image as wide as possible.  This is the default.  Another key is [c placement], which can take values [c left], [c right], and [c center].
+
+Below is a variant of the Egret image with placement on the left.  We will have floating placement left and right in the near future.
+
+[image | width: 150, caption: Egrets , placement: left| https://pcdn.columbian.com/wp-content/uploads/2018/04/0427_LIF_kidspost-herons-1226x0-c-default.jpg] 
+
+
+[b Note.] To copy the link of an image on the web, do control-click or right-click on the image and select "Copy image link" from the popup menu.
+
 [section2 Data]
+
+[def | sum |
+  Compute sum of a list of numbers, e.g., [c raw#[sum 1, 2, 3]#] renders as [ds [sum 1, 2, 3]].]
 
 [def | average |
   Compute average of a list of numbers, e.g., [c raw#[average 1, 2, 3]#] renders as [ds [average 1, 2, 3]].]
 
+[def | stdev |
+  Compute standard deviation of a list of numbers, e.g., [c raw#[stdev 1, 2, 3]#] renders as [ds [stdev 1, 2, 3]].]
 
 [section2 Graphs and Charts]
 
@@ -86,7 +182,7 @@ Construct a bar graph from data in CSV format, e.g., the text
 3
 0.2
 ]#
-]]
+]
 
 renders as
 
@@ -98,33 +194,12 @@ renders as
 ]
 
 ]
+]
 
 
-
-bargraph
-center
 data
-fontRGB
-highlight
-highlightRGB
-i
-image
-indent
-italic
-item
 linegraph
-link
-list
 macro
-poetry
 scatterplot
-stdev
-sum
-title
-verbatim
-
-
-
-
 
 

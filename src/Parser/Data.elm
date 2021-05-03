@@ -73,6 +73,7 @@ type alias Config =
     { redColor : String
     , blueColor : String
     , highlightColor : String
+    , displayWidth : Int
     }
 
 
@@ -206,6 +207,7 @@ defaultConfig =
     { redColor = "#a00"
     , blueColor = "#00c"
     , highlightColor = "#fAA"
+    , displayWidth = 470
     }
 
 

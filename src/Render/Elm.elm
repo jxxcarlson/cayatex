@@ -583,17 +583,17 @@ image renderArgs name args body meta =
                     E.none
 
                 Just c ->
-                    E.row [ E.centerX ] [ el [ E.width E.fill ] (text c) ]
+                    E.row [ placement ] [ el [] (text c) ]
 
         width =
             case Dict.get "width" dict of
                 Nothing ->
-                    E.fill
+                    px displayWidth
 
                 Just w_ ->
                     case String.toInt w_ of
                         Nothing ->
-                            E.fill
+                            px displayWidth
 
                         Just w ->
                             E.px w
@@ -614,8 +614,11 @@ image renderArgs name args body meta =
 
                 _ ->
                     E.centerX
+
+        displayWidth =
+            renderArgs.parserData.config.displayWidth
     in
-    E.column [ spacing 8, placement, E.width (E.px 400) ]
+    E.column [ spacing 8, E.width (E.px displayWidth), placement ]
         [ E.image [ E.width width, placement ]
             { src = getText body |> Maybe.withDefault "no image url", description = description }
         , caption

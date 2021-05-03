@@ -245,6 +245,7 @@ extractText element =
 getInt : Int -> List String -> Int
 getInt k stringList =
     List.Extra.getAt k stringList
+        |> Maybe.map String.trim
         |> Maybe.andThen String.toInt
         |> Maybe.withDefault 0
 
