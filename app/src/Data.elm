@@ -848,6 +848,21 @@ Example:  [highlightRGB |252, 178, 50| [fontRGB |23, 57, 156| [b What color is t
 Note the nesting of elements, aka function composition. When we have our macro facility up and running,  users can abbreviate constructs like
 this one, e.g., just say [code raw##[myhighlight| What color is this?]##]
 
+
+[section2 Variables]
+
+One can set variables to be used elsewhere in the text.  For example, if we
+say [c raw#[set [project = Gaia Unlimited, pi = 3.1416]#], we can later say
+"my project is [c raw#[get project]#]," which will be rendered as "my project is [get project]."
+
+The variable pi is also defined: pi = [get pi].  Here we said [c raw#pi = [get pi]#].
+
+The [c set ...] statements can be placed anywhere in the document, for example, at the end.
+Note that [c set ...] statements are not rendered in the text.  If you do want it to be rendered,
+use [c set_ ...] instead.
+
+[set project = Gaia Unlimited, pi = 3.1416]
+
 [section2 Data]
 
 One can design elements which manipulate data (numerical computations, visualization).  Here are some data computations:

@@ -131,6 +131,10 @@ renderElementDict =
     Dict.fromList
         [ ( "Error", error )
         , ( "macro", macro )
+        , ( "set", set )
+        , ( "set_", set_ )
+        , ( "hide", hide )
+        , ( "get", get )
         , ( "tableofcontents", tableofcontents )
         , ( "bold", renderStrong )
         , ( "b", renderStrong )
@@ -254,6 +258,39 @@ titleSize =
 macro : FRender CYTMsg
 macro renderArgs name args_ body meta =
     E.none
+
+
+
+-- BINDINGS
+
+
+set : FRender CYTMsg
+set renderArgs name args_ body meta =
+    E.none
+
+
+set_ : FRender CYTMsg
+set_ renderArgs name args_ body meta =
+    E.el [ Font.color codeColor ] (text ("set " ++ getText2 body))
+
+
+hide : FRender CYTMsg
+hide renderArgs name args_ body meta =
+    E.none
+
+
+get : FRender CYTMsg
+get renderArgs name args_ body meta_ =
+    let
+        key =
+            getText2 body |> String.trim
+    in
+    case Dict.get key renderArgs.parserData.bindings of
+        Nothing ->
+            E.el [ Font.color redColor ] (text ("variable " ++ key ++ " not found"))
+
+        Just value ->
+            E.el [] (text value)
 
 
 tableofcontents : FRender CYTMsg

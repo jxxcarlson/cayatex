@@ -29,19 +29,7 @@ type alias Data =
 
 
 type alias Bindings =
-    Dict String Value
-
-
-type alias Value =
-    { name : String, vtype : VType }
-
-
-type VType
-    = VString
-    | VInt
-    | VFloat
-    | VAtom
-    | VSExpr
+    Dict String String
 
 
 type alias MacroForm =
@@ -107,6 +95,12 @@ update element data =
                     "macro" ->
                         handleMacro name body data
 
+                    "set" ->
+                        handleLet name body data
+
+                    "set_" ->
+                        handleLet name body data
+
                     _ ->
                         data
 
@@ -154,6 +148,48 @@ handleSection name element data =
                     { name = getText element, label = sectionLabel newData, level = level - 1 }
             in
             { newData | tableOfContents = tocItem :: data.tableOfContents }
+
+
+handleLet : String -> Element -> Data -> Data
+handleLet name body data =
+    { data | bindings = handleLet_ name body data.bindings }
+
+
+handleLet_ : String -> Element -> Bindings -> Bindings
+handleLet_ name body bindings =
+    let
+        data =
+            getText2 body
+
+        parts =
+            String.split "," data
+
+        kvList : List ( String, String )
+        kvList =
+            List.map (String.split "=" >> List.map String.trim >> makePair) parts
+                |> Maybe.Extra.values
+    in
+    List.foldl (\( k, v ) -> Dict.insert k v) bindings kvList
+
+
+makePair : List String -> Maybe ( String, String )
+makePair ns =
+    case ns of
+        [ x, y ] ->
+            Just ( x, y )
+
+        _ ->
+            Nothing
+
+
+getText2 : Element -> String
+getText2 element =
+    case element of
+        LX list_ _ ->
+            List.map Render.Utility.extractText list_ |> Maybe.Extra.values |> String.join "\n"
+
+        _ ->
+            ""
 
 
 handleMacro : String -> Element -> Data -> Data
