@@ -20,6 +20,22 @@ get docName =
             "No such document"
 
 
+testData =
+    """
+[spreadsheet 
+
+[row 100.0, 1.1, row * 0 1]
+
+[row 120.0, 1.4 ,row * 0 1]
+
+[row 140.0, 0.9 ,row * 0 1]
+
+[row -, col sum 0 2, col sum 0 2]
+
+]
+"""
+
+
 exp =
     """[i A]
 
@@ -862,6 +878,48 @@ Note that [c set ...] statements are not rendered in the text.  If you do want i
 use [c set_ ...] instead.
 
 [set project = Gaia Unlimited, pi = 3.1416]
+
+[section2 Spreadsheets]
+
+The below demonstrates the use
+of a rudimentary spreadsheet element.  We plan a pop-up editor for
+these spreadsheets.
+
+[section3 Rendered spreadsheet]
+
+[spreadsheet
+
+[row 100.0, 1.1, row * 1 2 ]
+
+[row 120.0, 1.4 ,row * 1 2 ]
+
+[row 140.0, 0.9 ,row * 1 2]
+
+[row -, col sum 1 3, col sum 1 3]
+
+]
+
+
+
+[section3 Source text]
+
+[cb raw##
+[spreadsheet
+
+[row 100.0, 1.1, row * 1 2]
+
+[row 120.0, 1.4 ,row * 1 2]
+
+[row 140.0, 0.9 ,row * 1 2]
+
+[row -, col sum 1 3, col sum 1 3]
+
+]
+##]
+
+The entry [c row * 1 2] in the upper right-hand  cell means "In this row, multiply
+the cells in columns 1 and 2; use that value to replace me."  Similarly, the entry
+[c col sum 1 3] menas, "in the column where I am, compute sum of  the cell contents in rows 1 through 3; use that value to replace me.
 
 [section2 Data]
 

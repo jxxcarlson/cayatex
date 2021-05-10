@@ -18,6 +18,7 @@ import Parser.Metadata exposing (Metadata)
 import Parser.TextCursor
 import Render.Types exposing (DisplayMode(..), FRender, RenderArgs, RenderElementDict)
 import Render.Utility
+import Spreadsheet
 import String.Extra
 import SvgParser
 import Widget.Data
@@ -135,6 +136,7 @@ renderElementDict =
         , ( "set_", set_ )
         , ( "hide", hide )
         , ( "get", get )
+        , ( "spreadsheet", spreadsheet )
         , ( "tableofcontents", tableofcontents )
         , ( "bold", renderStrong )
         , ( "b", renderStrong )
@@ -277,6 +279,61 @@ set_ renderArgs name args_ body meta =
 hide : FRender CYTMsg
 hide renderArgs name args_ body meta =
     E.none
+
+
+getRow : Element -> String
+getRow element =
+    case element of
+        Element "row" [] (LX [ Text t _ ] _) _ ->
+            t
+
+        _ ->
+            ""
+
+
+getRows : Element -> List String
+getRows body =
+    case body of
+        LX list_ _ ->
+            List.map getRow list_
+                |> List.filter (\s -> s /= "")
+
+        _ ->
+            []
+
+
+getRows_ : Element -> List (List String)
+getRows_ body =
+    case body of
+        LX list_ _ ->
+            List.map getRow list_
+                |> List.filter (\s -> s /= "")
+                |> List.map (String.split ",")
+                |> List.map (List.map String.trim)
+
+        _ ->
+            [ [] ]
+
+
+spreadsheet : FRender CYTMsg
+spreadsheet renderArgs name args_ body meta =
+    let
+        spreadsheet1 =
+            getRows_ body |> List.Extra.transpose
+
+        spreadsheet2 =
+            Spreadsheet.evalText spreadsheet1
+                |> List.Extra.transpose
+
+        renderItem : String -> E.Element CYTMsg
+        renderItem str =
+            el [ E.width (E.px 60) ] (el [ E.alignRight ] (text str))
+
+        renderRow : List String -> E.Element CYTMsg
+        renderRow items =
+            row [ spacing 10 ] (List.map renderItem items)
+    in
+    E.column [ spacing 8, indentPadding ] (List.map renderRow spreadsheet2)
 
 
 get : FRender CYTMsg
