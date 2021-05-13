@@ -1,9 +1,19 @@
-module CaYaTeX exposing (CaYaTeXMsg, Data, init, render, renderString, renderToLaTeX, update)
+module CaYaTeX exposing
+    ( CaYaTeXMsg
+    , Data
+    , getTitle
+    , init
+    , render
+    , renderString
+    , renderString2
+    , renderToLaTeX
+    , update
+    )
 
 import Element as E
 import Parser.Data
 import Parser.Document
-import Parser.Element
+import Parser.Element exposing (Element(..))
 import Render.Elm
 import Render.LaTeX
 import Render.Types as Types
@@ -33,9 +43,13 @@ render id data =
         |> Parser.Document.toParsed
         |> List.map (Render.Elm.renderList (initState data.generation))
 
+
+getTitle =
+    Parser.Element.getTitle
+
+
 renderString : Int -> String -> E.Element Parser.Element.CYTMsg
 renderString k str =
-    -- CaYaTeX.render "id__" { content = str, generation = k } |> Element.map CYTMsg
     let
         state =
             Parser.Document.runLoop k (String.lines str)
@@ -48,6 +62,57 @@ renderString k str =
         |> List.map (Render.Elm.renderList newState)
         |> E.column [ E.spacing 18 ]
 
+
+astOfString : Int -> String -> List (List Element)
+astOfString k str =
+    let
+        state =
+            Parser.Document.runLoop k (String.lines str)
+
+        newState =
+            initStateWithData k state.data
+    in
+    state
+        |> Parser.Document.toParsed
+
+
+renderString2 : Int -> String -> { rendered : E.Element Parser.Element.CYTMsg, title : String }
+renderString2 k str =
+    let
+        state =
+            Parser.Document.runLoop k (String.lines str)
+
+        ast =
+            Parser.Document.toParsed state |> List.head |> Maybe.andThen List.head
+
+        title =
+            case ast of
+                Nothing ->
+                    "Err: title not found"
+
+                Just (Element "title" _ stuff _) ->
+                    case stuff of
+                        LX [ Text str_ _ ] _ ->
+                            str_
+
+                        _ ->
+                            "Err: title not found"
+
+                _ ->
+                    "Err: title not found"
+
+        newState =
+            initStateWithData k state.data
+
+        rendered =
+            state
+                |> Parser.Document.toParsed
+                |> List.map (Render.Elm.renderList newState)
+                |> E.column [ E.spacing 18 ]
+    in
+    { rendered = rendered, title = title }
+
+
 initStateWithData k data =
     { generation = k
     , blockOffset = 0
@@ -55,6 +120,7 @@ initStateWithData k data =
     , width = 300
     , parserData = data
     }
+
 
 renderToLaTeX : String -> String
 renderToLaTeX =
