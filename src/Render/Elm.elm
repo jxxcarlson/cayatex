@@ -139,8 +139,10 @@ renderElementDict =
         , ( "get", get )
         , ( "spreadsheet", spreadsheet )
         , ( "tableofcontents", tableofcontents )
-        , ( "bold", renderStrong )
-        , ( "b", renderStrong )
+        , ( "bold", bold )
+        , ( "strike", strike )
+        , ( "underline", underline )
+        , ( "b", bold )
         , ( "italic", renderItalic )
         , ( "i", renderItalic )
         , ( "highlight", highlight )
@@ -615,7 +617,7 @@ section_ renderArgs name args body meta =
         , Render.Utility.htmlAttribute "id" tag
         ]
         -- [ text <| getLabel meta ++ " " ++ sectionName ]
-        [ E.link [] { label = el [ Font.color blueColor ] (text <| getLabel meta ++ " " ++ sectionName), url = "#tableofcontents__" } ]
+        [ E.link [] { label = el [] (text <| getLabel meta ++ " " ++ sectionName), url = "#tableofcontents__" } ]
 
 
 center : FRender CYTMsg
@@ -820,9 +822,19 @@ svg renderArgs _ args body meta =
             E.el [] (E.text "SVG parse error")
 
 
-renderStrong : FRender CYTMsg
-renderStrong renderArgs _ _ body meta =
+bold : FRender CYTMsg
+bold renderArgs _ _ body meta =
     el [ Font.bold ] (renderElement renderArgs body)
+
+
+strike : FRender CYTMsg
+strike renderArgs _ _ body meta =
+    el [ Font.strike ] (renderElement renderArgs body)
+
+
+underline : FRender CYTMsg
+underline renderArgs _ _ body meta =
+    el [ Font.underline ] (renderElement renderArgs body)
 
 
 renderItalic : FRender CYTMsg
