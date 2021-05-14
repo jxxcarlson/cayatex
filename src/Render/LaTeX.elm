@@ -1,6 +1,7 @@
 module Render.LaTeX exposing (render, renderAsDocument)
 
 import Dict exposing (Dict)
+import List.Extra
 import Parser.Data
 import Parser.Document
 import Parser.Element exposing (Element(..))
@@ -27,6 +28,10 @@ type alias RenderingFunction =
     Types.RenderArgs -> String -> List String -> String -> String
 
 
+
+-- DICT
+
+
 latexDict : LaTeXDict
 latexDict =
     Dict.fromList
@@ -48,7 +53,31 @@ latexDict =
         , aliasedSimpleEntry "section4" "subheading"
         , aliasedSimpleEntry "section5" "subheading"
         , aliasedSimpleEntry "section6" "subheading"
+        , ( "title", \ra name args body -> title body )
+        , ( "tableofcontents", \_ _ _ _ -> "\\tableofcontents" )
+        , entry1 "link" "href"
         ]
+
+
+entry1 name macroname =
+    ( name, \_ _ args body -> macro1 macroname args body )
+
+
+macro1 name args body =
+    let
+        arg =
+            List.Extra.getAt 0 args |> Maybe.withDefault body
+    in
+    "\\" ++ name ++ "{" ++ body ++ "}{" ++ arg ++ "}"
+
+
+title : String -> String
+title str =
+    simpleMacro_ "title" str ++ "\n" ++ "\\maketitle"
+
+
+
+-- SIMPLE ENTRY
 
 
 aliasedSimpleEntry : String -> String -> ( String, RenderingFunction )
