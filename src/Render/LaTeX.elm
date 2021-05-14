@@ -1,5 +1,6 @@
-module Render.LaTeX exposing (render, renderAsDocument)
+module Render.LaTeX exposing (render, renderAsDocument, renderImage)
 
+import CYUtility
 import Dict exposing (Dict)
 import List.Extra
 import Parser.Data
@@ -35,8 +36,8 @@ type alias RenderingFunction =
 latexDict : LaTeXDict
 latexDict =
     Dict.fromList
-        [ simpleEntry "bold"
-        , aliasedSimpleEntry "b" "bold"
+        [ aliasedSimpleEntry "bold" "textbf"
+        , aliasedSimpleEntry "b" "textbf"
         , simpleEntry "italic"
         , aliasedSimpleEntry "i" "italic"
         , simpleEntry "strike"
@@ -44,6 +45,9 @@ latexDict =
         , simpleEntry "red"
         , simpleEntry "blue"
         , simpleEntry "highlight"
+        , simpleEntry "white"
+        , simpleEntry "medgray"
+        , simpleEntry "black"
         , simpleEntry "code"
         , aliasedSimpleEntry "c" "code"
         , simpleEntry "section"
@@ -56,7 +60,98 @@ latexDict =
         , ( "title", \ra name args body -> title body )
         , ( "tableofcontents", \_ _ _ _ -> "\\tableofcontents" )
         , entry1 "link" "href"
+        , ( "list", \ra name args body -> "\\begin{itemize}\n\n" ++ body ++ "\\end{itemize}" )
+        , ( "item", \ra name args body -> "\\item " ++ body ++ "\n\n" )
+        , ( "math", \ra name args body -> "$" ++ body ++ "$" )
+        , ( "m", \ra name args body -> "$" ++ body ++ "$" )
+        , ( "mathblock", \ra name args body -> "$$" ++ body ++ "$$" )
+        , ( "mb", \ra name args body -> "$$" ++ body ++ "$$" )
+        , ( "theorem", \ra name args body -> environment_ "theorem" body )
+        , environmentEntry "theorem"
+        , environmentEntry "corollary"
+        , environmentEntry "indent"
+        , aliasedEnvironmentEntry "codeblock" "verbatim"
+        , aliasedEnvironmentEntry "cb" "verbatim"
+        , entryForMacroWithArgs "fontRGB"
+        , entryForMacroWithArgs "highlightRGB"
+        , ( "image", \ra name args body -> renderImage args body )
         ]
+
+
+fileReferenceFromUrl : String -> String
+fileReferenceFromUrl url =
+    case String.split "/" url |> List.reverse |> List.head of
+        Nothing ->
+            "no-file-name"
+
+        Just fileName ->
+            "image/" ++ fileName
+
+
+renderImage : List String -> String -> String
+renderImage args body =
+    let
+        dict =
+            CYUtility.keyValueDict args
+
+        caption =
+            Dict.get "caption" dict |> Maybe.withDefault ""
+
+        width =
+            Dict.get "width" dict |> Maybe.andThen String.toInt |> Maybe.withDefault 100 |> String.fromInt
+
+        placement =
+            Dict.get "placement" dict |> Maybe.withDefault "center"
+
+        args_ =
+            argsToString [ fileReferenceFromUrl body, caption ]
+    in
+    "\\" ++ "imagecenter" ++ args_
+
+
+argsToString : List String -> String
+argsToString args =
+    args
+        |> List.map argToString
+        |> String.join ""
+
+
+argToString : String -> String
+argToString arg =
+    "{" ++ arg ++ "}"
+
+
+fontRGB args body =
+    "\\fontRGB" ++ argsToString args ++ argToString body
+
+
+highlightRGB args body =
+    "\\highlightRGB" ++ argsToString args ++ argToString body
+
+
+entryForMacroWithArgs macroName =
+    ( macroName, \ra name args body -> "\\" ++ macroName ++ argsToString args ++ argToString body )
+
+
+
+-- entryForMacroWithArgs_ macroName
+
+
+entryForMacroWithArgs_ macroName =
+    \ra name args body -> "\\" ++ macroName ++ argsToString args ++ argToString body
+
+
+environmentEntry envName =
+    ( envName, \ra name args body -> environment_ envName body )
+
+
+aliasedEnvironmentEntry alias envName =
+    ( alias, \ra name args body -> environment_ envName body )
+
+
+environment_ : String -> String -> String
+environment_ envName body =
+    "\\begin{" ++ envName ++ "}\n" ++ body ++ "\n\\end{" ++ envName ++ "}"
 
 
 entry1 name macroname =
@@ -232,6 +327,38 @@ texPrefix =
 \\renewenvironment{quotation}
   {\\begin{adjustwidth}{2cm}{} \\footnotesize}
   {\\end{adjustwidth}}
+
+\\def\\changemargin#1#2{\\list{}{\\rightmargin#2\\leftmargin#1}\\item[]}
+\\let\\endchangemargin=\\endlist
+
+\\renewenvironment{indent}
+  {\\begin{adjustwidth}{0.75cm}{}}
+  {\\end{adjustwidth}}
+
+
+\\definecolor{mypink1}{rgb}{0.858, 0.188, 0.478}
+\\definecolor{mypink2}{RGB}{219, 48, 122}
+
+\\newcommand{\\fontRGB}[4]{
+    \\definecolor{mycolor}{RGB}{#1, #2, #3}
+    \\textcolor{mycolor}{#4}
+    }
+
+\\newcommand{\\highlightRGB}[4]{
+    \\definecolor{mycolor}{RGB}{#1, #2, #3}
+    \\sethlcolor{mycolor}
+    \\hl{#4}
+     \\sethlcolor{yellow}
+    }
+
+\\newcommand{\\gray}[2]{
+\\definecolor{mygray}{gray}{#1}
+\\textcolor{mygray}{#2}
+}
+
+\\newcommand{\\white}[1]{\\gray{1}[#1]}
+\\newcommand{\\medgray}[1]{\\gray{0.5}[#1]}
+\\newcommand{\\black}[1]{\\gray{0}[#1]}
 
 % Spacing
 \\parindent0pt
