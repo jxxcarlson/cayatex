@@ -18,6 +18,7 @@ import Parser.Element as Parser
 import Parser.Getters
 import Render.Elm
 import Render.String
+import TsEditor
 
 
 main =
@@ -46,6 +47,7 @@ type Msg
     | GetDocument String
     | SetMode Mode
     | CYTMsg Parser.CYTMsg
+    | Editor Int
 
 
 type Mode
@@ -179,7 +181,11 @@ mainColumn model =
         [ column [ spacing 48, width (px appWidth_), height (px (appHeight_ model)) ]
             [ title "CaYaTeX Test App"
             , column [ spacing 12 ]
-                [ row [ spacing 12 ] [ inputElement model, outputDisplay model ]
+                [ row [ spacing 12 ]
+                    [ -- inputElement model
+                      TsEditor.view model.input |> Html.map Editor
+                    , outputDisplay model
+                    ]
 
                 -- , parserDisplay model
                 ]
