@@ -40,7 +40,7 @@ NOTES:
 import Parser as P exposing ((|.), (|=))
 import Parser.Data
 import Parser.Driver
-import Parser.Element exposing (Element)
+import Parser.Element exposing (Element(..))
 import Parser.Getters
 import Parser.TextCursor as TextCursor exposing (TextCursor)
 
@@ -106,6 +106,7 @@ runLoop generation strList =
     loop (init generation strList) nextState
 
 
+rl : String -> List (List Element)
 rl str =
     runLoop 0 (String.lines str) |> toParsed |> List.map (List.map Parser.Getters.strip)
 

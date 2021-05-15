@@ -1,7 +1,12 @@
 module Parser.Element exposing
     ( CYTMsg(..)
     , Element(..)
+    , filter
+    , getBody
+    , getElementTexts
+    , getText
     , getTitle
+    , isNamed
     , listParser
     , makeList
     , parse
@@ -11,6 +16,7 @@ module Parser.Element exposing
     , setLabel
     )
 
+import Maybe.Extra
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
 import Parser.Metadata as Metadata exposing (Metadata)
@@ -75,6 +81,58 @@ getTitle str =
 parse : Int -> Int -> String -> Result (List (Parser.DeadEnd Context Problem)) Element
 parse generation lineNumber str =
     Parser.run (parser 1 2) str
+
+
+getElementTexts : String -> List (List Element) -> List String
+getElementTexts elementName_ parsed =
+    parsed
+        |> filter (isNamed elementName_)
+        |> List.map getBody
+        |> List.map (Maybe.andThen getText)
+        |> Maybe.Extra.values
+
+
+filter : (Element -> Bool) -> List (List Element) -> List Element
+filter predicate list =
+    List.map (filter1 predicate) list |> List.concat
+
+
+filter1 : (Element -> Bool) -> List Element -> List Element
+filter1 predicate list =
+    List.filter predicate list
+
+
+isNamed : String -> Element -> Bool
+isNamed name element =
+    case element of
+        Element name_ _ _ _ ->
+            name == name_
+
+        _ ->
+            False
+
+
+getBody : Element -> Maybe Element
+getBody element =
+    case element of
+        Element _ _ body _ ->
+            Just body
+
+        Text _ _ ->
+            Nothing
+
+        LX _ _ ->
+            Nothing
+
+
+getText : Element -> Maybe String
+getText element =
+    case element of
+        LX [ Text str _ ] _ ->
+            Just str
+
+        _ ->
+            Nothing
 
 
 parseList : Int -> Int -> String -> Result (List (Parser.DeadEnd Context Problem)) (List Element)

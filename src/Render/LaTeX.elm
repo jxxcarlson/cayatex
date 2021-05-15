@@ -44,12 +44,13 @@ latexDict =
         , simpleEntry "underline"
         , simpleEntry "red"
         , simpleEntry "blue"
+        , simpleEntry "violet"
         , simpleEntry "highlight"
         , simpleEntry "white"
         , simpleEntry "medgray"
         , simpleEntry "black"
-        , simpleEntry "code"
-        , aliasedSimpleEntry "c" "code"
+        , aliasedSimpleEntry "code" "violet"
+        , aliasedSimpleEntry "c" "violet"
         , simpleEntry "section"
         , aliasedSimpleEntry "section1" "section"
         , aliasedSimpleEntry "section2" "subsection"
@@ -197,7 +198,8 @@ simpleMacro_ name body =
 
 renderDefaultElement : Types.RenderArgs -> String -> List String -> Element -> String
 renderDefaultElement renderArgs name argList body =
-    "Element: " ++ name ++ " | " ++ String.join ", " argList ++ " | " ++ renderElement renderArgs body
+    --"Element: " ++ name ++ " | " ++ String.join ", " argList ++ " | " ++ renderElement renderArgs body
+    "\\violet{Not implemented: }" ++ "\\blue{" ++ name ++ "}"
 
 
 renderList : Types.RenderArgs -> List (List Element) -> String
@@ -299,6 +301,7 @@ texPrefix =
 \\newcommand{\\xlink}[2]{\\href{{https://minilatex.lamdera.app/g/#1}}{#2}}
 \\newcommand{\\red}[1]{\\textcolor{red}{#1}}
 \\newcommand{\\blue}[1]{\\textcolor{blue}{#1}}
+\\newcommand{\\violet}[1]{\\textcolor{violet}{#1}}
 \\newcommand{\\remote}[1]{\\textcolor{red}{#1}}
 \\newcommand{\\local}[1]{\\textcolor{blue}{#1}}
 \\newcommand{\\highlight}[1]{\\hl{#1}}

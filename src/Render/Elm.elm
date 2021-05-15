@@ -150,6 +150,8 @@ renderElementDict =
         , ( "fontRGB", fontRGB )
         , ( "red", red )
         , ( "blue", blue )
+        , ( "violet", violet )
+        , ( "medgray", medgray )
         , ( "code", renderCode )
         , ( "c", renderCode )
         , ( "def", defitem )
@@ -887,6 +889,16 @@ blue renderArgs name args body meta =
     el [ Font.color (E.rgb255 0 0 200), E.paddingXY 4 2 ] (renderElement renderArgs body)
 
 
+violet : FRender CYTMsg
+violet renderArgs name args body meta =
+    el [ Font.color violetColor, E.paddingXY 4 2 ] (renderElement renderArgs body)
+
+
+medgray : FRender CYTMsg
+medgray renderArgs name args body meta =
+    el [ Font.color (E.rgb 0.4 0.4 0.4), E.paddingXY 4 2 ] (renderElement renderArgs body)
+
+
 
 -- MATH
 
@@ -988,6 +1000,10 @@ linkColor =
 
 blackColor =
     E.rgb 0 0 0
+
+
+medGray =
+    E.rgb 0.4 0.4 0.4
 
 
 redColor =
