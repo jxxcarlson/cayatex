@@ -3,9 +3,10 @@ module Render.LaTeX exposing (render, renderAsDocument, renderImage)
 import CYUtility
 import Dict exposing (Dict)
 import List.Extra
+import Maybe.Extra
 import Parser.Data
 import Parser.Document
-import Parser.Element exposing (Element(..))
+import Parser.Element as Element exposing (Element(..))
 import Render.Types as Types
 
 
@@ -18,7 +19,57 @@ render : String -> String
 render sourceText =
     Parser.Document.runLoop 0 (String.lines sourceText)
         |> Parser.Document.toParsed
+        |> transform
         |> renderList (initState 0)
+
+
+transform : List (List Element) -> List (List Element)
+transform parsand =
+    List.map (List.map transformElement) parsand
+
+
+transformElement : Element -> Element
+transformElement element =
+    case element of
+        Element "sum" args body _ ->
+            let
+                stringArgs =
+                    stringListFromElement body
+
+                sum =
+                    listFloatOfListString stringArgs |> List.sum |> CYUtility.roundTo 2
+            in
+            Text ("sum " ++ String.join ", " stringArgs ++ " = " ++ String.fromFloat sum) Nothing
+
+        _ ->
+            element
+
+
+argListsFromBody : Element -> { stringArgs : List String, floatArgs : List Float }
+argListsFromBody element =
+    let
+        stringArgs =
+            stringListFromElement element
+
+        floatArgs =
+            listFloatOfListString stringArgs
+    in
+    { stringArgs = stringArgs, floatArgs = floatArgs }
+
+
+stringListFromElement : Element -> List String
+stringListFromElement element =
+    element
+        |> Element.getText
+        |> Maybe.map CYUtility.commaSeparatedToList
+        |> Maybe.withDefault []
+
+
+listFloatOfListString : List String -> List Float
+listFloatOfListString strings =
+    strings
+        |> List.map String.toFloat
+        |> Maybe.Extra.values
 
 
 type alias LaTeXDict =

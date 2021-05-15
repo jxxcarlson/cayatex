@@ -1,4 +1,10 @@
-module CYUtility exposing (entities, keyValueDict, liftToMaybe, roundTo)
+module CYUtility exposing
+    ( commaSeparatedToList
+    , entities
+    , keyValueDict
+    , liftToMaybe
+    , roundTo
+    )
 
 import Dict exposing (Dict)
 import Maybe.Extra
@@ -11,6 +17,11 @@ roundTo k x =
             10.0 ^ toFloat k
     in
     toFloat (round (factor * x)) / factor
+
+
+commaSeparatedToList : String -> List String
+commaSeparatedToList str =
+    str |> String.split "," |> List.map String.trim
 
 
 entities : List String -> List String
