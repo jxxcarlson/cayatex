@@ -1,4 +1,4 @@
-module Render.Elm exposing (paragraphs, renderElement, renderList, renderString)
+module Render.Elm exposing (getRows_, paragraphs, renderElement, renderList, renderString)
 
 import CYUtility
 import Dict exposing (Dict)
@@ -329,6 +329,7 @@ spreadsheet renderArgs name args_ body meta =
         spreadsheet1 =
             getRows_ body |> List.Extra.transpose
 
+        spreadsheet2 : List (List String)
         spreadsheet2 =
             Spreadsheet.evalText spreadsheet1
                 |> List.Extra.transpose

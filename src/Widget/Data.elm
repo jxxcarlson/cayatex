@@ -2,8 +2,10 @@ module Widget.Data exposing
     ( average
     , bargraph
     , linegraph
+    , meanOfList
     , scatterplot
     , stdev
+    , stdevOfList
     , sum
     )
 
@@ -43,19 +45,22 @@ average renderArgs name args body sm =
         numbers =
             List.map String.toFloat numbers_ |> Maybe.Extra.values
 
-        n =
-            toFloat (List.length numbers)
-
-        sum_ =
-            List.sum numbers
-
         average_ =
-            sum_ / n
+            meanOfList numbers
 
         precision =
             Render.Utility.getPrecisionWithDefault 2 args
     in
     row [ spacing 8 ] (text "average" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (CYUtility.roundTo precision average_)) ])
+
+
+meanOfList : List Float -> Float
+meanOfList xs =
+    let
+        n =
+            toFloat (List.length xs)
+    in
+    List.sum xs / n
 
 
 stdev : FRender CYTMsg
@@ -90,6 +95,24 @@ stdev renderArgs name args body sm =
             Render.Utility.getPrecisionWithDefault 2 args
     in
     row [ spacing 8 ] (text "stdev" :: List.map text numbers_ ++ [ text "=" ] ++ [ text (String.fromFloat (CYUtility.roundTo precision stdev_)) ])
+
+
+stdevOfList : List Float -> Float
+stdevOfList xs =
+    let
+        n =
+            toFloat (List.length xs)
+
+        mean =
+            meanOfList xs
+
+        deltas =
+            List.map (\x -> x - mean) xs
+
+        sumOfDeltasSquared =
+            List.map2 (*) deltas deltas |> List.sum
+    in
+    sqrt sumOfDeltasSquared / (n - 1)
 
 
 

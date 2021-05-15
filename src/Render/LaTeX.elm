@@ -7,7 +7,10 @@ import Maybe.Extra
 import Parser.Data
 import Parser.Document
 import Parser.Element as Element exposing (Element(..))
+import Render.Elm
 import Render.Types as Types
+import Spreadsheet
+import Widget.Data
 
 
 renderAsDocument : String -> String
@@ -17,14 +20,19 @@ renderAsDocument sourceText =
 
 render : String -> String
 render sourceText =
-    Parser.Document.runLoop 0 (String.lines sourceText)
+    Parser.Document.runLoop 0 (String.lines (transformText sourceText))
         |> Parser.Document.toParsed
-        |> transform
+        |> transformAST
         |> renderList (initState 0)
 
 
-transform : List (List Element) -> List (List Element)
-transform parsand =
+transformText : String -> String
+transformText str =
+    String.replace "_" "\\_" str
+
+
+transformAST : List (List Element) -> List (List Element)
+transformAST parsand =
     List.map (List.map transformElement) parsand
 
 
@@ -32,17 +40,70 @@ transformElement : Element -> Element
 transformElement element =
     case element of
         Element "sum" args body _ ->
-            let
-                stringArgs =
-                    stringListFromElement body
+            evalListFunction "sum" List.sum body
 
-                sum =
-                    listFloatOfListString stringArgs |> List.sum |> CYUtility.roundTo 2
-            in
-            Text ("sum " ++ String.join ", " stringArgs ++ " = " ++ String.fromFloat sum) Nothing
+        Element "average" args body _ ->
+            evalListFunction "average" Widget.Data.meanOfList body
+
+        Element "stdev" args body _ ->
+            evalListFunction "stdev" Widget.Data.stdevOfList body
+
+        Element "spreadsheet" args body _ ->
+            Text (spreadsheet body) Nothing
 
         _ ->
             element
+
+
+spreadsheet : Element -> String
+spreadsheet body =
+    let
+        spreadsheet1 =
+            Render.Elm.getRows_ body |> List.Extra.transpose
+
+        spreadsheet2 : List (List String)
+        spreadsheet2 =
+            Spreadsheet.evalText spreadsheet1
+                |> List.Extra.transpose
+    in
+    tableOfListList spreadsheet2
+
+
+tableOfListList : List (List String) -> String
+tableOfListList data =
+    let
+        n =
+            List.head data |> Maybe.map List.length |> Maybe.withDefault 0
+
+        format =
+            List.repeat n "r" |> String.join " " |> (\x -> "{ " ++ x ++ " }")
+
+        table_ =
+            List.map transformRow data |> String.join "\\\\\n"
+    in
+    "\\begin{indent}\n\\begin{tabular}" ++ format ++ "\n" ++ table_ ++ "\n" ++ "\\end{tabular}\n\\end{indent}"
+
+
+transformRow : List String -> String
+transformRow items =
+    String.join " & " items
+
+
+smudge : List (List String) -> String
+smudge data =
+    data |> List.map (String.join "\n") |> String.join " "
+
+
+evalListFunction : String -> (List Float -> Float) -> Element -> Element
+evalListFunction name f element =
+    let
+        argLists =
+            argListsFromBody element
+
+        val =
+            argLists.floatArgs |> f |> CYUtility.roundTo 2
+    in
+    Text (name ++ " " ++ String.join ", " argLists.stringArgs ++ " = " ++ String.fromFloat val) Nothing
 
 
 argListsFromBody : Element -> { stringArgs : List String, floatArgs : List Float }
