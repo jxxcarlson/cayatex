@@ -28,7 +28,11 @@ render sourceText =
 
 transformText : String -> String
 transformText str =
-    String.replace "_" "\\_" str
+    str
+
+
+
+--  String.replace "_" "\\_" str
 
 
 transformAST : List (List Element) -> List (List Element)
