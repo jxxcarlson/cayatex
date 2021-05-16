@@ -361,13 +361,30 @@ get renderArgs name args_ body meta_ =
 
 tableofcontents : FRender CYTMsg
 tableofcontents renderArgs name args_ body meta =
-    E.column [ spacing 6, Render.Utility.htmlAttribute "id" "tableofcontents__" ]
-        (el [ Font.bold, Font.size 14 ] (text "Table of contents") :: List.map renderTocItem (List.reverse renderArgs.parserData.tableOfContents))
+    let
+        argDict =
+            CYUtility.keyValueDict args_
+
+        renderTocItem =
+            case Dict.get "numbered" argDict of
+                Just "no" ->
+                    renderUnNumberedTocItem
+
+                _ ->
+                    renderNumberedTocItem
+    in
+    E.column [ spacing 8, Render.Utility.htmlAttribute "id" "tableofcontents__" ]
+        (el [ Font.bold, Font.size 18 ] (text "Table of contents") :: List.map renderTocItem (List.reverse renderArgs.parserData.tableOfContents))
 
 
-renderTocItem : Data.TocEntry -> E.Element CYTMsg
-renderTocItem tocItem =
+renderNumberedTocItem : Data.TocEntry -> E.Element CYTMsg
+renderNumberedTocItem tocItem =
     E.link [ Font.color linkColor, tocPadding tocItem.level ] { label = text (tocItem.label ++ " " ++ tocItem.name), url = "#" ++ Render.Utility.slug tocItem.name }
+
+
+renderUnNumberedTocItem : Data.TocEntry -> E.Element CYTMsg
+renderUnNumberedTocItem tocItem =
+    E.link [ Font.color linkColor, tocPadding tocItem.level ] { label = text tocItem.name, url = "#" ++ Render.Utility.slug tocItem.name }
 
 
 tocPadding k =
@@ -597,30 +614,52 @@ getLabel mmeta =
 
 docTitle : FRender CYTMsg
 docTitle renderArgs name args body meta =
-    column [ Font.size titleFontSize, paddingAbove (round <| 0.8 * sectionFontSize) ] [ text <| getLabel meta ++ " " ++ (getText body |> Maybe.withDefault "no section name found") ]
+    column
+        [ Font.size titleFontSize
+        , paddingAbove (round <| titleFontSize)
+        ]
+        [ text <| getLabel meta ++ " " ++ (getText body |> Maybe.withDefault "no section name found") ]
 
 
 section_ renderArgs name args body meta =
     let
         level =
-            String.toFloat (String.replace "section" "" name) |> Maybe.withDefault 1.0
+            String.toFloat (String.replace "section" "" name) |> Maybe.withDefault 1.0 |> Debug.log "LEVEL"
+
+        _ =
+            Debug.log "SECTION FONT SIZE" sectionFontSize
 
         scaleFactor =
             max (sqrt (1.0 / level)) 0.5
+                |> Debug.log "FACTOR"
 
         sectionName =
             getText body |> Maybe.withDefault "no section name found"
 
         tag =
             Render.Utility.slug sectionName
+
+        argDict =
+            CYUtility.keyValueDict args
+
+        labelText =
+            case Dict.get "numbered" argDict of
+                Nothing ->
+                    getLabel meta ++ " " ++ sectionName
+
+                Just "no" ->
+                    sectionName
+
+                _ ->
+                    getLabel meta ++ " " ++ sectionName
     in
     column
         [ Font.size (round (scaleFactor * toFloat sectionFontSize))
-        , paddingAbove (round <| 0.8 * scaleFactor * sectionFontSize)
+        , paddingAbove (round <| scaleFactor * toFloat sectionFontSize)
         , Render.Utility.htmlAttribute "id" tag
         ]
         -- [ text <| getLabel meta ++ " " ++ sectionName ]
-        [ E.link [] { label = el [] (text <| getLabel meta ++ " " ++ sectionName), url = "#tableofcontents__" } ]
+        [ E.link [ Font.size (round (scaleFactor * toFloat sectionFontSize)) ] { label = el [] (text <| labelText), url = "#tableofcontents__" } ]
 
 
 center : FRender CYTMsg
@@ -637,20 +676,16 @@ paddingAbove k =
     E.paddingEach { top = k, bottom = 0, left = 0, right = 0 }
 
 
+
+-- DIMENSIONS
+
+
 titleFontSize =
-    30
+    36
 
 
 sectionFontSize =
-    24
-
-
-section2FontSize =
-    18
-
-
-section3FontSize =
-    16
+    30
 
 
 link : FRender CYTMsg
