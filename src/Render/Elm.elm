@@ -626,12 +626,8 @@ section_ renderArgs name args body meta =
         level =
             String.toFloat (String.replace "section" "" name) |> Maybe.withDefault 1.0 |> Debug.log "LEVEL"
 
-        _ =
-            Debug.log "SECTION FONT SIZE" sectionFontSize
-
         scaleFactor =
             max (sqrt (1.0 / level)) 0.5
-                |> Debug.log "FACTOR"
 
         sectionName =
             getText body |> Maybe.withDefault "no section name found"
