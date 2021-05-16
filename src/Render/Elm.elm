@@ -624,7 +624,7 @@ docTitle renderArgs name args body meta =
 section_ renderArgs name args body meta =
     let
         level =
-            String.toFloat (String.replace "section" "" name) |> Maybe.withDefault 1.0 |> Debug.log "LEVEL"
+            String.toFloat (String.replace "section" "" name) |> Maybe.withDefault 1.0
 
         scaleFactor =
             max (sqrt (1.0 / level)) 0.5
