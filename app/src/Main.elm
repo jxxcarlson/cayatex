@@ -11,6 +11,7 @@ import Html exposing (Html)
 import Html.Keyed
 import Html.Parser
 import Html.Parser.Util
+import Html.Styled
 import Paragraph
 import Parser.Data
 import Parser.Document
@@ -119,6 +120,9 @@ update msg model =
         CYTMsg _ ->
             ( model, Cmd.none )
 
+        Editor _ ->
+            ( model, Cmd.none )
+
 
 
 --
@@ -183,7 +187,7 @@ mainColumn model =
             , column [ spacing 12 ]
                 [ row [ spacing 12 ]
                     [ -- inputElement model
-                      TsEditor.view model.input |> Html.map Editor
+                      TsEditor.view model.input |> Html.Styled.map Editor |> Html.Styled.toUnstyled |> Element.html
                     , outputDisplay model
                     ]
 
