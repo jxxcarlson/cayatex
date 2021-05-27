@@ -10,8 +10,12 @@ import Test exposing (describe, fuzz, test)
 
 pl : String -> List Element
 pl str =
-    Driver.parseLoop 0 0 str |> .parsed
+    Driver.parseLoop 0 0 empty str |> .parsed
 
+
+-- parseLoop : Int -> Int -> Data -> String -> TextCursor Element
+-- parseLoop generation initialLineNumber data str =
+--     Loop.parseLoop packet generation initialLineNumber data str
 
 empty =
     Data.init Data.defaultConfig
