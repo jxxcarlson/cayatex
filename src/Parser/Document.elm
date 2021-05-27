@@ -37,11 +37,11 @@ NOTES:
 
 -}
 
-import Parser.Classify
 import Parser.Data
 import Parser.Driver
 import Parser.Element exposing (Element(..))
 import Parser.Getters
+import Parser.Line
 import Parser.TextCursor as TextCursor exposing (TextCursor)
 import Parser.Types exposing (LineType(..))
 
@@ -347,7 +347,7 @@ nextState state_ =
                 state =
                     { state_ | input = List.drop 1 state_.input }
             in
-            case ( state.blockStatus, Parser.Classify.classify currentLine ) of
+            case ( state.blockStatus, Parser.Line.classify currentLine ) of
                 -- COMMENT
                 ( _, LTComment ) ->
                     Loop { state | input = List.drop 1 state.input }

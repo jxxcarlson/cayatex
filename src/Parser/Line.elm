@@ -1,4 +1,4 @@
-module Parser.Classify exposing (classify)
+module Parser.Line exposing (classify)
 
 import Parser as P exposing ((|.), (|=))
 import Parser.Types exposing (LineType(..))
