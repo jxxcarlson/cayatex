@@ -1,4 +1,4 @@
-module Parser.Driver exposing (..)
+module Parser.Driver exposing (parseLoop)
 
 import List.Extra
 import Parser.Advanced as PA
@@ -10,6 +10,17 @@ import Parser.Loop as Loop
 import Parser.Metadata as Metadata exposing (Metadata)
 import Parser.RecoveryData as RecoveryData exposing (RecoveryData)
 import Parser.TextCursor as TextCursor exposing (TextCursor)
+
+
+{-|  The value of Loop.Packet that we need here  -}
+packet : Loop.Packet Element
+packet =
+    { parser = Element.parser
+    , getSource = Getters.getSource
+    , incrementOffset = incrementOffset
+    , highlighter = Nothing
+    , handleError = Just handleError
+    }
 
 
 parseLoop : Int -> Int -> Data -> String -> TextCursor Element
