@@ -1,4 +1,4 @@
-module Parser.Sections exposing (..)
+module Parser.Sections exposing (splitIntoSections)
 
 import Parser.Advanced as Parser
 

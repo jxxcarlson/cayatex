@@ -1,4 +1,4 @@
-module Parser.Loop exposing (..)
+module Parser.Loop exposing (parseLoop, Packet)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Data as Data exposing (Data)
