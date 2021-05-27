@@ -1,11 +1,9 @@
 module PipelineTests exposing (suite)
 
 import Expect
-import Parser.Advanced exposing (run)
-import Parser.Document as Document exposing (BlockStatus(..), State, Step(..), applyNextState, getParseResult, nextState)
+import Parser.Document
 import Parser.Element exposing (..)
 import Parser.Sections
-import Parser.Tool as T
 import Test exposing (describe, fuzz, test)
 
 
@@ -39,5 +37,10 @@ suite =
                         Parser.Sections.splitIntoSections testDoc
                             |> .sections
                             |> Expect.equal [ [ "# Intro", "four", "five", "", "six", "seven", "" ], [ "## Body", "eight", "nine", "" ] ]
+                , test "Parser.Document.process (the top level function)" <|
+                    \_ ->
+                        Parser.Document.process 0 (String.lines "test\nthis stuff")
+                            |> Parser.Document.toParsed
+                            |> Expect.equal [ [ Text "test\nthis stuff" (Just { blockOffset = 0, generation = 0, label = "", length = 15, offset = 0 }) ] ]
                 ]
         ]

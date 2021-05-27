@@ -1,7 +1,7 @@
 module Parser.Document exposing
     ( process, toParsed, toText
-    , State, Block, LineType(..)
-    , BlockStatus(..), Step(..), applyNextState, bl, cl, classify, differentialBlockLevel, getParseResult, init, nextState, rl, rl_, runLoop, toc
+    , State, Block
+    , BlockStatus(..), Step(..), applyNextState, bl, cl, differentialBlockLevel, getParseResult, init, nextState, rl, rl_, runLoop, toc
     )
 
 {-| The main function in this module is process, which takes as input
@@ -37,12 +37,13 @@ NOTES:
 
 -}
 
-import Parser as P exposing ((|.), (|=))
+import Parser.Classify
 import Parser.Data
 import Parser.Driver
 import Parser.Element exposing (Element(..))
 import Parser.Getters
 import Parser.TextCursor as TextCursor exposing (TextCursor)
+import Parser.Types exposing (LineType(..))
 
 
 {-| -}
@@ -71,15 +72,6 @@ type BlockStatus
     | InElementBlock
 
 
-{-| -}
-type LineType
-    = LTBlank
-    | LTTextBlock
-    | LTBeginElement
-    | LTEndElement
-    | LTComment
-
-
 {-| Compute the syntax tree and LaTeXState of a string of source text.
 -}
 process : Int -> List String -> State
@@ -92,7 +84,7 @@ The output field of State holds the AST of the source text.
 
 Function 'process' operates a loop for a state machine which
 identifies logical chunks of text, parses these using
-Parser.Driverx.parseLoop, and prepends them to a list of TextCursor.
+Parser.Driver.parseLoop, and prepends them to a list of TextCursor.
 The parsed text is held the field 'parsed' of TextCursor.
 
 Each time a loop is completed, the value of Parser.SourceText.SourceText
@@ -355,7 +347,7 @@ nextState state_ =
                 state =
                     { state_ | input = List.drop 1 state_.input }
             in
-            case ( state.blockStatus, classify currentLine ) of
+            case ( state.blockStatus, Parser.Classify.classify currentLine ) of
                 -- COMMENT
                 ( _, LTComment ) ->
                     Loop { state | input = List.drop 1 state.input }
@@ -658,49 +650,3 @@ loop s nextState_ =
 type Step state a
     = Loop state
     | Done a
-
-
-
--- CLASSIFY LINE
-
-
-classify : String -> LineType
-classify str =
-    case P.run lineTypeParser str of
-        Ok lt ->
-            lt
-
-        Err _ ->
-            LTBlank
-
-
-lineTypeParser =
-    P.oneOf [ commentParser, beginElementParser, endElementParser, textBlockParser, P.succeed LTBlank ]
-
-
-beginElementParser : P.Parser LineType
-beginElementParser =
-    P.succeed (\s -> LTBeginElement)
-        |= P.symbol "["
-
-
-commentParser : P.Parser LineType
-commentParser =
-    P.succeed (\s -> LTComment)
-        |= P.symbol "%"
-
-
-
---|= P.getChompedString (P.chompUntil "[")
-
-
-endElementParser : P.Parser LineType
-endElementParser =
-    P.succeed (\s -> LTEndElement)
-        |= P.symbol "]"
-
-
-textBlockParser : P.Parser LineType
-textBlockParser =
-    P.succeed LTTextBlock
-        |. P.chompIf (\_ -> True)
