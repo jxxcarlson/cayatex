@@ -2,27 +2,71 @@ module Parser.Sections exposing (..)
 
 import Parser.Advanced as Parser
 
-
-type Label = UnNamed | Named String
+type alias Document =
+    { prelude : Lines
+    , sections : List Section
+    }
 
 type alias Lines = List String 
 
-type alias Section =
-    {  label : Label
-    , contents : Lines
-    }
+type alias Section = List String
+
+
+testStr = """
+one
+two
+three
+
+# Intro
+four
+five
+
+six
+seven
+
+## Body
+eight
+nine
+"""
+
+type LineType = Marked | UnMarked
+
+type ProcessStatus = InPrelude | InSection 
 
 splitIntoSections : String -> { prelude: Lines, sections : List Section}
 splitIntoSections str = 
-   let
+   loop (initialSplliterState str) nextSplitterState
 
-     lines = String.lines str
+type alias State = { prelude : Lines, sections: List Section , accum: Lines, lines : Lines, status : ProcessStatus }
 
-     (prelude, rest) =  getSectionContent Nothing lines
+initialSplliterState : String -> State 
+initialSplliterState str = 
+  { prelude  = [], sections  = [] , accum = [], lines = String.lines str, status =  InPrelude }   
+  
+nextSplitterState : State -> Step State Document 
+nextSplitterState state = 
+  case List.head state.lines of 
+    Nothing ->  Done {prelude = List.reverse state.prelude, sections =  List.reverse <| (List.reverse state.accum)::state.sections}
+    Just currentLine -> 
+      case (lineType currentLine , state.status) of
+        (UnMarked, InPrelude) -> 
+          -- continue prelude
+          Loop { state | lines = List.drop 1 state.lines, accum = currentLine :: state.accum}
+        (Marked, InPrelude) -> 
+          -- start section
+          Loop { state | lines = List.drop 1 state.lines, accum = [currentLine], prelude = state.accum, status = InSection }     
+        (UnMarked, InSection) -> 
+          -- contunue section                                                                                                                    
+          Loop { state | lines = List.drop 1 state.lines, accum = currentLine :: state.accum }     
+        (Marked, InSection) -> 
+          -- start section
+          Loop { state | lines = List.drop 1 state.lines, accum = [currentLine], sections = (List.reverse state.accum) :: state.sections }  
         
-   in
-  { prelude = [], sections = []}
 
+
+lineType : String -> LineType
+lineType str =
+  if String.left 1 str == "#" then  Marked else UnMarked
 
 type Step state a
     = Loop state
