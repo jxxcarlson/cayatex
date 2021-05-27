@@ -12,16 +12,6 @@ import Parser.RecoveryData as RecoveryData exposing (RecoveryData)
 import Parser.TextCursor as TextCursor exposing (TextCursor)
 
 
-packet : Loop.Packet Element
-packet =
-    { parser = Element.parser
-    , getSource = Getters.getSource
-    , incrementOffset = incrementOffset
-    , highlighter = Nothing
-    , handleError = Just handleError
-    }
-
-
 parseLoop : Int -> Int -> Data -> String -> TextCursor Element
 parseLoop generation initialLineNumber data str =
     Loop.parseLoop packet generation initialLineNumber data str
