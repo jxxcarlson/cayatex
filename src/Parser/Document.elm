@@ -16,7 +16,7 @@ toStringList lines =
 
 
 type alias ProcessedDocument =
-    { processedPrelude : State, processedSections : List State, data : Parser.Data.Data }
+    { processedPrelude : State, processedSections : List State }
 
 
 type alias RenderedState =
@@ -57,21 +57,22 @@ processDocument generation { prelude, sections } =
 
         processedSections =
             processedSections_
+                |> List.map (\state -> { state | data = data })
                 |> List.reverse
                 |> List.drop 1
     in
-    { processedPrelude = processedPrelude, processedSections = List.reverse processedSections, data = data }
+    { processedPrelude = { processedPrelude | data = data }, processedSections = List.reverse processedSections }
 
 
 renderString : Int -> String -> List (List (E.Element Parser.Element.CYTMsg))
 renderString generation str =
     let
-        { processedPrelude, processedSections, data } =
+        { processedPrelude, processedSections } =
             processString generation str
 
         renderedPrelude : RenderedState
         renderedPrelude =
-            renderState generation { processedPrelude | data = data }
+            renderState generation processedPrelude
 
         folder section acc =
             renderState generation section :: acc
