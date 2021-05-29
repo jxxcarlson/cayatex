@@ -101,6 +101,7 @@ renderString2 k str =
                 _ ->
                     "Err: title not found"
 
+        newState : Types.RenderArgs
         newState =
             initStateWithData k state.data
 

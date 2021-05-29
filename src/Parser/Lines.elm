@@ -1,6 +1,6 @@
 module Parser.Lines exposing
     ( process, toParsed, toText
-    , Step(..), applyNextState, bl, cl, differentialBlockLevel, getParseResult, init, nextState, rl, rl_, runLoop, toc
+    , Step(..), applyNextState, bl, cl, differentialBlockLevel, getParseResult, init, nextState, processWithData, rl, rl_, runLoop, toc
     )
 
 {-| The main function in this module is process, which takes as input
@@ -52,6 +52,11 @@ process generation =
     runLoop generation
 
 
+processWithData : Int -> Parser.Data.Data -> List String -> State
+processWithData generation data =
+    runLoopWithData generation data
+
+
 {-| Compute the final State of a string of source text.
 The output field of State holds the AST of the source text.
 
@@ -69,6 +74,11 @@ etc.
 runLoop : Int -> List String -> State
 runLoop generation strList =
     loop (init generation strList) nextState
+
+
+runLoopWithData : Int -> Parser.Data.Data -> List String -> State
+runLoopWithData generation data strList =
+    loop (initWithData generation data strList) nextState
 
 
 rl : String -> List (List Element)
@@ -178,6 +188,20 @@ init generation strList =
     , lastTextCursor = Nothing
     , output = []
     , data = Parser.Data.init Parser.Data.defaultConfig
+    }
+
+
+initWithData : Int -> Parser.Data.Data -> List String -> State
+initWithData generation data strList =
+    { input = strList
+    , lineNumber = 0
+    , generation = generation
+    , blockStatus = Start
+    , blockContents = []
+    , blockLevel = 0
+    , lastTextCursor = Nothing
+    , output = []
+    , data = data
     }
 
 

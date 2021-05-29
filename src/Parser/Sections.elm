@@ -67,7 +67,7 @@ nextSplitterState state =
 
                 ( Marked, InPrelude ) ->
                     -- start section
-                    Loop { state | lines = List.drop 1 state.lines, accum = [ currentLine ], prelude = state.accum, status = InSection }
+                    Loop { state | lines = List.drop 1 state.lines, accum = [ makeIntoHeading currentLine ], prelude = state.accum, status = InSection }
 
                 ( UnMarked, InSection ) ->
                     -- continue section
@@ -75,7 +75,12 @@ nextSplitterState state =
 
                 ( Marked, InSection ) ->
                     -- start section
-                    Loop { state | lines = List.drop 1 state.lines, accum = [ currentLine ], sections = List.reverse state.accum :: state.sections }
+                    Loop { state | lines = List.drop 1 state.lines, accum = [ makeIntoHeading currentLine ], sections = List.reverse state.accum :: state.sections }
+
+
+makeIntoHeading : Line -> Line
+makeIntoHeading line =
+    { content = "[section1 " ++ String.dropLeft 1 line.content ++ "]", index = line.index }
 
 
 lineType : Line -> LineType

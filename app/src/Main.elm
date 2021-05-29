@@ -12,12 +12,15 @@ import Html.Keyed
 import Html.Parser
 import Html.Parser.Util
 import Paragraph
-import Parser.Data
+import Parser.Data exposing (Data)
+import Parser.Document as Document
 import Parser.Element as Parser
 import Parser.Getters
 import Parser.Lines
+import Parser.Types as Types
 import Render.Elm
 import Render.String
+import Render.Types
 
 
 main =
@@ -298,19 +301,29 @@ initStateWithData k data =
     }
 
 
-render : Int -> String -> Element Msg
-render k str =
+render1 : Int -> String -> Element Msg
+render1 k str =
     -- CaYaTeX.render "id__" { content = str, generation = k } |> Element.map CYTMsg
     let
+        state : Types.State
         state =
             Parser.Lines.runLoop k (String.lines str)
 
-        newState =
-            initStateWithData k state.data
+        getRenderArgs : Int -> Data -> Render.Types.RenderArgs
+        getRenderArgs k_ data =
+            initStateWithData k_ state.data
     in
     state
         |> Parser.Lines.toParsed
-        |> List.map (Render.Elm.renderList newState)
+        |> List.map (Render.Elm.renderList (getRenderArgs k state.data))
+        |> column [ spacing 18 ]
+        |> Element.map CYTMsg
+
+
+render : Int -> String -> Element Msg
+render k str =
+    Document.renderString k str
+        |> List.concat
         |> column [ spacing 18 ]
         |> Element.map CYTMsg
 
