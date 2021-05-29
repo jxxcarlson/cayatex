@@ -61,11 +61,11 @@ manual =
 
 [tableofcontents]
 
-[section1 Standard Elements]
+# Standard Elements
 
 
 
-[section2 Text]
+## Text
 
 [def | bold; b |
 Render text as bold, e.g, [c raw#[bold Bold!]#] renders as [ds [bold Bold!]] Short form: [c raw#[b Bold!]#] .
@@ -93,7 +93,7 @@ Make a hyperlink.  For example, the text, e.g, [c raw#[link http://nytimes.com]#
 Highlight the text with a given color, e.g, [c raw# [highlightRGB | 255, 200, 200 | This is important!]#] renders as [ds [highlightRGB | 255, 200, 200 | This is important!]].
 ]
 
-[section2 Code]
+## Code
 
 [def | code; c|
 Render text in-line as code, e.g, [c raw#[code a <- b]#] renders as
@@ -109,7 +109,7 @@ Short form: [c raw#[c a <- b]#] .
 ]
 
 
-[section2 Mathematics]
+## Mathematics
 
 [def | math; m |
 Render math in-line, e.g, [c raw#[math a^2 + b^2 = c^2]#] renders as
@@ -125,7 +125,7 @@ Short form: [c raw#[mb \\int_0^1 x^n dx = \\frac{1}{n+1}]#] .
 ]
 
 
-[section2 Structure]
+## Structure
 
 [def | title | Construct a document title, e.g. as [c raw#[title Tales of Yore]#] ].
 
@@ -146,7 +146,7 @@ section4
 section5
 section6
 
-[section2 Format]
+##  Format
 
 [def | center | Center the body of the element [c raw#[center BODY]#]].
 
@@ -184,9 +184,9 @@ write
 ]
 ##]
 
-[section2 Images]
+## Images
 
-[section3 jpg, png, etc]
+### jpg, png, etc
 
 Insert an image using the format [c raw#[image URL]#], where
  [c URL] is a link to the image.  The image below was inserted using the source text
@@ -214,7 +214,7 @@ Below is a variant of the Egret image with placement on the left.  We will have 
 
 [b Note.] To copy the link of an image on the web, do control-click or right-click on the image and select "Copy image link" from the popup menu.
 
-[section3 SVG]
+### SVG
 
 Insert SVG images like the one you see below using the format below
 
@@ -304,7 +304,7 @@ Here [c raw#<svg ... </svg>#] is the raw SVG source text.
 ]
 
 
-[section2 Data]
+## Data
 
 [def | sum |
   Compute sum of a list of numbers, e.g., [c raw#[sum 1, 2, 3]#] renders as [ds [sum 1, 2, 3]].]
@@ -315,7 +315,7 @@ Here [c raw#<svg ... </svg>#] is the raw SVG source text.
 [def | stdev |
   Compute standard deviation of a list of numbers, e.g., [c raw#[stdev 1, 2, 3]#] renders as [ds [stdev 1, 2, 3]].]
 
-[section2 Macros]
+## Macros
 
 We have implemented a primitive version of macro expansion. To show how it works, begin by writing the macro definition
 
@@ -336,7 +336,7 @@ When you add the macro definition, you will not see anything rendered. Now add t
 
 [indent [blue light blue bird's eggs]]
 
-[section3 Composability]
+### Composability
 
 
 One can use macro instances pretty much as one uses elements.  Elements can be applied to macro instances, as with
@@ -368,7 +368,7 @@ to obtain
 [macro [red [fontRGB |200, 0, 0| ]]]
 
 
-[section2 What's left]
+## What's left
 
 data
 linegraph
@@ -425,7 +425,7 @@ All is subject to radical revision, as the project is still in a high-flux exper
 
 [tableofcontents]
 
-[section  Syntax]
+# Syntax
 
 The syntax of CaYaTeX is as in the example below:
 
@@ -486,7 +486,7 @@ As to the structure of a general syntactic element, we have the following three 
 
 ]
 
-[section Parse Tree]
+# Parse Tree
 
 
 Cayatex is built around the type of the parse tree.  This type captures the syntax of the source text as described above.
@@ -504,7 +504,7 @@ The [c Metadata] component is carries data used in rendering the element or in i
 
 Note the distinction between syntactic element and Element.  The first is a decription of text formed by certain rules.  The second, while it reflects the first, is a type.
 
-[section Parser]
+# Parser
 
 Parsing, which is intended gracefully handle errors in the source text, such as unmatched brackets, is described below.  It is a three-stage process that produces a valid syntax tree despite the presence of error:  errors are both corrected and annotated.  Thus, when rendered, the text is readable and errors called out in-line in color so that the author can more easily understand and correct them.
 
@@ -536,7 +536,7 @@ Division of the text into blocks can fail, as it does with the last example of u
 ]
 
 
-[section2 Parser.Element]
+## Parser.Element
 
 Low-level parsing is handled by the function [code Parser.Element.parser]:
 
@@ -560,7 +560,7 @@ This metadata component is a record of the following type.
 
 The first three fields are used to locate the text parsed in the source text.  The last, [c label], is computed when the text is parsed.  For example, if the element is  [c raw#[section3 Foo]#], the label might be the string [c 5.2.1].  Labels are used to render the output of the parser.
 
-[section2 Parser.Driver]
+## Parser.Driver
 
 The next level up in parsing text is handled by [c parseLoop], whose type is given below. [i Grosso modo], it functions by applying [c Element.parser] to the input string, analyzing the result, doing some computations, and  dropping the substring just parsed from the input text, and adding the parsed result to a field of [c TextCursor].
 
@@ -601,14 +601,14 @@ type alias Data =
     }
 ]
 
-[section2 Error recovery]
+## Error recovery
 
 The [c parseLoop] function handles error recovery by modifiying the parse tree so as
 to (a) correct the error (b) highlight it in the rendered text.  A comment on the nature of the error
 is inserted in the TextCursor.  This comment is used by the supervising Parser.Lines runLoop
 function which backtracks as needed to properly reparse the remaining text.
 
-[section2 Parser.Lines]
+## Parser.Lines
 
 The highest level of the parser is handled by [c Parser.Lines.runLoop]:
 
@@ -709,6 +709,7 @@ Donec ultrices magna iaculis augue porta dignissim. Aenean dui felis, molestie u
 announcement =
     """
 
+
 [title Announcing CaYaTeX]
 
 By James Carlson and Nicholas Yang
@@ -725,12 +726,13 @@ here is written in Elm: [link |github.com/jxxcarlson/cayatex| https://github.com
 
 [i  [c Of special importance: make syntax errors (missing brackets, extra brackets, etc.)
 We are working to handle all errors gracefully and would like to know about the bugs, cases missed, etc.  Comments to jxxcarlson@gmail.com]]
+
 [tableofcontents]
 
 [i [fontRGB |60, 60, 60| Click on an item in the table of contents to go to the corresponding section.  Click on a section title
 to return to the table of contents.]]
 
-[section1 Design Goals]
+# Design Goals
 
 The goals of the CaYaTeX project are for the language to be
 
@@ -768,11 +770,11 @@ Our goal is to have a convenient  tool for writing technical documents that are 
 [b Note.] [fontRGB |50, 0, 200| The above are desiderata.  Among the missing items: compile to LaTeX and differential compilation, which is needed for snappy, real-time rendering of the source text while editing. Our first objectives
 are a decent proof-of-concept and error-handling that is both robust and graceful. All in due time!]
 
-[section1 Showcase]
+# Showcase
 
 Below are examples of what is currently possible with CaYaTeXs.
 
-[section2 Mathematics]
+## Mathematics
 
 
 Pythagoras says that [math a^2 + b^2 = c^2].
@@ -791,15 +793,13 @@ that attracts so many people to the subject:
 
 And of course, we can also do theorems:
 
-[theorem There are infinitely many primes [math p \\equiv 1 \\text{ mod } 4.]]
+[theorem There are infinitely many primes [math p \\equiv 1 \text{ mod } 4.]]
 
 [corollary |Euclid| There are infinitely many primes.]
 
 
 
-
-
-[section2 Macros]
+## Macros
 
 We have implemented a primitive version of macro expansion. To show how it works, begin by writing the macro definition
 
@@ -820,7 +820,7 @@ When you add the macro definition, you will not see anything rendered. Now add t
 
 [indent [blue light blue bird's eggs]]
 
-[section3 Composability]
+### Composability
 
 
 One can use macro instances pretty much as one uses elements.  Elements can be applied to macro instances, as with
@@ -854,7 +854,7 @@ to obtain
 
 
 
-[section2 Color]
+##  Color
 
 Example:  [highlightRGB |252, 178, 50| [fontRGB |23, 57, 156| [b What color is this?]]]
 
@@ -865,7 +865,7 @@ Note the nesting of elements, aka function composition. When we have our macro f
 this one, e.g., just say [code raw##[myhighlight| What color is this?]##]
 
 
-[section2 Variables]
+## Variables
 
 One can set variables to be used elsewhere in the text.  For example, if we
 say [c raw#[set [project = Gaia Unlimited, pi = 3.1416]#], we can later say
@@ -879,13 +879,13 @@ use [c set_ ...] instead.
 
 [set project = Gaia Unlimited, pi = 3.1416]
 
-[section2 Spreadsheets]
+## Spreadsheets
 
 The below demonstrates the use
 of a rudimentary spreadsheet element.  We plan a pop-up editor for
 these spreadsheets.
 
-[section3 Rendered spreadsheet]
+### Rendered spreadsheet
 
 [spreadsheet
 
@@ -901,7 +901,7 @@ these spreadsheets.
 
 
 
-[section3 Source text]
+### Source text
 
 [cb raw##
 [spreadsheet
@@ -921,7 +921,7 @@ The entry [c row * 1 2] in the upper right-hand  cell means "In this row, multip
 the cells in columns 1 and 2; use that value to replace me."  Similarly, the entry
 [c col sum 1 3] menas, "in the column where I am, compute sum of  the cell contents in rows 1 through 3; use that value to replace me.
 
-[section2 Data]
+## Data
 
 One can design elements which manipulate data (numerical computations, visualization).  Here are some data computations:
 
@@ -940,11 +940,11 @@ or
 [codeblock raw##[stdev |precision:3| 1.2, 2, 3.4, 4]## ]
 
 
-[section2 Graphs]
+## Graphs
 
 Below are three simple data visualizations. We plan more, and more configurability of what you see here.
 
-[section3 Bar graphs]
+### Bar graphs
 
 [bargraph |column:2, yShift: 0.2, caption: Global temperature anomaly 1880-1957|
 1880,-0.12
@@ -1035,7 +1035,7 @@ The bargraph code:
 1881,-0.07
 ...]## ]
 
-[section3 Line graphs]
+### Line graphs
 
 [linegraph |caption: Global temperature anomaly 1880-1957|
 1880,-0.12
@@ -1126,7 +1126,7 @@ temperature anomaly 1880-1957|
 1881,-0.0]
 ##]
 
-[section3 Scatter plots]
+### Scatter plots
 
 Use the same syntax as before, but with "scatterplot" in place of "linegraph."
 
@@ -1162,7 +1162,7 @@ N.G.C.6822,..,0.214,-130,9,-12.7,0.22,Slope,453.85999408475,km/sec/Mpc,,,,,,
 Table 1,,,,,-15.5,,,,,,,,,,
 ]
 
-[section2 Tables]
+## Tables
 
 [data |title:Atomic weights, header|
 
@@ -1191,7 +1191,7 @@ N,  Symbol,  Name, W
 ]
 
 
-[section2 Table of contents]
+## Table of contents
 
 A table contents is generated automatically if you place
 the element [c raw#[tableofcontents]#] in the source text.
@@ -1202,7 +1202,7 @@ as active links back to the table of contents.
 Sections up to six levels deep are available.
 
 
-[section2 Unicode]
+33 Unicode
 
 You can freely use unicode characters, as in this poetry element:
 
@@ -1215,7 +1215,7 @@ You can freely use unicode characters, as in this poetry element:
 — Анна Ахматова
 ]
 
-[section2 Shortcuts]
+## Shortcuts
 
 [verbatim
 
@@ -1232,7 +1232,7 @@ other common elements:
 
 ]
 
-[section2 Code]
+## Code]
 
 Time for some code: [code raw##col :: Int -> Matrix a -> [a]##].
 Do you recognize the language (ha ha)?
@@ -1250,6 +1250,7 @@ cols m =
     fmap (\\k -> col k m) [0..n]
        where n = length m - 1
 ##]
+##]
 
 
 [i [highlight Note the use of Rust-like raw strings in the source text to avoid escaping all the brackets.]]
@@ -1257,7 +1258,7 @@ cols m =
 
 
 
-[section2 Images]
+## Images
 
 [image |caption: Rotkehlchen aufgeplustert, width: 200, placement: center|https://i.pinimg.com/originals/d4/07/a4/d407a45bcf3ade18468ac7ba633244b9.jpg]
 
@@ -1299,9 +1300,9 @@ A numbered list has "numbered" as its first argument, as in the example below.
 
         [list |§, title:Greek symbols|
 
-            [item [math \\alpha = 0.123]]
+            [item [math \u{0007}lpha = 0.123]]
 
-            [item  [math \\beta = 4.567]]
+            [item  [math \u{0008}eta = 4.567]]
 
 ]]]
 
@@ -1347,8 +1348,6 @@ location of the corresponding piece of text in the source code as well as
 other metadata such as section numbering.
 
 For more technical details, see the [c Design Notes] tab.
-
-
 
 
 """

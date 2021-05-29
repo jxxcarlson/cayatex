@@ -1,6 +1,6 @@
-module Parser.Sections exposing (splitIntoSections, testStr)
+module Parser.Sections exposing (prefixLength, splitIntoSections, testStr)
 
-import Parser.Advanced as Parser
+import Parser exposing ((|.), (|=))
 import Parser.Types exposing (..)
 
 
@@ -80,7 +80,59 @@ nextSplitterState state =
 
 makeIntoHeading : Line -> Line
 makeIntoHeading line =
-    { content = "[section1 " ++ String.dropLeft 1 line.content ++ "]", index = line.index }
+    case prefixLength '#' line.content of
+        Nothing ->
+            line
+
+        Just 1 ->
+            { content = "[section1 " ++ String.dropLeft 1 line.content ++ "]", index = line.index }
+
+        Just 2 ->
+            { content = "[section2 " ++ String.dropLeft 2 line.content ++ "]", index = line.index }
+
+        Just 3 ->
+            { content = "[section3 " ++ String.dropLeft 3 line.content ++ "]", index = line.index }
+
+        Just 4 ->
+            { content = "[section4 " ++ String.dropLeft 4 line.content ++ "]", index = line.index }
+
+        Just 5 ->
+            { content = "[section4 " ++ String.dropLeft 5 line.content ++ "]", index = line.index }
+
+        _ ->
+            line
+
+
+{-|
+
+    > prefixLength '#' "## abc"
+    Just 2
+
+    > prefixLength '#' "#abc"
+    Nothing
+
+    > prefixLength '#' "abc"
+    Nothing
+
+-}
+prefixLength : Char -> String -> Maybe Int
+prefixLength char str =
+    case Parser.run (prefixLengthParser char) str of
+        Ok n ->
+            Just n
+
+        Err _ ->
+            Nothing
+
+
+prefixLengthParser : Char -> Parser.Parser Int
+prefixLengthParser char =
+    (Parser.getChompedString <|
+        Parser.succeed ()
+            |. Parser.chompWhile (\c -> c == char)
+            |. Parser.symbol " "
+    )
+        |> Parser.map (String.length >> (\x -> x - 1))
 
 
 lineType : Line -> LineType

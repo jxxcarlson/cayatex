@@ -16,7 +16,7 @@ toStringList lines =
 
 
 type alias ProcessedDocument =
-    { processedPrelude : State, processedSections : List State }
+    { processedPrelude : State, processedSections : List State, data : Parser.Data.Data }
 
 
 type alias RenderedState =
@@ -26,11 +26,6 @@ type alias RenderedState =
 processString : Int -> String -> ProcessedDocument
 processString generation str =
     processDocument generation (Sections.splitIntoSections str)
-
-
-process1 : Int -> Document -> ProcessedDocument
-process1 generation { prelude, sections } =
-    { processedPrelude = Lines.process generation (toStringList prelude), processedSections = List.map (Lines.process generation << toStringList) sections }
 
 
 processDocument : Int -> Document -> ProcessedDocument
@@ -52,33 +47,41 @@ processDocument generation { prelude, sections } =
         folder section acc =
             Lines.processWithData generation (dataOf acc) section :: acc
 
-        processedSections : List State
-        processedSections =
+        processedSections_ : List State
+        processedSections_ =
             List.foldl folder [ processedPrelude ] (List.map toStringList sections)
+
+        data : Parser.Data.Data
+        data =
+            List.head processedSections_ |> Maybe.map .data |> Maybe.withDefault (Parser.Data.init Parser.Data.defaultConfig)
+
+        processedSections =
+            processedSections_
                 |> List.reverse
                 |> List.drop 1
     in
-    { processedPrelude = processedPrelude, processedSections = List.reverse processedSections }
+    { processedPrelude = processedPrelude, processedSections = List.reverse processedSections, data = data }
 
 
 renderString : Int -> String -> List (List (E.Element Parser.Element.CYTMsg))
 renderString generation str =
     let
-        { processedPrelude, processedSections } =
+        { processedPrelude, processedSections, data } =
             processString generation str
 
         renderedPrelude : RenderedState
         renderedPrelude =
-            renderState generation processedPrelude
+            renderState generation { processedPrelude | data = data }
 
         folder section acc =
             renderState generation section :: acc
 
         renderedSections : List RenderedState
         renderedSections =
-            List.foldl (\section acc -> folder section acc) [ renderedPrelude ] processedSections
+            List.foldl (\section acc -> folder section acc) [] processedSections
     in
-    renderedSections
+    renderedPrelude
+        :: renderedSections
         |> List.map .rendered
 
 
