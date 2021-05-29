@@ -3,7 +3,7 @@ module CayatexBenchmark exposing (suite)
 import Benchmark exposing (..)
 import Data
 import Parser.Data
-import Parser.Document
+import Parser.Lines
 import Render.Elm
 import SourceText
 
@@ -13,8 +13,8 @@ import SourceText
 
 
 parseAndRender k str =
-    Parser.Document.runLoop k (String.lines str)
-        |> Parser.Document.toParsed
+    Parser.Lines.runLoop k (String.lines str)
+        |> Parser.Lines.toParsed
         |> List.map (Render.Elm.renderList (initState k))
 
 

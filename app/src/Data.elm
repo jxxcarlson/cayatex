@@ -525,7 +525,7 @@ Division of the text into blocks can fail, as it does with the last example of u
 
 [list | s: numbered |
 
-[item Decompose the source text into blocks and feed these to [code Parser.Driver.parseLoop] using [code Parser.Document.runLoop]].  Here is a synopsis of the parsing process:
+[item Decompose the source text into blocks and feed these to [code Parser.Driver.parseLoop] using [code Parser.Lines.runLoop]].  Here is a synopsis of the parsing process:
 
 
 [item Parse a list of elements from a block of input text using [code Parser.Driver.parseLoop].  The [c parseLoop] function does this by repeatedly running  [code Parser.Element.parser], truncating the input text each time.
@@ -605,12 +605,12 @@ type alias Data =
 
 The [c parseLoop] function handles error recovery by modifiying the parse tree so as
 to (a) correct the error (b) highlight it in the rendered text.  A comment on the nature of the error
-is inserted in the TextCursor.  This comment is used by the supervising Parser.Document runLoop
+is inserted in the TextCursor.  This comment is used by the supervising Parser.Lines runLoop
 function which backtracks as needed to properly reparse the remaining text.
 
-[section2 Parser.Document]
+[section2 Parser.Lines]
 
-The highest level of the parser is handled by [c Parser.Document.runLoop]:
+The highest level of the parser is handled by [c Parser.Lines.runLoop]:
 
 [cb
 runLoop : Int -> List String -> State

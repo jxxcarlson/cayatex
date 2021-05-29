@@ -2,9 +2,9 @@ module DocLoopTests exposing (..)
 
 import Expect
 import Parser.Advanced exposing (run)
-import Parser.Document as Document exposing (BlockStatus(..), State, Step(..), applyNextState, getParseResult, nextState)
 import Parser.Element exposing (..)
-import Parser.Tool as T
+import Parser.Lines as Document exposing (Step(..), applyNextState, getParseResult, nextState)
+import Parser.Types exposing (..)
 import Test exposing (describe, fuzz, test)
 
 
@@ -13,17 +13,19 @@ init str =
 
 
 suite =
-    describe "Parser.Document"
+    describe "Parser.Lines"
         [ describe "nextState, from Start"
-            [ test "init" <| \_ -> Expect.equal 2 2 ] ]
+            [ test "init" <| \_ -> Expect.equal 2 2 ]
+        ]
 
 
-              --test "init" <|
-              --  \_ ->
-              --      Expect.equal
-              --          (init "")
-              --          { blockContents = [], blockLevel = 0, blockType = Start, generation = 0, input = [""], lineNumber = 0, output = [], renderState = { config = { blueColor = "#00c", highlightColor = "#fAA", redColor = "#a00" }, counters = Dict.fromList [("eqno",0),("section1",0),("section2",0),("section3",0),("theorem",0)], crossReferences = Dict.fromList [], dictionary = Dict.fromList [], tableOfContents = [] } )
-              --
+
+--test "init" <|
+--  \_ ->
+--      Expect.equal
+--          (init "")
+--          { blockContents = [], blockLevel = 0, blockType = Start, generation = 0, input = [""], lineNumber = 0, output = [], renderState = { config = { blueColor = "#00c", highlightColor = "#fAA", redColor = "#a00" }, counters = Dict.fromList [("eqno",0),("section1",0),("section2",0),("section3",0),("theorem",0)], crossReferences = Dict.fromList [], dictionary = Dict.fromList [], tableOfContents = [] } )
+--
 --            , test "start-blank" <|
 --                \_ ->
 --                    Expect.equal

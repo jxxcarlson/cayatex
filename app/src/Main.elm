@@ -13,9 +13,9 @@ import Html.Parser
 import Html.Parser.Util
 import Paragraph
 import Parser.Data
-import Parser.Document
 import Parser.Element as Parser
 import Parser.Getters
+import Parser.Lines
 import Render.Elm
 import Render.String
 
@@ -303,13 +303,13 @@ render k str =
     -- CaYaTeX.render "id__" { content = str, generation = k } |> Element.map CYTMsg
     let
         state =
-            Parser.Document.runLoop k (String.lines str)
+            Parser.Lines.runLoop k (String.lines str)
 
         newState =
             initStateWithData k state.data
     in
     state
-        |> Parser.Document.toParsed
+        |> Parser.Lines.toParsed
         |> List.map (Render.Elm.renderList newState)
         |> column [ spacing 18 ]
         |> Element.map CYTMsg

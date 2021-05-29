@@ -12,8 +12,8 @@ module CaYaTeX exposing
 
 import Element as E
 import Parser.Data
-import Parser.Document
 import Parser.Element exposing (Element(..))
+import Parser.Lines
 import Render.Elm
 import Render.LaTeX
 import Render.Types as Types
@@ -39,8 +39,8 @@ update generation text _ =
 
 render : String -> Data -> List (E.Element Parser.Element.CYTMsg)
 render id data =
-    Parser.Document.runLoop data.generation (String.lines data.content)
-        |> Parser.Document.toParsed
+    Parser.Lines.runLoop data.generation (String.lines data.content)
+        |> Parser.Lines.toParsed
         |> List.map (Render.Elm.renderList (initState data.generation))
 
 
@@ -52,13 +52,13 @@ renderString : Int -> String -> E.Element Parser.Element.CYTMsg
 renderString k str =
     let
         state =
-            Parser.Document.runLoop k (String.lines str)
+            Parser.Lines.runLoop k (String.lines str)
 
         newState =
             initStateWithData k state.data
     in
     state
-        |> Parser.Document.toParsed
+        |> Parser.Lines.toParsed
         |> List.map (Render.Elm.renderList newState)
         |> E.column [ E.spacing 18 ]
 
@@ -67,23 +67,23 @@ astOfString : Int -> String -> List (List Element)
 astOfString k str =
     let
         state =
-            Parser.Document.runLoop k (String.lines str)
+            Parser.Lines.runLoop k (String.lines str)
 
         newState =
             initStateWithData k state.data
     in
     state
-        |> Parser.Document.toParsed
+        |> Parser.Lines.toParsed
 
 
 renderString2 : Int -> String -> { rendered : E.Element Parser.Element.CYTMsg, title : String }
 renderString2 k str =
     let
         state =
-            Parser.Document.runLoop k (String.lines str)
+            Parser.Lines.runLoop k (String.lines str)
 
         ast =
-            Parser.Document.toParsed state |> List.head |> Maybe.andThen List.head
+            Parser.Lines.toParsed state |> List.head |> Maybe.andThen List.head
 
         title =
             case ast of
@@ -106,7 +106,7 @@ renderString2 k str =
 
         rendered =
             state
-                |> Parser.Document.toParsed
+                |> Parser.Lines.toParsed
                 |> List.map (Render.Elm.renderList newState)
                 |> E.column [ E.spacing 18 ]
     in

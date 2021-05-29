@@ -5,8 +5,8 @@ import Dict exposing (Dict)
 import List.Extra
 import Maybe.Extra
 import Parser.Data
-import Parser.Document
 import Parser.Element as Element exposing (Element(..))
+import Parser.Lines
 import Render.Elm
 import Render.Types as Types
 import Spreadsheet
@@ -20,8 +20,8 @@ renderAsDocument sourceText =
 
 render : String -> String
 render sourceText =
-    Parser.Document.runLoop 0 (String.lines (transformText sourceText))
-        |> Parser.Document.toParsed
+    Parser.Lines.runLoop 0 (String.lines (transformText sourceText))
+        |> Parser.Lines.toParsed
         |> transformAST
         |> renderList (initState 0)
 
