@@ -1,4 +1,4 @@
-module Parser.Document exposing (..)
+module Parser.Document exposing (renderString)
 
 import Element as E
 import Parser.Data
@@ -26,7 +26,7 @@ type alias RenderedState =
 processString : Int -> String -> ProcessedDocument
 processString generation str =
     processDocument generation (Sections.splitIntoSections str)
-
+  
 
 processDocument : Int -> Document -> ProcessedDocument
 processDocument generation { prelude, sections } =

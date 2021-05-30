@@ -149,32 +149,6 @@ noFocus =
 
 
 
--- PARAMETERS
-
-
-widePanelWidth_ =
-    2 * panelWidth_
-
-
-panelWidth_ =
-    520
-
-
-appHeight_ model =
-    model.windowHeight - 300
-
-
-panelHeight_ model =
-    appHeight_ model - parserDisplayPanelHeight_ - 100
-
-
-parserDisplayPanelHeight_ =
-    0
-
-
-appWidth_ =
-    2 * panelWidth_ + 15
-
 
 mainColumn : Model -> Element Msg
 mainColumn model =
@@ -183,8 +157,6 @@ mainColumn model =
             [ title "CaYaTeX Test App"
             , column [ spacing 12 ]
                 [ row [ spacing 12 ] [ inputElement model, outputDisplay model ]
-
-                -- , parserDisplay model
                 ]
             , row [ Font.size 14, Font.color whiteColor ] []
             ]
@@ -203,36 +175,6 @@ title str =
     row [ centerX, fontGray 0.9 ] [ text str ]
 
 
-parserDisplay model =
-    row
-        [ moveUp 10
-        , Font.size 14
-        , Background.color whiteColor
-        , padding 8
-        ]
-        [ parsed model ]
-
-
-parsed model =
-    case Parser.parseList model.count 0 model.input |> Result.map (List.map Parser.Getters.strip) of
-        Err _ ->
-            text "Parse error"
-
-        Ok pt ->
-            el [ alignTop ]
-                (column
-                    [ width (px widePanelWidth_)
-                    , height (px parserDisplayPanelHeight_)
-                    , scrollbarY
-                    ]
-                    (List.map (\s -> Element.paragraph [] [ text s ]) (parsed_ pt))
-                )
-
-
-parsed_ : a -> List String
-parsed_ pt =
-    -- Paragraph.lines paragraphFormat2 (Debug.toString pt)
-    []
 
 
 outputDisplay : Model -> Element Msg
@@ -427,6 +369,33 @@ renderedModeButton currentMode =
             }
         ]
 
+
+
+-- PARAMETERS
+
+
+widePanelWidth_ =
+    2 * panelWidth_
+
+
+panelWidth_ =
+    520
+
+
+appHeight_ model =
+    model.windowHeight - 300
+
+
+panelHeight_ model =
+    appHeight_ model - parserDisplayPanelHeight_ - 100
+
+
+parserDisplayPanelHeight_ =
+    0
+
+
+appWidth_ =
+    2 * panelWidth_ + 15
 
 
 --
