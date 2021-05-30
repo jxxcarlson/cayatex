@@ -1,14 +1,15 @@
 module CaYaTeX exposing
-    ( CaYaTeXMsg
-    , Data
-    , getTitle
-    , init
-    , render
-    , renderString
-    , renderString2
-    , renderToLaTeX
-    , update
+    ( CaYaTeXMsg, Data
+    , init, render, renderString, renderString2, renderToLaTeX, update
     )
+
+{-| API for the CaYaTeX markup language
+
+@docs CaYaTeXMsg, Data
+
+@docs init, render, renderString, renderString2, renderToLaTeX, update
+
+-}
 
 import Element as E
 import Parser.Data
@@ -19,24 +20,29 @@ import Render.LaTeX
 import Render.Types as Types
 
 
+{-| -}
 type alias Data =
     { content : String, generation : Int }
 
 
+{-| -}
 type alias CaYaTeXMsg =
     Parser.Element.CYTMsg
 
 
+{-| -}
 init : Int -> String -> Data
 init generation text =
     { content = text, generation = generation }
 
 
+{-| -}
 update : Int -> String -> Data -> Data
 update generation text _ =
     init generation text
 
 
+{-| -}
 render : String -> Data -> List (E.Element Parser.Element.CYTMsg)
 render id data =
     Parser.Lines.runLoop data.generation (String.lines data.content)
@@ -44,10 +50,7 @@ render id data =
         |> List.map (Render.Elm.renderList (initState data.generation))
 
 
-getTitle =
-    Parser.Element.getTitle
-
-
+{-| -}
 renderString : Int -> String -> E.Element Parser.Element.CYTMsg
 renderString k str =
     let
@@ -63,6 +66,7 @@ renderString k str =
         |> E.column [ E.spacing 18 ]
 
 
+{-| -}
 astOfString : Int -> String -> List (List Element)
 astOfString k str =
     let
@@ -76,6 +80,7 @@ astOfString k str =
         |> Parser.Lines.toParsed
 
 
+{-| -}
 renderString2 : Int -> String -> { rendered : E.Element Parser.Element.CYTMsg, title : String }
 renderString2 k str =
     let
@@ -114,6 +119,7 @@ renderString2 k str =
     { rendered = rendered, title = title }
 
 
+{-| -}
 initStateWithData k data =
     { generation = k
     , blockOffset = 0
@@ -123,6 +129,7 @@ initStateWithData k data =
     }
 
 
+{-| -}
 renderToLaTeX : String -> String
 renderToLaTeX =
     Render.LaTeX.render

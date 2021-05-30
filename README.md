@@ -1,15 +1,29 @@
-# CaYaTeX: an Experimental Markup Language (Draft!)
+# CaYaTeX
 
-by James Carlson and Nicholas Yang
+CaYaTeX is an experimental markup language that compiles 
+to LaTeX, Html, and (indirectly) PDF. 
+Here is a [demo](https://cayatex.lamdera.app), and here
+is a sample document:
+
+There are three constructs in the language: _text_, _elements_,
+and _headings_. 
+
+Elements have the form `[name |args| body]` 
+where (a) `|args|` may be absent, (b) `|args|` is present, 
+it has the form `|arg1, arg2, ...|` where the 
+individual args are strings without commas, 
+(c) the body is an Element. 
+
+Headings consist of one or non-blank lines of text where the first
+line begins with a sequence of one or more hash marks '#' followed
+by a space and at least one alphabetic character. These function
+as in Markdown.
+
+## Example
+
+[title Introduction to CaYaTeX]
 
 
-CaYaTeX is an experimental markup language that compiles to LaTeX, Html, and (indirectly) PDF. 
-Here is a a [demo](https://jxxcarlson.github.io/app/cayatex/).
-
-There are two constructs in the language: _text_ and _elements_. Below are
-some elements.  They have the form `[name |args| body]` where (a) `|args|` may be
-absent, (b) `|args|` is present, it has the form `|arg1, arg2, ...|` where the 
-individual args are strings without commas, (c) the body is an Element.
 
 1. [strong whiskey and other liquor]
 2. [italic [strong stuff]]  
