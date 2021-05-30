@@ -16,6 +16,7 @@ module CaYaTeX exposing
 
 import Element as E
 import Parser.Data
+import Parser.Document
 import Parser.Element exposing (Element(..))
 import Parser.Lines
 import Render.Elm
@@ -55,7 +56,15 @@ render id data =
 
 {-| -}
 renderString : Int -> String -> E.Element Parser.Element.CYTMsg
-renderString k str =
+renderString generation str =
+    Parser.Document.renderString generation str
+        |> List.concat
+        |> E.column [ E.spacing 18 ]
+
+
+{-| -}
+renderString1 : Int -> String -> E.Element Parser.Element.CYTMsg
+renderString1 k str =
     let
         state =
             Parser.Lines.runLoop k (String.lines str)
