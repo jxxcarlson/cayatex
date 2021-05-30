@@ -1,6 +1,7 @@
 module CaYaTeX exposing
     ( CaYaTeXMsg, Data
     , init, render, renderString, renderString2, renderToLaTeX, update
+    , getTitle
     )
 
 {-| API for the CaYaTeX markup language
@@ -8,6 +9,8 @@ module CaYaTeX exposing
 @docs CaYaTeXMsg, Data
 
 @docs init, render, renderString, renderString2, renderToLaTeX, update
+
+@docs getTitle
 
 -}
 
@@ -143,3 +146,8 @@ initState k =
     , width = 300
     , parserData = Parser.Data.init Parser.Data.defaultConfig
     }
+
+
+{-| -}
+getTitle =
+    Parser.Element.getTitle
