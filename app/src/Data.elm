@@ -710,6 +710,7 @@ announcement =
     """
 
 
+
 [title Announcing CaYaTeX]
 
 By James Carlson and Nicholas Yang
@@ -769,10 +770,8 @@ Our goal is to have a convenient  tool for writing technical documents that are 
 
 [b Note.] [fontRGB |50, 0, 200| The above are desiderata.  Among the missing items: compile to LaTeX and differential compilation, which is needed for snappy, real-time rendering of the source text while editing. Our first objectives
 are a decent proof-of-concept and error-handling that is both robust and graceful. All in due time!]
+793# Showcase
 
-# Showcase
-
-Below are examples of what is currently possible with CaYaTeXs.
 
 ## Mathematics
 
@@ -793,7 +792,7 @@ that attracts so many people to the subject:
 
 And of course, we can also do theorems:
 
-[theorem There are infinitely many primes [math p \\equiv 1 \text{ mod } 4.]]
+[theorem There are infinitely many primes [math p \\equiv 1 	ext{ mod } 4.]]
 
 [corollary |Euclid| There are infinitely many primes.]
 
@@ -914,8 +913,7 @@ these spreadsheets.
 
 [row -, col sum 1 3, col sum 1 3]
 
-]
-##]
+]##]
 
 The entry [c row * 1 2] in the upper right-hand  cell means "In this row, multiply
 the cells in columns 1 and 2; use that value to replace me."  Similarly, the entry
@@ -1123,8 +1121,7 @@ The linegraph code (CSV format):
 [codeblock raw##[linegraph |caption: Global
 temperature anomaly 1880-1957|
 1880,-0.12
-1881,-0.0]
-##]
+1881,-0.0]##]
 
 ### Scatter plots
 
@@ -1227,12 +1224,11 @@ There are shortcuts for a few
 other common elements:
 [b ...] instead of [bold ... ]
 [m ...] instead of [math ... ]
-[mb ...] instead of [mathblock ... ]
-###
+[mb ...] instead of [mathblock ... ]###
 
 ]
 
-## Code]
+## Code
 
 Time for some code: [code raw##col :: Int -> Matrix a -> [a]##].
 Do you recognize the language (ha ha)?
@@ -1240,17 +1236,14 @@ Do you recognize the language (ha ha)?
 We can also do code blocks.  Syntax highlighting coming later.
 
 [codeblock raw##
-# For Sudoku 3x3 subsquare function
-
-col :: Int -> Matrix a -> [a]
-col k = fmap ( !! k)
+For Sudoku 3x3 subsquare function
+1298col k = fmap ( !! k)
 
 cols :: Matrix a -> Matrix a
 cols m =
     fmap (\\k -> col k m) [0..n]
-       where n = length m - 1
-##]
-##]
+       where n = length m - 1  ##]
+
 
 
 [i [highlight Note the use of Rust-like raw strings in the source text to avoid escaping all the brackets.]]
@@ -1263,7 +1256,7 @@ cols m =
 [image |caption: Rotkehlchen aufgeplustert, width: 200, placement: center|https://i.pinimg.com/originals/d4/07/a4/d407a45bcf3ade18468ac7ba633244b9.jpg]
 
 [code raw##[image |caption: Rotkehlchen aufgeplustert, width: 200, placement: center| https://..jpg]##]
-
+1296
 
 [section2 SVG]
 
@@ -1300,9 +1293,9 @@ A numbered list has "numbered" as its first argument, as in the example below.
 
         [list |§, title:Greek symbols|
 
-            [item [math \u{0007}lpha = 0.123]]
+            [item [math \\alpha = 0.123]]
 
-            [item  [math \u{0008}eta = 4.567]]
+            [item  [math \\beta = 4.567]]
 
 ]]]
 
@@ -1332,12 +1325,12 @@ Math+Markdown, and plain text are supported.
 Because CaYaTeX is so simple, the type of the AST is very small:
 
 [codeblock
-raw##type Element
+  raw##type Element
     =   Text String Meta
       | Element String (List String) Element Meta
       | LX (List Element) Meta
-##
-]
+  ##
+ ]
 
 The first variant, [code Text String] accounts for plain text.
 The second is of the form [code Element name args body],
@@ -1348,6 +1341,7 @@ location of the corresponding piece of text in the source code as well as
 other metadata such as section numbering.
 
 For more technical details, see the [c Design Notes] tab.
+
 
 
 """
