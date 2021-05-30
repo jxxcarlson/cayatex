@@ -53,6 +53,7 @@ manual =
 
 
 
+
 [macro [ds [fontRGB |0, 0, 200| ]]]
 
 [i [code This document is a draft-in-progress of a manual for CaYaTeX]]
@@ -181,8 +182,7 @@ write
 
   [item  Conservation of energy]
 
-]
-##]
+]  ##]
 
 ## Images
 
@@ -379,6 +379,9 @@ scatterplot
 
 
 
+
+
+
 """
 
 
@@ -417,6 +420,7 @@ notes =
 
 
 
+
 [title Design Notes]
 
 Following are some random notes on the structure of the cayatex compiler.  Our aim is to capture
@@ -432,8 +436,7 @@ The syntax of CaYaTeX is as in the example below:
 [codeblock
 
 raw###
-Whiskey is [b very] strong stuff.
-###
+Whiskey is [b very] strong stuff.###
 ]
 
 It renders as "Whiskey is [b very] strong stuff."  All CaYaTeX source text consists of ordinary text, which may contain unicode characters, and [i basic elements], which are of one of three forms:
@@ -458,8 +461,7 @@ raw###
 1, 2.1
 2, 2.9
 ...
-]
-###
+]###
 ]
 
 [bargraph | column:2, yShift: 0.2,
@@ -496,8 +498,7 @@ raw###
 type Element
     = Text String (Maybe Metadata)
     | Element String (List String) Element (Maybe Metadata)
-    | LX (List Element) (Maybe Metadata)
-###
+    | LX (List Element) (Maybe Metadata)###
 ]
 
 The [c Metadata] component is carries data used in rendering the element or in interacting with an editor: section numbers, cross-refrences, location of the corresponding text in in the source, etc.
@@ -647,11 +648,12 @@ state
    |> .output
    |> List.map .parsed
    |> List.reverse
-#  ]
+ #  ]
 
 produces a value of type [c List (List Element)] which can then be fed to the rendering machine.  The renderer also requires the [c state.data] field.
 
 
+                  
 """
 
 
@@ -770,7 +772,9 @@ Our goal is to have a convenient  tool for writing technical documents that are 
 
 [b Note.] [fontRGB |50, 0, 200| The above are desiderata.  Among the missing items: compile to LaTeX and differential compilation, which is needed for snappy, real-time rendering of the source text while editing. Our first objectives
 are a decent proof-of-concept and error-handling that is both robust and graceful. All in due time!]
-793# Showcase
+
+
+# Showcase
 
 
 ## Mathematics
