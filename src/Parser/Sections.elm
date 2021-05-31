@@ -59,7 +59,11 @@ nextSplitterState state =
         Nothing ->
             Done { prelude = List.reverse state.prelude, sections = List.reverse <| List.reverse state.accum :: state.sections }
 
-        Just currentLine ->
+        Just currentLine_ ->
+            let
+                currentLine =
+                    preprocessLine currentLine_
+            in
             case ( lineType currentLine, state.status ) of
                 ( UnMarked, InPrelude ) ->
                     -- continue prelude
@@ -76,6 +80,37 @@ nextSplitterState state =
                 ( Marked, InSection ) ->
                     -- start section
                     Loop { state | lines = List.drop 1 state.lines, accum = [ makeIntoHeading currentLine ], sections = List.reverse state.accum :: state.sections }
+
+
+preprocessLine : Line -> Line
+preprocessLine line =
+    if String.left 1 line.content == "#" then
+        makeIntoHeading line
+
+    else
+        preprocessLine_ line
+
+
+preprocessLine_ line =
+    case String.left 1 line.content of
+        "-" ->
+            { index = line.index, content = "[item" ++ String.dropLeft 1 line.content ++ "]" }
+
+        "@" ->
+            if String.left 5 line.content == "@list" then
+                { index = line.index, content = "[list" }
+
+            else if String.left 9 line.content == "@numbered" then
+                { index = line.index, content = "[list | s: numbered |" }
+
+            else if String.left 4 line.content == "@end" then
+                { index = line.index, content = "  ]" }
+
+            else
+                line
+
+        _ ->
+            line
 
 
 makeIntoHeading : Line -> Line
