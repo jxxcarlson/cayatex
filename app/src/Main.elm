@@ -8,9 +8,13 @@ import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
+import Html.Attributes
+import Html.Events
 import Html.Keyed
 import Html.Parser
 import Html.Parser.Util
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Paragraph
 import Parser.Data exposing (Data)
 import Parser.Document as Document
@@ -33,18 +37,19 @@ main =
 
 
 type alias Model =
-    { input : String
+    { contents : String
     , renderedText : String
     , mode : Mode
     , count : Int
     , windowHeight : Int
     , windowWidth : Int
+    , width : Int
     }
 
 
 type Msg
     = NoOp
-    | InputText String
+    | CodeChanged String
     | ClearText
     | GetDocument String
     | SetMode Mode
@@ -66,12 +71,13 @@ initialText =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( { input = initialText
+    ( { contents = initialText
       , renderedText = Render.String.renderString initialText
       , mode = RenderedMode
       , count = 0
       , windowHeight = flags.height
       , windowWidth = flags.width
+      , width = 400
       }
     , Cmd.none
     )
@@ -87,9 +93,9 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        InputText str ->
+        CodeChanged str ->
             ( { model
-                | input = str
+                | contents = str
                 , renderedText = Render.String.renderString str
                 , count = model.count + 1
               }
@@ -101,7 +107,7 @@ update msg model =
 
         ClearText ->
             ( { model
-                | input = ""
+                | contents = ""
                 , renderedText = Render.String.renderString ""
                 , count = model.count + 1
               }
@@ -110,7 +116,7 @@ update msg model =
 
         GetDocument docName ->
             ( { model
-                | input = Data.get docName
+                | contents = Data.get docName
                 , renderedText = Render.String.renderString (Data.get docName)
                 , count = model.count + 1
               }
@@ -148,8 +154,6 @@ noFocus =
     }
 
 
-
-
 mainColumn : Model -> Element Msg
 mainColumn model =
     column (mainColumnStyle model)
@@ -166,15 +170,35 @@ mainColumn model =
 inputElement model =
     column [ spacing 8, moveUp 9 ]
         [ row [ spacing 12 ] [ clearTextButton, getDocumentButton "announcement", getDocumentButton "notes", getDocumentButton "manual" ]
-        , inputText model
+        , editor model --, inputText model
         ]
+
+
+editor : { a | windowHeight : Int, width : Int, contents : String } -> Element Msg
+editor model =
+    row [ width fill, height <| px <| panelHeight_ model ]
+        [ el [ panelWidth model, height <| px <| panelHeight_ model ]
+            (html <|
+                Html.node "custom-editor"
+                    [ Html.Attributes.property "editorContents" <|
+                        Encode.string model.contents
+                    , Html.Events.on "editorChanged" <|
+                        Decode.map CodeChanged <|
+                            Decode.at [ "target", "editorContents" ] <|
+                                Decode.string
+                    ]
+                    []
+            )
+        ]
+
+
+panelWidth model =
+    width (px <| model.width // 2)
 
 
 title : String -> Element msg
 title str =
     row [ centerX, fontGray 0.9 ] [ text str ]
-
-
 
 
 outputDisplay : Model -> Element Msg
@@ -186,7 +210,7 @@ outputDisplay model =
             , moveUp 9
             , Font.size 14
             ]
-            [ dummyButton, text ("generation: " ++ String.fromInt model.count), wordCountElement model.input ]
+            [ dummyButton, text ("generation: " ++ String.fromInt model.count), wordCountElement model.contents ]
         , outputDisplay_ model
         ]
 
@@ -214,7 +238,7 @@ outputDisplay_ model =
         , Font.size 12
         ]
         (if model.mode == RenderedMode then
-            [ render model.count model.input ]
+            [ render model.count model.contents ]
 
          else
             List.map text (Paragraph.lines paragraphFormat model.renderedText)
@@ -298,8 +322,8 @@ keyIt k list =
 inputText : Model -> Element Msg
 inputText model =
     Input.multiline [ height (px (panelHeight_ model)), width (px panelWidth_), Font.size 14 ]
-        { onChange = InputText
-        , text = model.input
+        { onChange = CodeChanged
+        , text = model.contents
         , placeholder = Nothing
 
         --, label = Input.labelAbove [ fontGray 0.9 ] <| el [] (text "Source text")
@@ -396,6 +420,7 @@ parserDisplayPanelHeight_ =
 
 appWidth_ =
     2 * panelWidth_ + 15
+
 
 
 --
