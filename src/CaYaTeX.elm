@@ -18,7 +18,7 @@ import Element as E
 import Parser.Data
 import Parser.Document
 import Parser.Element exposing (Element(..))
-import Parser.Helpers
+import Parser.Functions
 import Parser.Lines
 import Render.Elm
 import Render.LaTeX
@@ -160,4 +160,4 @@ initState k =
 
 {-| -}
 getTitle =
-    Parser.Helpers.getTitle
+    Parser.Functions.getTitle

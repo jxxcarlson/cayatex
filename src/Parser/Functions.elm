@@ -1,4 +1,4 @@
-module Parser.Helpers exposing
+module Parser.Functions exposing
     ( filter
     , getBody
     , getElementTexts

@@ -6,7 +6,7 @@ import List.Extra
 import Maybe.Extra
 import Parser.Data
 import Parser.Element as Element exposing (Element(..))
-import Parser.Helpers
+import Parser.Functions
 import Parser.Lines
 import Render.Elm
 import Render.Types as Types
@@ -126,7 +126,7 @@ argListsFromBody element =
 stringListFromElement : Element -> List String
 stringListFromElement element =
     element
-        |> Parser.Helpers.getText
+        |> Parser.Functions.getText
         |> Maybe.map CYUtility.commaSeparatedToList
         |> Maybe.withDefault []
 
