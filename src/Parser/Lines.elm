@@ -113,10 +113,11 @@ nextState state_ =
 
         ( Just currentLine, _ ) ->
             -- there is a line to process and there are no errors, so let's go for it!
-            innerNextState state_ currentLine
+            innerNextState currentLine state_
 
 
-innerNextState state_ currentLine =
+innerNextState : String -> State -> Step State State
+innerNextState currentLine state_ =
     let
         state =
             { state_ | input = List.drop 1 state_.input }
