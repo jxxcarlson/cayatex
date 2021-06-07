@@ -116,6 +116,19 @@ nextState state_ =
             innerNextState currentLine state_
 
 
+
+-- INNERNEXTSTATE EXPERIMENTAL
+
+
+differentialLevel : String -> Int
+differentialLevel str =
+    List.length (String.indices "[" str) - List.length (String.indices "]" str)
+
+
+
+-- INNERNEXTSTATE
+
+
 innerNextState : String -> State -> Step State State
 innerNextState currentLine state_ =
     let
