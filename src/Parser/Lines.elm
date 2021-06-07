@@ -1,6 +1,6 @@
 module Parser.Lines exposing
     ( process, toParsed, toText
-    , Step(..), applyNextState, bl, cl, differentialBlockLevel, getParseResult, init, nextState, processWithData, rl, rl_, runLoop, toc
+    , Step(..), applyNextState, differentialBlockLevel, getParseResult, init, nextState, processWithData, runLoop, toBlocks
     )
 
 {-| The main function in this module is process, which takes as input
@@ -79,76 +79,6 @@ runLoop generation strList =
 runLoopWithData : Int -> Parser.Data.Data -> List String -> State
 runLoopWithData generation data strList =
     loop (initWithData generation data strList) nextState
-
-
-rl : String -> List (List Element)
-rl str =
-    runLoop 0 (String.lines str) |> toParsed |> List.map (List.map Parser.Getters.strip)
-
-
-{-| Return the block decomposition of a string:
-
-    > bl "abc\n\n[x\n\nQ\n\n[k Q]]\n\ndef"
-    ["abc\n","[x\n\nQ\n\n[k Q]]\n\n","def"]
-
-    Anomaly:
-    > bl "[x\n\nQ\n\n]"
-    ["[x\n\nQ\n\n]","[x\n\nQ\n\n]"]
-
-    Anomaly:
-    > bl "[x\n\nQ\n\nQ]"
-    ["[x\n\nQ\n\n\nQ]"]
-
--}
-bl : String -> List String
-bl str =
-    runLoop 0 (String.lines str) |> toBlocks
-
-
-{-|
-
-    > bbl "abc\n\n[x\n\nQ\n\n[k Q]]\n\ndef"
-    ["abc\n","[x\n\nQ\n\n[k Q]]\n\n","def"]
-
--}
-bbl str =
-    bl (bl str |> String.join "\n")
-
-
-{-| For all well-formed strings, bl str == str only modulo some newlines
-
-    > test "abc\n\n[x\n\nQ\n\n[k Q]]\n\ndef"
-    False
-
--}
-test str =
-    (bl str |> String.join "\n") == str
-
-
-{-| Idempotency: for all well-formed strings, bbl st
-
-    > test2 "abc\n\n[x\n\nQ\n\n[k Q]]\n\ndef"
-    True
-
--}
-test2 str =
-    bbl str == bl str
-
-
-toc str =
-    runLoop 0 (String.lines str)
-        |> (.data >> .tableOfContents)
-
-
-rl_ str =
-    runLoop 0 (String.lines str) |> toParsed
-
-
-cl str =
-    runLoop 0 (String.lines str)
-        |> .output
-        |> List.head
-        |> Maybe.map (.data >> .counters)
 
 
 {-| Return the AST from the State.
@@ -340,6 +270,7 @@ nextState state_ =
             handleError state_
 
         ( Just currentLine, _ ) ->
+            -- there is a line to process and there are no error, so let's go for it!
             let
                 state =
                     { state_ | input = List.drop 1 state_.input }
