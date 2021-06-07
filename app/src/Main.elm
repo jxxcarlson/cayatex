@@ -148,13 +148,11 @@ noFocus =
     }
 
 
-
-
 mainColumn : Model -> Element Msg
 mainColumn model =
     column (mainColumnStyle model)
         [ column [ spacing 48, width (px appWidth_), height (px (appHeight_ model)) ]
-            [ title "CaYaTeX Test App"
+            [ title "D"
             , column [ spacing 12 ]
                 [ row [ spacing 12 ] [ inputElement model, outputDisplay model ]
                 ]
@@ -173,8 +171,6 @@ inputElement model =
 title : String -> Element msg
 title str =
     row [ centerX, fontGray 0.9 ] [ text str ]
-
-
 
 
 outputDisplay : Model -> Element Msg
@@ -396,6 +392,7 @@ parserDisplayPanelHeight_ =
 
 appWidth_ =
     2 * panelWidth_ + 15
+
 
 
 --

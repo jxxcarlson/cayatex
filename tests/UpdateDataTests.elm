@@ -13,9 +13,11 @@ pl str =
     Driver.parseLoop 0 0 empty str |> .parsed
 
 
+
 -- parseLoop : Int -> Int -> Data -> String -> TextCursor Element
 -- parseLoop generation initialLineNumber data str =
 --     Loop.parseLoop packet generation initialLineNumber data str
+
 
 empty =
     Data.init Data.defaultConfig
@@ -32,7 +34,7 @@ suite =
                             Data.update e empty
                     in
                     Expect.equal
-                        (Result.map (Element.makeList >> updateCounters >> .counters) (Element.parseList 0 0 "[section A]\n\n[section B]"))
+                        (Result.map (Element.lx >> updateCounters >> .counters) (Element.parseList 0 0 "[section A]\n\n[section B]"))
                         (Ok <| Dict.fromList [ ( "section1", 2 ) ])
             ]
         , test "two sections from element list" <|

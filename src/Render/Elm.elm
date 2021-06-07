@@ -159,6 +159,8 @@ renderElementDict =
         , ( "cb", codeblock )
         , ( "verbatim", verbatim )
         , ( "poetry", poetry )
+        , ( "obeylines", obeylines )
+        , ( "par", par )
         , ( "title", docTitle )
         , ( "section", section_ )
         , ( "section1", section_ )
@@ -490,6 +492,11 @@ item renderArgs name args_ body meta =
     paragraph [] [ renderElement renderArgs body ]
 
 
+par : FRender CYTMsg
+par renderArgs name args_ body meta =
+    E.none
+
+
 error : FRender CYTMsg
 error renderArgs name args_ body meta =
     el [ Font.color violetColor ] (renderElement renderArgs body)
@@ -536,6 +543,16 @@ poetry renderArgs _ _ body meta =
         [ Font.size 14
         , Render.Utility.htmlAttribute "white-space" "pre"
         , indentation
+        , spacing 4
+        ]
+        (List.map text (getLines (getText2 body |> String.trim)))
+
+
+obeylines : FRender CYTMsg
+obeylines renderArgs _ _ body meta =
+    column
+        [ Font.size 14
+        , Render.Utility.htmlAttribute "white-space" "pre"
         , spacing 4
         ]
         (List.map text (getLines (getText2 body |> String.trim)))
@@ -753,7 +770,7 @@ image renderArgs name args body meta =
                     E.none
 
                 Just c ->
-                    E.row [ placement ] [ el [] (text c) ]
+                    E.row [ placement, E.width E.fill ] [ el [ E.width E.fill ] (text c) ]
 
         width =
             case Dict.get "width" dict of

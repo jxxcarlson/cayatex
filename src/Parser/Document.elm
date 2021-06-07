@@ -23,10 +23,12 @@ type alias RenderedState =
     { rendered : List (E.Element Parser.Element.CYTMsg), renderArgs : Render.Types.RenderArgs }
 
 
+{-| Main and only exported function
+-}
 processString : Int -> String -> ProcessedDocument
 processString generation str =
     processDocument generation (Sections.splitIntoSections str)
-  
+
 
 processDocument : Int -> Document -> ProcessedDocument
 processDocument generation { prelude, sections } =
@@ -35,6 +37,7 @@ processDocument generation { prelude, sections } =
         processedPrelude =
             Lines.process generation (toStringList prelude)
 
+        dataOf : List State -> Parser.Data.Data
         dataOf acc_ =
             case List.head acc_ of
                 Nothing ->

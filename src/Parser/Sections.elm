@@ -34,7 +34,7 @@ type ProcessStatus
 
 splitIntoSections : String -> { prelude : Lines, sections : List Section }
 splitIntoSections str =
-    loop (initialSplliterState str) nextSplitterState
+    loop (initialSplitterState str) nextSplitterState
 
 
 type alias SplitterState =
@@ -48,8 +48,8 @@ split str =
         |> List.indexedMap (\k s -> { index = k, content = s })
 
 
-initialSplliterState : String -> SplitterState
-initialSplliterState str =
+initialSplitterState : String -> SplitterState
+initialSplitterState str =
     { prelude = [], sections = [], accum = [], lines = split str, status = InPrelude }
 
 
