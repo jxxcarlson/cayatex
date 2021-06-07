@@ -5,7 +5,6 @@ module Parser.Element exposing
     , parse
     , parseList
     , parser
-    , rlp
     )
 
 {-
@@ -20,10 +19,6 @@ import Parser.Metadata as Metadata exposing (Metadata)
 import Parser.RawString as RawString
 import Parser.Tool as T
 import Parser.XString as XString
-
-
-rlp str =
-    Parser.run (listParser 0 0) "[section A]\n\n[section B]\n\n[section C]"
 
 
 type Element

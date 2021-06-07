@@ -7,7 +7,7 @@ import Html exposing (Attribute)
 import Html.Attributes as HA
 import Maybe.Extra
 import Parser.Element as Element exposing (Element(..))
-import Parser.Functions
+import Parser.Function
 import Render.Utility
 import Vector exposing (Vector)
 
@@ -245,7 +245,7 @@ sectionLabel data =
 
 setSectionLabel : String -> Data -> Element -> Element
 setSectionLabel name_ data element =
-    Parser.Functions.setLabel (sectionLabel data) element
+    Parser.Function.setLabel (sectionLabel data) element
 
 
 

@@ -5,6 +5,7 @@ import Expect
 import Parser.Data as Data exposing (Data)
 import Parser.Driver as Driver
 import Parser.Element as Element exposing (Element)
+import Parser.Function
 import Test exposing (describe, fuzz, test)
 
 
@@ -34,7 +35,7 @@ suite =
                             Data.update e empty
                     in
                     Expect.equal
-                        (Result.map (Element.lx >> updateCounters >> .counters) (Element.parseList 0 0 "[section A]\n\n[section B]"))
+                        (Result.map (Parser.Function.lx >> updateCounters >> .counters) (Element.parseList 0 0 "[section A]\n\n[section B]"))
                         (Ok <| Dict.fromList [ ( "section1", 2 ) ])
             ]
         , test "two sections from element list" <|
