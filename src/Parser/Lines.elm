@@ -112,57 +112,61 @@ nextState state_ =
             handleError state_
 
         ( Just currentLine, _ ) ->
-            -- there is a line to process and there are no error, so let's go for it!
-            let
-                state =
-                    { state_ | input = List.drop 1 state_.input }
-            in
-            case ( state.blockStatus, Parser.Line.classify currentLine ) of
-                -- COMMENT
-                ( _, LTComment ) ->
-                    Loop { state | input = List.drop 1 state.input }
+            -- there is a line to process and there are no errors, so let's go for it!
+            innerNextState state_ currentLine
 
-                -- START
-                ( Start, LTBlank ) ->
-                    Loop (start state)
 
-                ( Start, LTBeginElement ) ->
-                    Loop (startBlock currentLine { state | blockStatus = InElementBlock })
+innerNextState state_ currentLine =
+    let
+        state =
+            { state_ | input = List.drop 1 state_.input }
+    in
+    case ( state.blockStatus, Parser.Line.classify currentLine ) of
+        -- COMMENT
+        ( _, LTComment ) ->
+            Loop { state | input = List.drop 1 state.input }
 
-                ( Start, LTEndElement ) ->
-                    Loop (initBlock InTextBlock ("Error: " ++ currentLine) state)
+        -- START
+        ( Start, LTBlank ) ->
+            Loop (start state)
 
-                ( Start, LTTextBlock ) ->
-                    Loop (initBlock InTextBlock currentLine state)
+        ( Start, LTBeginElement ) ->
+            Loop (startBlock currentLine { state | blockStatus = InElementBlock })
 
-                -- TEXTBLOCK
-                ( InTextBlock, LTBlank ) ->
-                    -- Then end of a text block has been reached. Create a string representing
-                    -- this block, parse it using Parser.parseLoop to produce a TextCursor, and
-                    -- add it to state.output.  Finally, update the laTeXState using Render.Reduce.latexState
-                    Loop (pushBlock state)
+        ( Start, LTEndElement ) ->
+            Loop (initBlock InTextBlock ("Error: " ++ currentLine) state)
 
-                ( InTextBlock, LTBeginElement ) ->
-                    Loop (startBlock currentLine state)
+        ( Start, LTTextBlock ) ->
+            Loop (initBlock InTextBlock currentLine state)
 
-                ( InTextBlock, LTEndElement ) ->
-                    Loop (addToBlockContents currentLine state)
+        -- TEXTBLOCK
+        ( InTextBlock, LTBlank ) ->
+            -- Then end of a text block has been reached. Create a string representing
+            -- this block, parse it using Parser.parseLoop to produce a TextCursor, and
+            -- add it to state.output.  Finally, update the laTeXState using Render.Reduce.latexState
+            Loop (pushBlock state)
 
-                ( InTextBlock, LTTextBlock ) ->
-                    Loop (addToBlockContents currentLine state)
+        ( InTextBlock, LTBeginElement ) ->
+            Loop (startBlock currentLine state)
 
-                --- ELEMENT BLOCK
-                ( InElementBlock, LTBlank ) ->
-                    Loop (pushBlockStack currentLine state)
+        ( InTextBlock, LTEndElement ) ->
+            Loop (addToBlockContents currentLine state)
 
-                ( InElementBlock, LTBeginElement ) ->
-                    Loop (startBlock currentLine state)
+        ( InTextBlock, LTTextBlock ) ->
+            Loop (addToBlockContents currentLine state)
 
-                ( InElementBlock, LTEndElement ) ->
-                    Loop (popBlockStack currentLine state)
+        --- ELEMENT BLOCK
+        ( InElementBlock, LTBlank ) ->
+            Loop (pushBlockStack currentLine state)
 
-                ( InElementBlock, LTTextBlock ) ->
-                    Loop (addToBlockContents currentLine state)
+        ( InElementBlock, LTBeginElement ) ->
+            Loop (startBlock currentLine state)
+
+        ( InElementBlock, LTEndElement ) ->
+            Loop (popBlockStack currentLine state)
+
+        ( InElementBlock, LTTextBlock ) ->
+            Loop (addToBlockContents currentLine state)
 
 
 
