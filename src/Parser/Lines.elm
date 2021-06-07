@@ -94,6 +94,7 @@ initWithData generation data strList =
     , blockStatus = Start
     , blockContents = []
     , blockLevel = 0
+    , blockLevels = { blanksSeen = 0, bracketLevel = 0, textLevel = 0 }
     , lastTextCursor = Nothing
     , output = []
     , data = data
@@ -113,180 +114,100 @@ nextState state_ =
 
         ( Just currentLine, _ ) ->
             -- there is a line to process and there are no errors, so let's go for it!
-            innerNextState currentLine state_
-
-
-
--- INNERNEXTSTATE EXPERIMENTAL
-
-
-differentialLevel : String -> Int
-differentialLevel str =
-    List.length (String.indices "[" str) - List.length (String.indices "]" str)
-
-
-
--- INNERNEXTSTATE
-
-
-innerNextState : String -> State -> Step State State
-innerNextState currentLine state_ =
-    let
-        state =
-            { state_ | input = List.drop 1 state_.input }
-    in
-    case ( state.blockStatus, Parser.Line.classify currentLine ) of
-        -- COMMENT
-        ( _, LTComment ) ->
-            Loop { state | input = List.drop 1 state.input }
-
-        -- START
-        ( Start, LTBlank ) ->
-            Loop (start state)
-
-        ( Start, LTBeginElement ) ->
-            Loop (startBlock currentLine { state | blockStatus = InElementBlock })
-
-        ( Start, LTEndElement ) ->
-            Loop (initBlock InTextBlock ("Error: " ++ currentLine) state)
-
-        ( Start, LTTextBlock ) ->
-            Loop (initBlock InTextBlock currentLine state)
-
-        -- TEXTBLOCK
-        ( InTextBlock, LTBlank ) ->
-            -- Then end of a text block has been reached. Create a string representing
-            -- this block, parse it using Parser.parseLoop to produce a TextCursor, and
-            -- add it to state.output.  Finally, update the laTeXState using Render.Reduce.latexState
-            Loop (pushBlock state)
-
-        ( InTextBlock, LTBeginElement ) ->
-            Loop (startBlock currentLine state)
-
-        ( InTextBlock, LTEndElement ) ->
-            Loop (addToBlockContents currentLine state)
-
-        ( InTextBlock, LTTextBlock ) ->
-            Loop (addToBlockContents currentLine state)
-
-        --- ELEMENT BLOCK
-        ( InElementBlock, LTBlank ) ->
-            Loop (pushBlockStack currentLine state)
-
-        ( InElementBlock, LTBeginElement ) ->
-            Loop (startBlock currentLine state)
-
-        ( InElementBlock, LTEndElement ) ->
-            Loop (popBlockStack currentLine state)
-
-        ( InElementBlock, LTTextBlock ) ->
-            Loop (addToBlockContents currentLine state)
-
-
-
--- OPERATIONS ON STATE
+            -- innerNextState currentLine state_
+            Loop (innerNextState2 currentLine state_)
 
 
 differentialBlockLevel : String -> Int
 differentialBlockLevel str =
+    List.length (String.indices "[" str) - List.length (String.indices "]" str)
+
+
+blockFinished : BlockLevels -> Bool
+blockFinished { bracketLevel, textLevel } =
+    bracketLevel == 0 && textLevel == 0
+
+
+updateBlockLevels : String -> BlockLevels -> BlockLevels
+updateBlockLevels line { blanksSeen, bracketLevel, textLevel } =
     let
-        chars =
-            String.split "" str
+        blanksSeen_ =
+            if line == "" then
+                blanksSeen + 1
 
-        leftBrackets =
-            List.filter (\s -> s == "[") chars |> List.length
+            else
+                0
 
-        rightBrackets =
-            List.filter (\s -> s == "]") chars |> List.length
+        bracketLevel_ =
+            differentialBlockLevel line + bracketLevel
+
+        textLevel_ =
+            if line == "" then
+                0
+
+            else if textLevel == 0 then
+                1
+
+            else
+                textLevel
     in
-    leftBrackets - rightBrackets
+    { blanksSeen = blanksSeen_, bracketLevel = bracketLevel_, textLevel = textLevel_ }
 
 
-{-| (ST 1) Put State in the Start state
-Used in ( Start, LTBlank )
-ST uses: 10 uses, 5 functions in 3x4 + 1 state transitions
--}
-start : State -> State
-start state =
-    { state | blockStatus = Start, blockLevel = 0, blockContents = [] }
-
-
-{-| (ST 2) Two uses: ( Start, LTEndElement ) and ( Start, LTTextBlock )
--}
-initBlock : BlockStatus -> String -> State -> State
-initBlock blockType_ currentLine_ state =
-    { state | blockStatus = blockType_, blockContents = [ currentLine_ ] }
-
-
-{-| (ST 3) Three uses: ( InTextBlock, LTEndElement ),( InTextBlock, LTTextBlock ), ( InElementBlock, LTTextBlock )
--}
-addToBlockContents : String -> State -> State
-addToBlockContents currentLine_ state =
+innerNextState2 : String -> State -> State
+innerNextState2 currentLine state_ =
     let
-        deltaBlockLevel =
-            differentialBlockLevel currentLine_
+        state =
+            { state_ | input = List.drop 1 state_.input }
 
-        newBlockLevel =
-            state.blockLevel + deltaBlockLevel |> max 0
+        oldBlockLevels =
+            state_.blockLevels
+
+        newBlockLevels =
+            updateBlockLevels currentLine oldBlockLevels
     in
-    if newBlockLevel == 0 && deltaBlockLevel < 0 then
-        pushBlock_ ("\n" ++ currentLine_) state
+    case ( blockFinished oldBlockLevels, blockFinished newBlockLevels ) of
+        ( True, True ) ->
+            ignoreLine newBlockLevels state
 
-    else
-        { state | blockLevel = newBlockLevel, blockContents = currentLine_ :: state.blockContents }
+        ( True, False ) ->
+            newBlock currentLine newBlockLevels state
+
+        ( False, True ) ->
+            finishBlock currentLine newBlockLevels state
+
+        ( False, False ) ->
+            accumulate currentLine newBlockLevels state
 
 
-{-| (ST 4) One use: ( InElementBlock, LTBlank )
--}
-pushBlockStack : String -> State -> State
-pushBlockStack currentLine_ state =
+accumulate : String -> BlockLevels -> State -> State
+accumulate line newBlockLevels state =
     let
-        deltaBlockLevel =
-            differentialBlockLevel currentLine_
-
-        newBlockLevel =
-            state.blockLevel + deltaBlockLevel |> max 0
-    in
-    if newBlockLevel == 0 then
-        pushBlock_ ("\n" ++ currentLine_) state
-
-    else
-        { state
-            | blockContents = currentLine_ :: state.blockContents
-            , blockLevel = newBlockLevel
-        }
-
-
-{-| (ST 5) Three uses: ( Start, LTBeginElement ), ( InTextBlock, LTBeginElement ), ( InElementBlock, LTBeginElement )
--}
-startBlock : String -> State -> State
-startBlock currentLine_ state =
-    let
-        deltaBlockLevel =
-            differentialBlockLevel currentLine_
-
-        newBlockLevel =
-            state.blockLevel + deltaBlockLevel |> max 0
+        _ =
+            Debug.log "ACCUMULATE" ( blockFinished newBlockLevels, newBlockLevels, line )
     in
     { state
-        | blockContents = currentLine_ :: state.blockContents
-        , blockLevel = newBlockLevel
-        , blockStatus = InElementBlock
+        | blockContents = line :: state.blockContents
+        , blockLevels = newBlockLevels
     }
 
 
-{-| (ST 6) Called at ( InTextBlock, LTBlank )
--}
-pushBlock : State -> State
-pushBlock state =
-    pushBlock_ "" state
+ignoreLine : BlockLevels -> State -> State
+ignoreLine newBlockLevels state =
+    { state | blockLevels = newBlockLevels, blockContents = [] }
 
 
-{-| (ST 6)
--}
-pushBlock_ : String -> State -> State
-pushBlock_ line state =
+newBlock : String -> BlockLevels -> State -> State
+newBlock currentLine newBlockLevels state =
+    { state | blockLevels = newBlockLevels, blockContents = [ currentLine ] }
+
+
+finishBlock : String -> BlockLevels -> State -> State
+finishBlock line newBlockLevels state =
     let
+        _ =
+            Debug.log "TRANSITION" ( blockFinished newBlockLevels, newBlockLevels, line )
+
         str =
             String.join "\n" (List.reverse state.blockContents)
                 ++ "\n"
@@ -300,7 +221,7 @@ pushBlock_ line state =
     { state
         | blockStatus = Start
         , blockContents = []
-        , blockLevel = 0
+        , blockLevels = newBlockLevels
         , data = updateData tc
         , lastTextCursor = Just tc
         , output = tc :: state.output
@@ -315,43 +236,6 @@ updateData tc =
 
         Just parsand ->
             Parser.Data.update parsand tc.data
-
-
-{-| (ST 7 Called at ( InElementBlock, LTEndElement )
--}
-popBlockStack : String -> State -> State
-popBlockStack currentLine_ state =
-    let
-        newBlockLevel =
-            state.blockLevel + differentialBlockLevel currentLine_ |> max 0
-    in
-    if newBlockLevel == 0 then
-        let
-            input_ =
-                String.join "\n" (List.reverse (currentLine_ :: state.blockContents))
-
-            tc_ =
-                -- TODO: is usage of state.data correct?
-                Parser.Driver.parseLoop state.generation state.lineNumber state.data input_
-
-            tc =
-                { tc_ | text = input_ }
-        in
-        { state
-            | blockStatus = Start
-            , blockLevel = 0
-            , blockContents = currentLine_ :: state.blockContents
-            , lastTextCursor = Just tc
-            , output = tc :: state.output
-            , data = updateData tc
-            , lineNumber = state.lineNumber + (2 + List.length state.blockContents) -- TODO: think about this.  Is it correct?
-        }
-
-    else
-        { state
-            | blockContents = currentLine_ :: state.blockContents
-            , blockLevel = newBlockLevel
-        }
 
 
 flush : State -> Step State State
@@ -569,11 +453,6 @@ applyNextState stepState =
 
 loop : State -> (State -> Step State State) -> State
 loop s nextState_ =
-    -- TODO: Uncomment for debugging
-    --let
-    --    _ =
-    --        Debug.log (String.fromInt s.lineNumber) { inp = s.input, err = Maybe.map .error s.lastTextCursor, bt = s.blockStatus, bl = s.blockLevel, bc = s.blockContents }
-    --in
     case nextState_ s of
         Loop s_ ->
             loop s_ nextState_

@@ -39,10 +39,15 @@ type alias State =
     , blockStatus : BlockStatus
     , blockContents : List String
     , blockLevel : Int
+    , blockLevels : BlockLevels
     , lastTextCursor : Maybe (TextCursor Element)
     , output : List (TextCursor Element)
     , data : Parser.Data.Data
     }
+
+
+type alias BlockLevels =
+    { blanksSeen : Int, bracketLevel : Int, textLevel : Int }
 
 
 {-| -}
