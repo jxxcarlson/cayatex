@@ -9,7 +9,7 @@ import Test exposing (describe, fuzz, test)
 
 
 init str =
-    Document.init 0 (String.lines str)
+    Document.initWithDefault 0 (String.lines str)
 
 
 suite =

@@ -1,6 +1,6 @@
 module Parser.Lines exposing
-    ( process, toParsed, toText
-    , Step(..), applyNextState, differentialBlockLevel, getParseResult, init, nextState, processWithData, runLoop, toBlocks
+    ( process, toParsed
+    , Step(..), applyNextState, differentialBlockLevel, getParseResult, initWithDefault, nextState, processWithData, runLoop, toBlocks
     )
 
 {-| The main function in this module is process, which takes as input
@@ -73,7 +73,7 @@ etc.
 -}
 runLoop : Int -> List String -> State
 runLoop generation strList =
-    loop (init generation strList) nextState
+    loop (initWithDefault generation strList) nextState
 
 
 runLoopWithData : Int -> Parser.Data.Data -> List String -> State
@@ -81,44 +81,9 @@ runLoopWithData generation data strList =
     loop (initWithData generation data strList) nextState
 
 
-{-| Return the AST from the State.
--}
-toParsed : State -> List (List Element)
-toParsed state =
-    state.output |> List.map .parsed |> List.reverse
-
-
-{-| Return the AST from the State.
--}
-toBlocks : State -> List String
-toBlocks state =
-    state.output |> List.map .block |> List.reverse
-
-
-
--- |> List.reverse
-
-
-{-| Return a list of logical paragraphs (blocks(: ordinary paragraphs
-or outer begin-end blocks.
--}
-toText : State -> List String
-toText state =
-    state.output |> List.map .block
-
-
-init : Int -> List String -> State
-init generation strList =
-    { input = strList
-    , lineNumber = 0
-    , generation = generation
-    , blockStatus = Start
-    , blockContents = []
-    , blockLevel = 0
-    , lastTextCursor = Nothing
-    , output = []
-    , data = Parser.Data.init Parser.Data.defaultConfig
-    }
+initWithDefault : Int -> List String -> State
+initWithDefault generation strList =
+    initWithData generation (Parser.Data.init Parser.Data.defaultConfig) strList
 
 
 initWithData : Int -> Parser.Data.Data -> List String -> State
@@ -132,129 +97,6 @@ initWithData generation data strList =
     , lastTextCursor = Nothing
     , output = []
     , data = data
-    }
-
-
-debug =
-    True
-
-
-getParseResult : Step State State -> List (List Element)
-getParseResult stepState =
-    case stepState of
-        Loop state ->
-            state.output |> List.map .parsed |> List.map (List.map Parser.Getters.strip)
-
-        Done state ->
-            state.output |> List.map .parsed |> List.map (List.map Parser.Getters.strip)
-
-
-applyNextState : Step State State -> Step State State
-applyNextState stepState =
-    case stepState of
-        Loop state ->
-            nextState state
-
-        Done state ->
-            Done state
-
-
-noError : State -> Bool
-noError state =
-    let
-        err =
-            Maybe.map .error state.lastTextCursor
-    in
-    err == Nothing || Maybe.map .status err == Just TextCursor.NoError
-
-
-handleError : State -> Step State State
-handleError state =
-    if state.input == [] then
-        flush state
-
-    else
-        let
-            err_ =
-                Maybe.map .error state.lastTextCursor
-
-            _ =
-                Maybe.map .error state.lastTextCursor |> Maybe.map .status
-        in
-        case err_ of
-            Nothing ->
-                Done state
-
-            Just err ->
-                case err.status of
-                    TextCursor.LeftBracketError ->
-                        let
-                            correctedText =
-                                err.correctedText |> List.head |> Maybe.withDefault "Could not get corrected text"
-
-                            foo =
-                                1
-                        in
-                        Loop
-                            { state
-                                | blockStatus = Start
-                                , blockLevel = 0
-                                , lastTextCursor = Maybe.map resetError state.lastTextCursor
-                            }
-
-                    TextCursor.RightBracketError ->
-                        let
-                            --_ =
-                            --    Debug.log "Parser.Lines.handleError, RightBracketError"
-                            correctedText =
-                                err.correctedText |> List.head |> Maybe.withDefault "Could not get corrected text"
-
-                            foo =
-                                1
-                        in
-                        Loop
-                            { state
-                                | blockStatus = Start
-                                , blockLevel = 0
-                                , lastTextCursor = Maybe.map resetError state.lastTextCursor
-                            }
-
-                    TextCursor.PipeError ->
-                        let
-                            --_ =
-                            --    Debug.log "Parser.Lines.handleError, RightBracketError"
-                            correctedText =
-                                err.correctedText |> List.head |> Maybe.withDefault "Could not get corrected text"
-
-                            foo =
-                                1
-                        in
-                        Loop
-                            { state
-                                | blockStatus = Start
-                                , blockLevel = 0
-                                , lastTextCursor = Maybe.map resetError state.lastTextCursor
-                            }
-
-                    _ ->
-                        Done state
-
-
-resetError : TextCursor e -> TextCursor e
-resetError tc =
-    { tc | error = { status = TextCursor.NoError, correctedText = [] } }
-
-
-type alias OO =
-    { input : List String
-    , lineNumber : Int
-    , generation : Int
-    , blockStatus : BlockStatus
-    , blockContents : List String
-    , blockLevel : Int
-    , lastTextCursor : Maybe (TextCursor Element)
-    , output : List (TextCursor Element)
-    , data : Parser.Data.Data
     }
 
 
@@ -554,6 +396,153 @@ flush state =
 countLines : List String -> Int
 countLines list =
     list |> List.map String.lines |> List.concat |> List.length |> (\x -> x + 1)
+
+
+
+-- ERROR HANDLER
+
+
+noError : State -> Bool
+noError state =
+    let
+        err =
+            Maybe.map .error state.lastTextCursor
+    in
+    err == Nothing || Maybe.map .status err == Just TextCursor.NoError
+
+
+handleError : State -> Step State State
+handleError state =
+    if state.input == [] then
+        flush state
+
+    else
+        let
+            err_ =
+                Maybe.map .error state.lastTextCursor
+
+            _ =
+                Maybe.map .error state.lastTextCursor |> Maybe.map .status
+        in
+        case err_ of
+            Nothing ->
+                Done state
+
+            Just err ->
+                case err.status of
+                    TextCursor.LeftBracketError ->
+                        let
+                            correctedText =
+                                err.correctedText |> List.head |> Maybe.withDefault "Could not get corrected text"
+
+                            foo =
+                                1
+                        in
+                        Loop
+                            { state
+                                | blockStatus = Start
+                                , blockLevel = 0
+                                , lastTextCursor = Maybe.map resetError state.lastTextCursor
+                            }
+
+                    TextCursor.RightBracketError ->
+                        let
+                            --_ =
+                            --    Debug.log "Parser.Lines.handleError, RightBracketError"
+                            correctedText =
+                                err.correctedText |> List.head |> Maybe.withDefault "Could not get corrected text"
+
+                            foo =
+                                1
+                        in
+                        Loop
+                            { state
+                                | blockStatus = Start
+                                , blockLevel = 0
+                                , lastTextCursor = Maybe.map resetError state.lastTextCursor
+                            }
+
+                    TextCursor.PipeError ->
+                        let
+                            --_ =
+                            --    Debug.log "Parser.Lines.handleError, RightBracketError"
+                            correctedText =
+                                err.correctedText |> List.head |> Maybe.withDefault "Could not get corrected text"
+
+                            foo =
+                                1
+                        in
+                        Loop
+                            { state
+                                | blockStatus = Start
+                                , blockLevel = 0
+                                , lastTextCursor = Maybe.map resetError state.lastTextCursor
+                            }
+
+                    _ ->
+                        Done state
+
+
+resetError : TextCursor e -> TextCursor e
+resetError tc =
+    { tc | error = { status = TextCursor.NoError, correctedText = [] } }
+
+
+type alias OO =
+    { input : List String
+    , lineNumber : Int
+    , generation : Int
+    , blockStatus : BlockStatus
+    , blockContents : List String
+    , blockLevel : Int
+    , lastTextCursor : Maybe (TextCursor Element)
+    , output : List (TextCursor Element)
+    , data : Parser.Data.Data
+    }
+
+
+
+-- GETTERS
+
+
+getParseResult : Step State State -> List (List Element)
+getParseResult stepState =
+    case stepState of
+        Loop state ->
+            state.output |> List.map .parsed |> List.map (List.map Parser.Getters.strip)
+
+        Done state ->
+            state.output |> List.map .parsed |> List.map (List.map Parser.Getters.strip)
+
+
+{-| Return the AST from the State.
+-}
+toParsed : State -> List (List Element)
+toParsed state =
+    state.output |> List.map .parsed |> List.reverse
+
+
+{-| Return the AST from the State.
+-}
+toBlocks : State -> List String
+toBlocks state =
+    state.output |> List.map .block |> List.reverse
+
+
+
+-- FOR TESTING
+
+
+{-| Used in DocLoopTess
+-}
+applyNextState : Step State State -> Step State State
+applyNextState stepState =
+    case stepState of
+        Loop state ->
+            nextState state
+
+        Done state ->
+            Done state
 
 
 
