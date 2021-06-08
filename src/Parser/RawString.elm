@@ -1,8 +1,24 @@
-module Parser.RawString exposing (parser)
+module Parser.RawString exposing (parser, r0, r1, r2, r3)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Error exposing (Context(..), Problem(..))
 import Parser.Tool as T
+
+
+r0 =
+    "raw#abc#"
+
+
+r1 =
+    "raw#[abc]#"
+
+
+r2 =
+    "raw#[3]#"
+
+
+r3 =
+    "raw#[3#"
 
 
 type alias Parser a =

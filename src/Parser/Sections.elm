@@ -1,7 +1,23 @@
-module Parser.Sections exposing (prefixLength, splitIntoSections, testStr)
+module Parser.Sections exposing (prefixLength, splitIntoSections, t1, t2, testStr)
 
 import Parser exposing ((|.), (|=))
 import Parser.Types exposing (..)
+
+
+t1 =
+    """
+[c raw#[set [project = Gaia Unlimited, pi = 3.1416]#].
+
+# Spreadsheets
+"""
+
+
+t2 =
+    """
+[c raw#[set [project = Gaia Unlimited, pi = 3.1416]#].
+
+## Spreadsheets
+"""
 
 
 testStr =

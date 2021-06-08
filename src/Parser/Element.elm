@@ -5,6 +5,12 @@ module Parser.Element exposing
     , parse
     , parseList
     , parser
+    , r0
+    , r1
+    , r1b
+    , r2
+    , r3
+    , rawString
     )
 
 {-
@@ -42,6 +48,26 @@ type CYTMsg
 
 
 -- PARSER
+
+
+r0 =
+    "[c raw#abc#]"
+
+
+r1 =
+    "[c raw#[abc]#]"
+
+
+r1b =
+    "[c raw#[abc#]"
+
+
+r2 =
+    "[c raw#[3]#]"
+
+
+r3 =
+    "[c raw#[3#]"
 
 
 parse : Int -> Int -> String -> Result (List ParseError) Element

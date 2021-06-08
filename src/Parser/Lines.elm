@@ -115,7 +115,7 @@ nextState state_ =
         ( Just currentLine, _ ) ->
             -- there is a line to process and there are no errors, so let's go for it!
             -- innerNextState currentLine state_
-            Loop (innerNextState2 currentLine state_)
+            Loop (innerNextState currentLine state_)
 
 
 differentialBlockLevel : String -> Int
@@ -154,8 +154,8 @@ updateBlockLevels line { blanksSeen, bracketLevel, textLevel } =
     { blanksSeen = blanksSeen_, bracketLevel = bracketLevel_, textLevel = textLevel_ }
 
 
-innerNextState2 : String -> State -> State
-innerNextState2 currentLine state_ =
+innerNextState : String -> State -> State
+innerNextState currentLine state_ =
     let
         state =
             { state_ | input = List.drop 1 state_.input }
@@ -182,10 +182,6 @@ innerNextState2 currentLine state_ =
 
 accumulate : String -> BlockLevels -> State -> State
 accumulate line newBlockLevels state =
-    let
-        _ =
-            Debug.log "ACCUMULATE" ( blockFinished newBlockLevels, newBlockLevels, line )
-    in
     { state
         | blockContents = line :: state.blockContents
         , blockLevels = newBlockLevels
@@ -205,9 +201,6 @@ newBlock currentLine newBlockLevels state =
 finishBlock : String -> BlockLevels -> State -> State
 finishBlock line newBlockLevels state =
     let
-        _ =
-            Debug.log "TRANSITION" ( blockFinished newBlockLevels, newBlockLevels, line )
-
         str =
             String.join "\n" (List.reverse state.blockContents)
                 ++ "\n"
@@ -287,7 +280,7 @@ flush state =
                         Maybe.map .correctedText errorStatus |> Maybe.withDefault [ "Could not correct the error" ] |> List.reverse
 
                     correctedState =
-                        { state | input = correctedText, blockContents = [], blockLevel = 0, blockStatus = Start }
+                        { state | input = correctedText, blockContents = [], blockLevels = { blanksSeen = 0, bracketLevel = 0, textLevel = 0 } }
                 in
                 Loop correctedState
 
@@ -342,8 +335,7 @@ handleError state =
                         in
                         Loop
                             { state
-                                | blockStatus = Start
-                                , blockLevel = 0
+                                | blockLevels = { blanksSeen = 0, bracketLevel = 0, textLevel = 0 }
                                 , lastTextCursor = Maybe.map resetError state.lastTextCursor
                             }
 
@@ -359,8 +351,7 @@ handleError state =
                         in
                         Loop
                             { state
-                                | blockStatus = Start
-                                , blockLevel = 0
+                                | blockLevels = { blanksSeen = 0, bracketLevel = 0, textLevel = 0 }
                                 , lastTextCursor = Maybe.map resetError state.lastTextCursor
                             }
 
@@ -388,19 +379,6 @@ handleError state =
 resetError : TextCursor e -> TextCursor e
 resetError tc =
     { tc | error = { status = TextCursor.NoError, correctedText = [] } }
-
-
-type alias OO =
-    { input : List String
-    , lineNumber : Int
-    , generation : Int
-    , blockStatus : BlockStatus
-    , blockContents : List String
-    , blockLevel : Int
-    , lastTextCursor : Maybe (TextCursor Element)
-    , output : List (TextCursor Element)
-    , data : Parser.Data.Data
-    }
 
 
 
