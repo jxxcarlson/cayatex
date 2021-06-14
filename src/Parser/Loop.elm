@@ -82,7 +82,7 @@ nextCursor packet tc =
                     { tc
                         | count = tc.count + 1
                         , text = String.dropLeft sourceMapLength tc.text
-                        , block = tc.block ++ String.left sourceMapLength tc.text
+                        , block = "" -- tc.block ++ String.left sourceMapLength tc.text |> Debug.log ("INC BLOCK " ++ String.fromInt tc.count)
                         , parsand = Just parsand
                         , parsed = Data.labelElement data parsand :: tc.parsed
                         , offset = tc.offset + sourceMapLength

@@ -8,7 +8,6 @@ import Parser.Error exposing (Context(..), Problem(..))
 import Parser.Getters as Getters
 import Parser.Loop as Loop
 import Parser.Metadata as Metadata exposing (Metadata)
-import Parser.RecoveryData as RecoveryData exposing (RecoveryData)
 import Parser.TextCursor as TextCursor exposing (TextCursor)
 
 
@@ -72,59 +71,64 @@ type alias ParseError  =
 
 
 {-| TODO: Document how this works and how it is extended.
+ The role of handleError is to take a textCursor and a list
+ of errors and return a corrected textCursor.
 -}
 handleError : TextCursor Element -> List ParseError -> TextCursor Element
-handleError tc_ errors =
-    let
-        mFirstError =
-             List.head errors
-
-        problem : Problem
-        problem =
-            mFirstError |> Maybe.map .problem |> Maybe.withDefault (UnHandledError 0)
-
-        errorColumn =
-            mFirstError |> Maybe.map .col |> Maybe.withDefault 0
-
-        errorText =
-            -- Example: if the input text is "foo [b bar", then
-            -- the error text is "[b bar"
-            -- But if the input text is "foo [b bar\n\nabc", then
-            -- the error text is "b b" which is INCORRECT.
-            String.left errorColumn tc_.text |> Debug.log "ERROR TEXT"
-
-        mRecoveryData : Maybe RecoveryData
-        mRecoveryData =
-            RecoveryData.get tc_ problem |> Debug.log "RECOVERY DATA"
-
-        lxError =
-            Element "Error" [] (Text errorText Nothing) (Just { blockOffset = tc_.blockIndex, length = errorColumn, offset = tc_.offset + errorColumn, generation = tc_.generation, label = "" })
-    in
-    case problem of
-        ExpectingRightBracket ->
-            handleRightBracketError tc_ mFirstError errorColumn mRecoveryData
-
-        ExpectingLeftBracket ->
-            handleLeftBracketError tc_ mFirstError errorColumn mRecoveryData
-
-        ExpectingPipe ->
-            handlePipeError tc_ mFirstError errorColumn mRecoveryData
-
-        _ ->
-            unhandledError tc_ mFirstError errorColumn mRecoveryData lxError errorText
+handleError tc errors =
+    case List.head errors of
+        Nothing -> tc
+        Just firstError ->
+            let
 
 
-unhandledError tc_ mFirstError errorColumn mRecoveryData lxError errorText =
-    { text = makeNewText tc_ errorColumn mRecoveryData
-    , block = "?? TO DO"
-    , blockIndex = tc_.blockIndex
+
+                problem : Problem
+                problem =
+                    firstError |> .problem |> Debug.log "PROBLEM"
+
+                errorColumn = firstError.col
+
+                errorRow = firstError.row
+                _ = Debug.log "Error (row, col)" (errorRow, errorColumn)
+
+                errorText =
+                    -- Example: if the input text is "foo [b bar", then
+                    -- the error text is "[b bar"
+                    -- But if the input text is "foo [b bar\n\nabc", then
+                    -- the error text is "b b" which is INCORRECT.
+                    -- String.left errorColumn tc_.text |> Debug.log "ERROR TEXT (0)"
+                     tc.text |> Debug.log "ERROR TEXT (0)"
+
+
+                lxError =
+                    Element "Error" [] (Text errorText Nothing) (Just { blockOffset = tc.blockIndex, length = errorColumn, offset = tc.offset + errorColumn, generation = tc.generation, label = "" })
+            in
+            case problem of
+                ExpectingRightBracket ->
+                    handleRightBracketError tc firstError errorText
+
+                ExpectingLeftBracket ->
+                    handleLeftBracketError tc firstError errorText
+
+                ExpectingPipe ->
+                    handlePipeError tc firstError errorText
+
+                _ ->
+                    unhandledError tc firstError errorText lxError
+
+
+unhandledError tc firstError errorText lxError =
+    { text = tc.text -- makeNewText tc_ errorColumn mRecoveryData
+    , block = ""
+    , blockIndex = tc.blockIndex
     , parsand = Nothing
-    , parsed = newParsed tc_ lxError mRecoveryData
-    , stack = newStack tc_ errorText mRecoveryData
-    , offset = newOffset tc_ errorColumn mRecoveryData
-    , count = tc_.count
-    , generation = tc_.generation
-    , data = tc_.data
+    , parsed = [] -- newParsed tc lxError mRecoveryData
+    , stack = [] -- newStack tc errorText mRecoveryData
+    , offset = 0 -- newOffset tc errorColumn mRecoveryData
+    , count = tc.count
+    , generation = tc.generation
+    , data = tc.data
     , error = { status = TextCursor.UnhandledError, correctedText = [] }
     }
 
@@ -133,62 +137,54 @@ unhandledError tc_ mFirstError errorColumn mRecoveryData lxError errorText =
 -- The handlers below will be rationalized and simplified.  Still in an experimental state.
 
 
-handleRightBracketError : TextCursor Element -> Maybe ParseError -> Int -> Maybe RecoveryData -> TextCursor Element
-handleRightBracketError tc_ mFirstError errorColumn mRecoveryData =
+handleRightBracketError : TextCursor Element -> ParseError -> String -> TextCursor Element
+handleRightBracketError tc ({row, col} as firstError) errorText =
     let
 
+        --correctedText2 = errorText ++ "]"  |>   Debug.log "CORR. TEXT 1"
+
+
         textLines =
-            String.lines tc_.text
-
-        badText =
-            case List.head textLines of
-                Nothing ->
-                    "Oops, couldn't find your error text"
-
-                Just str ->
-                    str
-
-        correctedText =
-            badText
-                |> String.replace "[" fakeLeftBracket
-                |> String.replace "|" fakePipeSymbol
-                |> (\s -> s ++ fakeRightBracket)
-
-        errorRow =
-            Maybe.map .row mFirstError |> Maybe.withDefault 0
+            String.lines tc.text |> Debug.log "TEXT LINES"
 
         errorLines : List String
         errorLines =
-            List.take errorRow textLines
+            List.take firstError.row textLines
 
         replacementText =
-            "[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]"
+            "[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| [b " ++ fixUp errorText ++ " ]]"
+               |> Debug.log "REPLACEMENT TEXT"
 
-        newTextLines =
-            -- ("[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]") :: List.drop errorRow textLines
-            List.Extra.setIf (\t -> t == badText) replacementText errorLines
-                |> List.reverse
+        newTextLines3 = replacementText :: (List.drop 1 textLines)
+          |> List.reverse
+
 
         newText =
-            String.join "\n" (List.reverse newTextLines)
+            String.join "\n" newTextLines3
     in
     { text = newText
-    , block = "?? TO DO" --
-    , blockIndex = tc_.blockIndex --
+    , block = ""
+    , blockIndex = tc.blockIndex --
     , parsand = Nothing
-    , parsed = List.drop 1 tc_.parsed -- throw away the erroneous parsand
+    , parsed =  tc.parsed
     , stack = [] -- not used
-    , offset = newOffset tc_ errorColumn mRecoveryData
-    , count = tc_.count
-    , generation = tc_.generation
-    , data = tc_.data
-    , error = { status = TextCursor.RightBracketError, correctedText = newTextLines }
+    , offset = 0 -- tc_.offset + firstError.col
+    , count = tc.count
+    , generation = tc.generation
+    , data = tc.data
+    , error = { status = TextCursor.RightBracketError, correctedText = newTextLines3 }
     }
 
 
-handleLeftBracketError : TextCursor Element -> Maybe (PA.DeadEnd Context Problem) -> Int -> Maybe RecoveryData -> TextCursor Element
-handleLeftBracketError tc_ mFirstError errorColumn mRecoveryData =
+fixUp : String -> String
+fixUp str =
+    str |> String.replace "[" fakeLeftBracket
+      |> String.replace "]" fakeRightBracket
+
+handleLeftBracketError : TextCursor Element -> ParseError -> String -> TextCursor Element
+handleLeftBracketError tc_ ({row, col} as firstError) errorText  =
     let
+        _ = Debug.log "COUNT" tc_.count
         textLines =
             String.lines tc_.text
 
@@ -201,33 +197,34 @@ handleLeftBracketError tc_ mFirstError errorColumn mRecoveryData =
                     str
 
         name =
-            String.replace "[" "" tc_.block |> String.words |> List.head |> Maybe.withDefault "NAME"
+            String.replace "[" "" (Debug.log "BLOCK (1)" tc_.block) |> String.words |> List.head |> Maybe.withDefault "NAME"
 
-        errorRow =
-            Maybe.map .row mFirstError |> Maybe.withDefault 0
+
 
         errorLines : List String
         errorLines =
-            List.take errorRow textLines
+            List.take row textLines
 
         replacementText =
-            "[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ fakeLeftBracket ++ " " ++ name ++ " " ++ tc_.block ++ " " ++ fakeRightBracket ++ "]"
+            "[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ fakeLeftBracket
+              ++ " " ++ (Debug.log "NAME" name) ++ " " ++ (Debug.log "BLOCK (2)" tc_.block) ++ " " ++ fakeRightBracket ++ "]"
+              |> Debug.log "REPLACEMENT TEXT"
 
         newTextLines =
             -- ("[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]") :: List.drop errorRow textLines
             List.Extra.setIf (\t -> t == badText) replacementText errorLines
-                |> List.reverse
+
 
         newText =
-            String.join "\n" (List.reverse newTextLines)
+            String.join "\n" (newTextLines)
     in
     { text = newText
-    , block = "?? TO DO" --
+    , block = ""
     , blockIndex = tc_.blockIndex --
     , parsand = Nothing
-    , parsed = List.drop 1 tc_.parsed -- throw away the erroneous parsand
+    , parsed =  tc_.parsed -- throw away the erroneous parsand
     , stack = [] -- not used
-    , offset = newOffset tc_ errorColumn mRecoveryData
+    , offset = 0 -- newOffset tc_ errorColumn mRecoveryData
     , count = tc_.count
     , generation = tc_.generation
     , data = tc_.data
@@ -235,8 +232,8 @@ handleLeftBracketError tc_ mFirstError errorColumn mRecoveryData =
     }
 
 
-handlePipeError : TextCursor Element -> Maybe (PA.DeadEnd Context Problem) -> Int -> Maybe RecoveryData -> TextCursor Element
-handlePipeError tc_ mFirstError errorColumn mRecoveryData =
+handlePipeError : TextCursor Element -> ParseError -> String -> TextCursor Element
+handlePipeError tc_ ({row, col} as firstError) errorText  =
     let
         textLines : List String
         textLines =
@@ -258,13 +255,11 @@ handlePipeError tc_ mFirstError errorColumn mRecoveryData =
                 |> String.replace "|" fakePipeSymbol
                 |> (\s -> s ++ fakeRightBracket)
 
-        errorRow : Int
-        errorRow =
-            Maybe.map .row mFirstError |> Maybe.withDefault 0
+
 
         errorLines : List String
         errorLines =
-            List.take (errorRow - 1) textLines
+            List.take (row - 1) textLines
 
         replacementText : String
         replacementText =
@@ -275,12 +270,12 @@ handlePipeError tc_ mFirstError errorColumn mRecoveryData =
             List.Extra.setIf (\t -> t == badText) replacementText textLines |> List.reverse
     in
     { text = String.join "\n" (List.reverse newTextLines)
-    , block = "?? TO DO"
+    , block = ""
     , blockIndex = tc_.blockIndex
     , parsed = parse__ (String.join "\n" errorLines)
     , parsand = Nothing
     , stack = [] --newStack tc_ errorText mRecoveryData
-    , offset = newOffset tc_ errorColumn mRecoveryData
+    , offset = 0 -- newOffset tc_ errorColumn mRecoveryData
     , count = tc_.count
     , generation = tc_.generation
     , data = tc_.data
