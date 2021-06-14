@@ -274,8 +274,6 @@ flush state =
         case Maybe.map .status errorStatus of
             Just TextCursor.RightBracketError ->
                 let
-                    --_ =
-                    --    Debug.log "Parser.Lines.FLUSH, RightBracketError"
                     correctedText =
                         Maybe.map .correctedText errorStatus |> Maybe.withDefault [ "Could not correct the error" ] |> List.reverse
 
@@ -341,8 +339,6 @@ handleError state =
 
                     TextCursor.RightBracketError ->
                         let
-                            --_ =
-                            --    Debug.log "Parser.Lines.handleError, RightBracketError"
                             correctedText =
                                 err.correctedText |> List.head |> Maybe.withDefault "Could not get corrected text"
 
@@ -357,8 +353,6 @@ handleError state =
 
                     TextCursor.PipeError ->
                         let
-                            --_ =
-                            --    Debug.log "Parser.Lines.handleError, RightBracketError"
                             correctedText =
                                 err.correctedText |> List.head |> Maybe.withDefault "Could not get corrected text"
 

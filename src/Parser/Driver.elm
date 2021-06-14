@@ -85,20 +85,18 @@ handleError tc errors =
 
                 problem : Problem
                 problem =
-                    firstError |> .problem |> Debug.log "PROBLEM"
+                    firstError |> .problem
 
                 errorColumn = firstError.col
 
                 errorRow = firstError.row
-                _ = Debug.log "Error (row, col)" (errorRow, errorColumn)
 
                 errorText =
                     -- Example: if the input text is "foo [b bar", then
                     -- the error text is "[b bar"
                     -- But if the input text is "foo [b bar\n\nabc", then
                     -- the error text is "b b" which is INCORRECT.
-                    -- String.left errorColumn tc_.text |> Debug.log "ERROR TEXT (0)"
-                     tc.text |> Debug.log "ERROR TEXT (0)"
+                     tc.text
 
 
                 lxError =
@@ -141,11 +139,8 @@ handleRightBracketError : TextCursor Element -> ParseError -> String -> TextCurs
 handleRightBracketError tc ({row, col} as firstError) errorText =
     let
 
-        --correctedText2 = errorText ++ "]"  |>   Debug.log "CORR. TEXT 1"
-
-
         textLines =
-            String.lines tc.text |> Debug.log "TEXT LINES"
+            String.lines tc.text
 
         errorLines : List String
         errorLines =
@@ -153,7 +148,7 @@ handleRightBracketError tc ({row, col} as firstError) errorText =
 
         replacementText =
             "[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| [b " ++ fixUp errorText ++ " ]]"
-               |> Debug.log "REPLACEMENT TEXT"
+
 
         newTextLines3 = replacementText :: (List.drop 1 textLines)
           |> List.reverse
@@ -184,7 +179,6 @@ fixUp str =
 handleLeftBracketError : TextCursor Element -> ParseError -> String -> TextCursor Element
 handleLeftBracketError tc_ ({row, col} as firstError) errorText  =
     let
-        _ = Debug.log "COUNT" tc_.count
         textLines =
             String.lines tc_.text
 
@@ -197,7 +191,7 @@ handleLeftBracketError tc_ ({row, col} as firstError) errorText  =
                     str
 
         name =
-            String.replace "[" "" (Debug.log "BLOCK (1)" tc_.block) |> String.words |> List.head |> Maybe.withDefault "NAME"
+            String.replace "[" "" ( tc_.block) |> String.words |> List.head |> Maybe.withDefault "NAME"
 
 
 
@@ -207,8 +201,8 @@ handleLeftBracketError tc_ ({row, col} as firstError) errorText  =
 
         replacementText =
             "[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ fakeLeftBracket
-              ++ " " ++ (Debug.log "NAME" name) ++ " " ++ (Debug.log "BLOCK (2)" tc_.block) ++ " " ++ fakeRightBracket ++ "]"
-              |> Debug.log "REPLACEMENT TEXT"
+              ++ " " ++ ( name) ++ " " ++ ( tc_.block) ++ " " ++ fakeRightBracket ++ "]"
+
 
         newTextLines =
             -- ("[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]") :: List.drop errorRow textLines
