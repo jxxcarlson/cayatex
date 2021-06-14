@@ -133,7 +133,7 @@ parsable by the human eye.
 Below is the abstract parseLoop function.  It is made concrete
 by the value of `Packet Element`, which is a record of 
 functions -- a parser, an error handler, etc.  The `Data`
-element accumuates information about the parsed text such 
+element accumulates information about the parsed text such 
 as section numbers, cross references, etc.  This information
 is available when the AST is rendered, so that no second pass,
 as with LaTeX, is necessary.
