@@ -91,11 +91,11 @@ handleError tc_ errors =
             -- the error text is "[b bar"
             -- But if the input text is "foo [b bar\n\nabc", then
             -- the error text is "b b" which is INCORRECT.
-            String.left errorColumn tc_.text |> Debug.log "ERROR TEXT"
+            String.left errorColumn tc_.text --|> Debug.log "ERROR TEXT"
 
         mRecoveryData : Maybe RecoveryData
         mRecoveryData =
-            RecoveryData.get tc_ problem |> Debug.log "RECOVERY DATA"
+            RecoveryData.get tc_ problem -- |> Debug.log "RECOVERY DATA"
 
         lxError =
             Element "Error" [] (Text errorText Nothing) (Just { blockOffset = tc_.blockIndex, length = errorColumn, offset = tc_.offset + errorColumn, generation = tc_.generation, label = "" })

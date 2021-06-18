@@ -75,11 +75,7 @@ nextSplitterState state =
         Nothing ->
             Done { prelude = List.reverse state.prelude, sections = List.reverse <| List.reverse state.accum :: state.sections }
 
-        Just currentLine_ ->
-            let
-                currentLine =
-                    preprocessLine currentLine_
-            in
+        Just currentLine ->
             case ( lineType currentLine, state.status ) of
                 ( UnMarked, InPrelude ) ->
                     -- continue prelude
