@@ -1,4 +1,4 @@
-module Parser.Document exposing (renderString)
+module Parser.Document exposing (renderString, processString)
 
 import Element as E
 import Parser.Data

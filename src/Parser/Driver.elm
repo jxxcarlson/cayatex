@@ -1,4 +1,4 @@
-module Parser.Driver exposing (parseLoop)
+module Parser.Driver exposing (parseLoop, pl)
 
 import List.Extra
 import Parser.Advanced as PA
@@ -67,18 +67,17 @@ incrementSourceMapOffset delta sourceMap =
 -- ERROR HANDLER
 
 
-type alias ErrorData =
+type alias ParseError  =
     PA.DeadEnd Context Problem
 
 
 {-| TODO: Document how this works and how it is extended.
 -}
-handleError : TextCursor Element -> List ErrorData -> TextCursor Element
-handleError tc_ e =
+handleError : TextCursor Element -> List ParseError -> TextCursor Element
+handleError tc_ errors =
     let
         mFirstError =
-            e
-                |> List.head
+             List.head errors
 
         problem : Problem
         problem =
@@ -88,11 +87,15 @@ handleError tc_ e =
             mFirstError |> Maybe.map .col |> Maybe.withDefault 0
 
         errorText =
-            String.left errorColumn tc_.text
+            -- Example: if the input text is "foo [b bar", then
+            -- the error text is "[b bar"
+            -- But if the input text is "foo [b bar\n\nabc", then
+            -- the error text is "b b" which is INCORRECT.
+            String.left errorColumn tc_.text --|> Debug.log "ERROR TEXT"
 
         mRecoveryData : Maybe RecoveryData
         mRecoveryData =
-            RecoveryData.get tc_ problem
+            RecoveryData.get tc_ problem -- |> Debug.log "RECOVERY DATA"
 
         lxError =
             Element "Error" [] (Text errorText Nothing) (Just { blockOffset = tc_.blockIndex, length = errorColumn, offset = tc_.offset + errorColumn, generation = tc_.generation, label = "" })
@@ -130,11 +133,10 @@ unhandledError tc_ mFirstError errorColumn mRecoveryData lxError errorText =
 -- The handlers below will be rationalized and simplified.  Still in an experimental state.
 
 
-handleRightBracketError : TextCursor Element -> Maybe (PA.DeadEnd Context Problem) -> Int -> Maybe RecoveryData -> TextCursor Element
+handleRightBracketError : TextCursor Element -> Maybe ParseError -> Int -> Maybe RecoveryData -> TextCursor Element
 handleRightBracketError tc_ mFirstError errorColumn mRecoveryData =
     let
-        --_ =
-        --    Debug.log "Parser.Lines.FLUSH, RightBracketError"
+
         textLines =
             String.lines tc_.text
 
