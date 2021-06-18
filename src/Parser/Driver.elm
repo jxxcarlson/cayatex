@@ -67,7 +67,7 @@ incrementSourceMapOffset delta sourceMap =
 -- ERROR HANDLER
 
 
-type alias ParseError  =
+type alias ParseError =
     PA.DeadEnd Context Problem
 
 
@@ -77,7 +77,7 @@ handleError : TextCursor Element -> List ParseError -> TextCursor Element
 handleError tc_ errors =
     let
         mFirstError =
-             List.head errors
+            List.head errors
 
         problem : Problem
         problem =
@@ -91,12 +91,14 @@ handleError tc_ errors =
             -- the error text is "[b bar"
             -- But if the input text is "foo [b bar\n\nabc", then
             -- the error text is "b b" which is INCORRECT.
-            String.left errorColumn tc_.text --|> Debug.log "ERROR TEXT"
+            String.left errorColumn tc_.text
 
+        --|> Debug.log "ERROR TEXT"
         mRecoveryData : Maybe RecoveryData
         mRecoveryData =
-            RecoveryData.get tc_ problem -- |> Debug.log "RECOVERY DATA"
+            RecoveryData.get tc_ problem
 
+        -- |> Debug.log "RECOVERY DATA"
         lxError =
             Element "Error" [] (Text errorText Nothing) (Just { blockOffset = tc_.blockIndex, length = errorColumn, offset = tc_.offset + errorColumn, generation = tc_.generation, label = "" })
     in
@@ -134,11 +136,10 @@ unhandledError tc_ mFirstError errorColumn mRecoveryData lxError errorText =
 
 
 handleRightBracketError : TextCursor Element -> Maybe ParseError -> Int -> Maybe RecoveryData -> TextCursor Element
-handleRightBracketError tc_ mFirstError errorColumn mRecoveryData =
+handleRightBracketError tc mFirstError errorColumn mRecoveryData =
     let
-
         textLines =
-            String.lines tc_.text
+            String.lines tc.text
 
         badText =
             case List.head textLines of
@@ -162,27 +163,31 @@ handleRightBracketError tc_ mFirstError errorColumn mRecoveryData =
             List.take errorRow textLines
 
         replacementText =
-            "[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]"
+            if tc.stack == [] then
+                "[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]"
 
-        newTextLines =
-            -- ("[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]") :: List.drop errorRow textLines
-            List.Extra.setIf (\t -> t == badText) replacementText errorLines
-                |> List.reverse
+            else
+                ""
 
-        newText =
-            String.join "\n" (List.reverse newTextLines)
+        --
+        --newTextLines =
+        --    -- ("[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]") :: List.drop errorRow textLines
+        --    List.Extra.setIf (\t -> t == badText) replacementText errorLines
+        --        |> List.reverse
+        --newText =
+        --    String.join "\n" (List.reverse newTextLines)
     in
-    { text = newText
+    { text = replacementText
     , block = "" --
-    , blockIndex = tc_.blockIndex --
+    , blockIndex = tc.blockIndex --
     , parsand = Nothing
-    , parsed = List.drop 1 tc_.parsed -- throw away the erroneous parsand
-    , stack = [] -- not used
-    , offset = newOffset tc_ errorColumn mRecoveryData
-    , count = tc_.count
-    , generation = tc_.generation
-    , data = tc_.data
-    , error = { status = TextCursor.RightBracketError, correctedText = newTextLines }
+    , parsed = List.drop 1 tc.parsed -- throw away the erroneous parsand
+    , stack = "[" :: tc.stack -- not used
+    , offset = newOffset tc errorColumn mRecoveryData
+    , count = tc.count
+    , generation = tc.generation
+    , data = tc.data
+    , error = { status = TextCursor.RightBracketError, correctedText = [ replacementText ] }
     }
 
 
@@ -211,36 +216,32 @@ handleLeftBracketError tc mFirstError errorColumn mRecoveryData =
             List.take errorRow textLines
 
         replacementText =
-            "[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ fakeLeftBracket ++ " " ++ name ++ " " ++ tc.block ++ " " ++ fakeRightBracket ++ "]"
+            if tc.stack == [] then
+                "[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ fakeLeftBracket ++ " " ++ name ++ " " ++ tc.block ++ " " ++ fakeRightBracket ++ "]"
 
-        newTextLines =
-            -- ("[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]") :: List.drop errorRow textLines
-            List.Extra.setIf (\t -> t == badText) replacementText errorLines
-                |> List.reverse
-
-        newText =
-            String.join "\n" (List.reverse newTextLines)
+            else
+                ""
     in
-    { text = newText
+    { text = replacementText
     , block = "" --
     , blockIndex = tc.blockIndex --
     , parsand = Nothing
     , parsed = List.drop 1 tc.parsed -- throw away the erroneous parsand
-    , stack = [] -- not used
+    , stack = "]" :: tc.stack -- not used
     , offset = newOffset tc errorColumn mRecoveryData
     , count = tc.count
     , generation = tc.generation
     , data = tc.data
-    , error = { status = TextCursor.LeftBracketError, correctedText = newTextLines }
+    , error = { status = TextCursor.LeftBracketError, correctedText = [ replacementText ] }
     }
 
 
 handlePipeError : TextCursor Element -> Maybe (PA.DeadEnd Context Problem) -> Int -> Maybe RecoveryData -> TextCursor Element
-handlePipeError tc_ mFirstError errorColumn mRecoveryData =
+handlePipeError tc mFirstError errorColumn mRecoveryData =
     let
         textLines : List String
         textLines =
-            String.lines tc_.text
+            String.lines tc.text
 
         badText : String
         badText =
@@ -268,23 +269,27 @@ handlePipeError tc_ mFirstError errorColumn mRecoveryData =
 
         replacementText : String
         replacementText =
-            "[highlightRGB |255, 130, 130| missing trailing pipe symbol in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]"
+            if tc.stack == [] then
+                "[highlightRGB |255, 130, 130| missing trailing pipe symbol in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]"
+
+            else
+                ""
 
         newTextLines : List String
         newTextLines =
             List.Extra.setIf (\t -> t == badText) replacementText textLines |> List.reverse
     in
-    { text = String.join "\n" (List.reverse newTextLines)
+    { text = replacementText
     , block = ""
-    , blockIndex = tc_.blockIndex
+    , blockIndex = tc.blockIndex
     , parsed = parse__ (String.join "\n" errorLines)
     , parsand = Nothing
-    , stack = [] --newStack tc_ errorText mRecoveryData
-    , offset = newOffset tc_ errorColumn mRecoveryData
-    , count = tc_.count
-    , generation = tc_.generation
-    , data = tc_.data
-    , error = { status = TextCursor.PipeError, correctedText = newTextLines }
+    , stack = "|" :: tc.stack --newStack tc_ errorText mRecoveryData
+    , offset = newOffset tc errorColumn mRecoveryData
+    , count = tc.count
+    , generation = tc.generation
+    , data = tc.data
+    , error = { status = TextCursor.PipeError, correctedText = [ replacementText ] }
     }
 
 
