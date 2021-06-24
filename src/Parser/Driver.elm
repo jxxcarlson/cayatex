@@ -48,6 +48,10 @@ incrementOffset delta expr =
         LX e sm ->
             LX e (incrementSourceMapOffset delta sm)
 
+        Problem p c e ->
+            -- TODO: trouble?
+            Problem p c e
+
 
 incrementSourceMapOffset : Int -> Maybe Metadata -> Maybe Metadata
 incrementSourceMapOffset delta sourceMap =

@@ -76,6 +76,9 @@ renderElement renderArgs element =
         LX list_ _ ->
             paragraph format (List.map (renderElement renderArgs) list_)
 
+        Problem p c e ->
+            E.el [ Font.color (E.rgb255 200 0 0) ] (E.text e)
+
 
 paragraphs : String -> List String
 paragraphs str =

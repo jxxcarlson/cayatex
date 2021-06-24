@@ -91,6 +91,9 @@ getBody element =
         LX _ _ ->
             Nothing
 
+        Problem _ _ _ ->
+            Nothing
+
 
 getText : Element -> Maybe String
 getText element =

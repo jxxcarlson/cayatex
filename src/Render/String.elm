@@ -3,9 +3,11 @@ module Render.String exposing (renderElement, renderString)
 import Dict exposing (Dict)
 import Parser.Element as Element exposing (Element(..))
 
+
 type DisplayMode
     = InlineMathMode
     | DisplayMathMode
+
 
 
 {-
@@ -49,6 +51,9 @@ renderElement element =
 
         LX list _ ->
             List.map renderElement list |> String.join " "
+
+        Problem p c e ->
+            e
 
 
 renderWithDictionary name args body =
@@ -141,6 +146,9 @@ endTag str =
 tag : String -> String -> String
 tag tag_ str =
     beginTag tag_ ++ str ++ endTag tag_
+
+
+
 --- MATH
 --
 --

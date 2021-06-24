@@ -347,6 +347,9 @@ renderElement renderArgs element =
         LX elements _ ->
             List.map (renderElement renderArgs) elements |> String.join " "
 
+        Problem p c e ->
+            "Error: " ++ e
+
 
 initState : Int -> Types.RenderArgs
 initState k =

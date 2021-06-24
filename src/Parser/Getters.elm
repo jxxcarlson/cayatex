@@ -18,6 +18,9 @@ strip expr =
         LX expr_ _ ->
             LX (List.map strip expr_) Nothing
 
+        Problem p c e ->
+            Problem p c e
+
 
 getSource : Element -> Maybe Metadata
 getSource expr =
@@ -30,6 +33,9 @@ getSource expr =
 
         LX expr_ sm ->
             sm
+
+        Problem _ _ _ ->
+            Nothing
 
 
 
@@ -47,6 +53,9 @@ getArgs_ expr =
         LX expr_ _ ->
             Nothing
 
+        Problem _ _ _ ->
+            Nothing
+
 
 getArgs expr =
     expr |> List.map getArgs_ |> List.map (Maybe.map (List.map strip))
@@ -61,6 +70,9 @@ getBody_ expr =
             Nothing
 
         LX _ _ ->
+            Nothing
+
+        Problem _ _ _ ->
             Nothing
 
 

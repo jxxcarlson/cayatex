@@ -97,6 +97,9 @@ setSourceMap sm expr =
         LX list _ ->
             LX list sm
 
+        Problem p c e ->
+            Problem p c e
+
 
 
 --type Element
