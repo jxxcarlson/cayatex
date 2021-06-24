@@ -74,8 +74,11 @@ type alias ParseError =
 {-| TODO: Document how this works and how it is extended.
 -}
 handleError : TextCursor Element -> List ParseError -> TextCursor Element
-handleError tc_ errors =
+handleError tc errors =
     let
+        _ =
+            Debug.log "ERRORS" errors
+
         mFirstError =
             List.head errors
 
@@ -91,32 +94,32 @@ handleError tc_ errors =
             -- the error text is "[b bar"
             -- But if the input text is "foo [b bar\n\nabc", then
             -- the error text is "b b" which is INCORRECT.
-            String.left errorColumn tc_.text
+            String.left errorColumn tc.text |> Debug.log "ERROR TEXT"
 
         --|> Debug.log "ERROR TEXT"
         mRecoveryData : Maybe RecoveryData
         mRecoveryData =
-            RecoveryData.get tc_ problem
+            RecoveryData.get tc problem
 
         -- |> Debug.log "RECOVERY DATA"
         lxError =
-            Element "Error" [] (Text errorText Nothing) (Just { blockOffset = tc_.blockIndex, length = errorColumn, offset = tc_.offset + errorColumn, generation = tc_.generation, label = "" })
+            Element "Error" [] (Text errorText Nothing) (Just { blockOffset = tc.blockIndex, length = errorColumn, offset = tc.offset + errorColumn, generation = tc.generation, label = "" })
     in
     case problem of
         ExpectingRightBracket ->
-            handleRightBracketError tc_ mFirstError errorColumn mRecoveryData
+            handleRightBracketError mFirstError errorColumn mRecoveryData tc
 
         ExpectingLeftBracket ->
-            handleLeftBracketError tc_ mFirstError errorColumn mRecoveryData
+            handleLeftBracketError mFirstError errorColumn mRecoveryData tc
 
         ExpectingPipe ->
-            handlePipeError tc_ mFirstError errorColumn mRecoveryData
+            handlePipeError mFirstError errorColumn mRecoveryData tc
 
         _ ->
-            unhandledError tc_ mFirstError errorColumn mRecoveryData lxError errorText
+            unhandledError mFirstError errorColumn mRecoveryData lxError errorText tc
 
 
-unhandledError tc_ mFirstError errorColumn mRecoveryData lxError errorText =
+unhandledError mFirstError errorColumn mRecoveryData lxError errorText tc_ =
     { text = makeNewText tc_ errorColumn mRecoveryData
     , block = "?? TO DO"
     , blockIndex = tc_.blockIndex
@@ -135,8 +138,8 @@ unhandledError tc_ mFirstError errorColumn mRecoveryData lxError errorText =
 -- The handlers below will be rationalized and simplified.  Still in an experimental state.
 
 
-handleRightBracketError : TextCursor Element -> Maybe ParseError -> Int -> Maybe RecoveryData -> TextCursor Element
-handleRightBracketError tc mFirstError errorColumn mRecoveryData =
+handleRightBracketError : Maybe ParseError -> Int -> Maybe RecoveryData -> TextCursor Element -> TextCursor Element
+handleRightBracketError mFirstError errorColumn mRecoveryData tc =
     let
         textLines =
             String.lines tc.text
@@ -191,8 +194,8 @@ handleRightBracketError tc mFirstError errorColumn mRecoveryData =
     }
 
 
-handleLeftBracketError : TextCursor Element -> Maybe (PA.DeadEnd Context Problem) -> Int -> Maybe RecoveryData -> TextCursor Element
-handleLeftBracketError tc mFirstError errorColumn mRecoveryData =
+handleLeftBracketError : Maybe (PA.DeadEnd Context Problem) -> Int -> Maybe RecoveryData -> TextCursor Element -> TextCursor Element
+handleLeftBracketError mFirstError errorColumn mRecoveryData tc =
     let
         textLines =
             String.lines tc.text
@@ -236,8 +239,8 @@ handleLeftBracketError tc mFirstError errorColumn mRecoveryData =
     }
 
 
-handlePipeError : TextCursor Element -> Maybe (PA.DeadEnd Context Problem) -> Int -> Maybe RecoveryData -> TextCursor Element
-handlePipeError tc mFirstError errorColumn mRecoveryData =
+handlePipeError : Maybe (PA.DeadEnd Context Problem) -> Int -> Maybe RecoveryData -> TextCursor Element -> TextCursor Element
+handlePipeError mFirstError errorColumn mRecoveryData tc =
     let
         textLines : List String
         textLines =
