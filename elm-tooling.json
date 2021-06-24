@@ -1,6 +1,6 @@
 {
     "entrypoints": [
-        "./src-ui/App.elm"
+        "./app/src/Main.elm"
     ],
     "elmLS.onlyUpdateDiagnosticsOnSave": true,
     "tools": {
