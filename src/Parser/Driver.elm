@@ -91,13 +91,13 @@ handleError errors tc =
     in
     case problem of
         ExpectingRightBracket ->
-            handleRightBracketError mFirstError tc
+            handleError_ mFirstError tc
 
         ExpectingLeftBracket ->
-            handleLeftBracketError mFirstError tc
+            handleError_ mFirstError tc
 
         ExpectingPipe ->
-            handlePipeError mFirstError tc
+            handleError_ mFirstError tc
 
         _ ->
             unhandledError tc
@@ -120,11 +120,9 @@ unhandledError tc =
 
 
 
--- The handlers below will be rationalized and simplified.  Still in an experimental state.
 
-
-handleRightBracketError : Maybe ParseError -> TextCursor Element -> TextCursor Element
-handleRightBracketError mFirstError tc =
+handleError_ : Maybe ParseError -> TextCursor Element -> TextCursor Element
+handleError_ mFirstError tc =
     let
         textLines =
             String.lines tc.text |> Debug.log "HANDLE RightBracketError WITH"
@@ -158,108 +156,6 @@ handleRightBracketError mFirstError tc =
     , generation = tc.generation
     , data = tc.data
     , error = { status = NoError, correctedText = [] }
-    }
-
-
-handleLeftBracketError : Maybe (PA.DeadEnd Context Problem) -> TextCursor Element -> TextCursor Element
-handleLeftBracketError mFirstError tc =
-    let
-        textLines =
-            String.lines tc.text
-
-        badText =
-            case List.head textLines of
-                Nothing ->
-                    "Oops, couldn't find your error text"
-
-                Just str ->
-                    str
-
-        name =
-            String.replace "[" "" tc.block |> String.words |> List.head |> Maybe.withDefault "NAME"
-
-        errorRow =
-            Maybe.map .row mFirstError |> Maybe.withDefault 0
-
-        errorLines : List String
-        errorLines =
-            List.take errorRow textLines
-
-        replacementText =
-            if tc.stack == [] then
-                "[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ fakeLeftBracket ++ " " ++ name ++ " " ++ tc.block ++ " " ++ fakeRightBracket ++ "]"
-
-            else
-                ""
-    in
-    { text = replacementText
-    , block = "" --
-    , blockIndex = tc.blockIndex --
-    , parsand = Nothing
-    , parsed = List.drop 1 tc.parsed -- throw away the erroneous parsand
-    , stack = "]" :: tc.stack -- not used
-    , offset = tc.offset + 1 -- TODO: trouble!
-    , count = tc.count
-    , generation = tc.generation
-    , data = tc.data
-    , error = { status = TextCursor.LeftBracketError, correctedText = [ replacementText ] }
-    }
-
-
-handlePipeError : Maybe (PA.DeadEnd Context Problem) -> TextCursor Element -> TextCursor Element
-handlePipeError mFirstError tc =
-    let
-        textLines : List String
-        textLines =
-            String.lines tc.text
-
-        badText : String
-        badText =
-            case List.head textLines of
-                Nothing ->
-                    "Oops, couldn't find your error text"
-
-                Just str ->
-                    str
-
-        correctedText : String
-        correctedText =
-            badText
-                |> String.replace "[" fakeLeftBracket
-                |> String.replace "|" fakePipeSymbol
-                |> (\s -> s ++ fakeRightBracket)
-
-        errorRow : Int
-        errorRow =
-            Maybe.map .row mFirstError |> Maybe.withDefault 0
-
-        errorLines : List String
-        errorLines =
-            List.take (errorRow - 1) textLines
-
-        replacementText : String
-        replacementText =
-            if tc.stack == [] then
-                "[highlightRGB |255, 130, 130| missing trailing pipe symbol in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]"
-
-            else
-                ""
-
-        newTextLines : List String
-        newTextLines =
-            List.Extra.setIf (\t -> t == badText) replacementText textLines |> List.reverse
-    in
-    { text = replacementText
-    , block = ""
-    , blockIndex = tc.blockIndex
-    , parsed = parse__ (String.join "\n" errorLines)
-    , parsand = Nothing
-    , stack = "|" :: tc.stack --newStack tc_ errorText mRecoveryData
-    , offset = tc.offset + 1 -- TODO: trouble!
-    , count = tc.count
-    , generation = tc.generation
-    , data = tc.data
-    , error = { status = TextCursor.PipeError, correctedText = [ replacementText ] }
     }
 
 
