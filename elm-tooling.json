@@ -3,6 +3,7 @@
         "./app/src/Main.elm"
     ],
     "elmLS.onlyUpdateDiagnosticsOnSave": true,
+    "elmLS.disableElmLSDiagnostic":true,
     "tools": {
         "elm": "0.19.1",
         "elm-format": "0.8.5",
