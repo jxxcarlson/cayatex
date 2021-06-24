@@ -18,8 +18,8 @@ strip expr =
         LX expr_ _ ->
             LX (List.map strip expr_) Nothing
 
-        Problem p c e ->
-            Problem p c e
+        Problem p e ->
+            Problem p e
 
 
 getSource : Element -> Maybe Metadata
@@ -34,7 +34,7 @@ getSource expr =
         LX expr_ sm ->
             sm
 
-        Problem _ _ _ ->
+        Problem _ _ ->
             Nothing
 
 
@@ -53,7 +53,7 @@ getArgs_ expr =
         LX expr_ _ ->
             Nothing
 
-        Problem _ _ _ ->
+        Problem _ _ ->
             Nothing
 
 
@@ -72,7 +72,7 @@ getBody_ expr =
         LX _ _ ->
             Nothing
 
-        Problem _ _ _ ->
+        Problem _ _ ->
             Nothing
 
 

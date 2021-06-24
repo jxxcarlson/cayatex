@@ -33,7 +33,7 @@ type Element
     = Text String (Maybe Metadata)
     | Element String (List String) Element (Maybe Metadata)
     | LX (List Element) (Maybe Metadata)
-    | Problem Problem Context ErrorMessage
+    | Problem Problem ErrorMessage
 
 
 type alias ErrorMessage =
@@ -44,7 +44,7 @@ type SimpleElement
     = SText String
     | SElement String (List String) SimpleElement
     | SLX (List SimpleElement)
-    | SProblem Problem Context ErrorMessage
+    | SProblem Problem ErrorMessage
 
 
 simplify : Element -> SimpleElement
@@ -59,8 +59,8 @@ simplify element =
         LX elementList _ ->
             SLX (List.map simplify elementList)
 
-        Problem p c e ->
-            SProblem p c e
+        Problem pc e ->
+            SProblem pc e
 
 
 type alias Parser a =

@@ -91,7 +91,7 @@ getBody element =
         LX _ _ ->
             Nothing
 
-        Problem _ _ _ ->
+        Problem _ _ ->
             Nothing
 
 

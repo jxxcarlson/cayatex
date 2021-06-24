@@ -52,7 +52,7 @@ renderElement element =
         LX list _ ->
             List.map renderElement list |> String.join " "
 
-        Problem p c e ->
+        Problem p e ->
             e
 
 
