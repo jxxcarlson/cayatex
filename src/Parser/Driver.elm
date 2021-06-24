@@ -134,50 +134,30 @@ handleRightBracketError mFirstError tc =
             mFirstError |> Maybe.map .problem |> Maybe.withDefault (UnHandledError 0) |> Debug.log "!! PROBLEM"
 
         newElement =
-            Problem problem tc.text
+            Problem problem (List.head textLines |> Maybe.withDefault "error text")
 
         errorColumn =
             mFirstError |> Maybe.map .col |> Maybe.withDefault 0
 
-        badText =
-            case List.head textLines of
-                Nothing ->
-                    "Oops, couldn't find your error text"
-
-                Just str ->
-                    str
-
-        correctedText =
-            badText
-                |> String.replace "[" fakeLeftBracket
-                |> String.replace "|" fakePipeSymbol
-                |> (\s -> s ++ fakeRightBracket)
-
         errorRow =
             Maybe.map .row mFirstError |> Maybe.withDefault 0
 
-        errorLines : List String
-        errorLines =
-            List.take errorRow textLines
-
-        replacementText =
-            if tc.stack == [] then
-                "[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]"
-
-            else
-                ""
+        -- KEEP FOR NOW
+        --errorLines : List String
+        --errorLines =
+        --    List.take errorRow textLines
     in
-    { text = "" -- replacementText
-    , block = "" --
+    { text = List.drop 1 textLines |> String.join "\n" |> (\s -> "\n" ++ s) |> Debug.log "TC.text"
+    , block = ""
     , blockIndex = tc.blockIndex --
     , parsand = Nothing
     , parsed = newElement :: List.drop 1 tc.parsed -- throw away the erroneous parsand
-    , stack = "[" :: tc.stack -- not used
+    , stack = []
     , offset = tc.offset + 1 -- TODO: trouble!
     , count = tc.count
     , generation = tc.generation
     , data = tc.data
-    , error = { status = NoError, correctedText = [ replacementText ] }
+    , error = { status = NoError, correctedText = [] }
     }
 
 
