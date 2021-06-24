@@ -134,7 +134,7 @@ handleRightBracketError mFirstError tc =
             mFirstError |> Maybe.map .problem |> Maybe.withDefault (UnHandledError 0) |> Debug.log "!! PROBLEM"
 
         newElement =
-            Problem problem (List.head textLines |> Maybe.withDefault "error text")
+            Problem problem ( List.head textLines |> Maybe.withDefault "error text")
 
         errorColumn =
             mFirstError |> Maybe.map .col |> Maybe.withDefault 0
@@ -147,7 +147,7 @@ handleRightBracketError mFirstError tc =
         --errorLines =
         --    List.take errorRow textLines
     in
-    { text = List.drop 1 textLines |> String.join "\n" |> (\s -> "\n" ++ s) |> Debug.log "TC.text"
+    { text = List.drop 1 textLines |> String.join "\n" |> (\s -> " \n " ++ s) |> Debug.log "TC.text"
     , block = ""
     , blockIndex = tc.blockIndex --
     , parsand = Nothing

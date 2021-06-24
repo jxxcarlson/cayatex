@@ -23,7 +23,7 @@ import Spreadsheet
 import String.Extra
 import SvgParser
 import Widget.Data
-
+import Parser.Error as Error
 
 
 -- import Widget.Simulations
@@ -77,7 +77,12 @@ renderElement renderArgs element =
             paragraph format (List.map (renderElement renderArgs) list_)
 
         Problem p e ->
-            E.el [ Font.color (E.rgb255 200 0 0) ] (E.text (Debug.log "RENDER PROBLEM" e))
+              E.paragraph [ ] [
+               E.el [ Font.color(E.rgb255 200 0 0)] (E.text (Error.heading p))
+              ,E.el [ E.paddingXY 8 0, Font.color (E.rgb255 0 0 200), Font.bold ](E.text (Debug.log "RENDER PROBLEM" e))
+              ]
+
+
 
 
 paragraphs : String -> List String
