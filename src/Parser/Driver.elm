@@ -8,7 +8,6 @@ import Parser.Error exposing (Context(..), Problem(..))
 import Parser.Getters as Getters
 import Parser.Loop as Loop
 import Parser.Metadata as Metadata exposing (Metadata)
-import Parser.RecoveryData as RecoveryData exposing (RecoveryData)
 import Parser.TextCursor as TextCursor exposing (ErrorStatus(..), TextCursor)
 
 
@@ -101,7 +100,7 @@ handleError errors tc =
         errorRow =
             Maybe.map .row mFirstError |> Maybe.withDefault 0
     in
-    { text = List.drop 1 textLines |> String.join "\n" |> (\s -> " \n " ++ s) |> Debug.log "TC.text"
+    { text = List.drop 1 textLines |> String.join "\n" |> (\s -> "\n\n " ++ s) |> Debug.log "TC.text"
         , block = ""
         , blockIndex = tc.blockIndex --
         , parsand = Nothing
