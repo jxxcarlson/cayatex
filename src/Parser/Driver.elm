@@ -9,7 +9,7 @@ import Parser.Getters as Getters
 import Parser.Loop as Loop
 import Parser.Metadata as Metadata exposing (Metadata)
 import Parser.RecoveryData as RecoveryData exposing (RecoveryData)
-import Parser.TextCursor as TextCursor exposing (TextCursor)
+import Parser.TextCursor as TextCursor exposing (ErrorStatus(..), TextCursor)
 
 
 {-| The value of Loop.Packet that we need here
@@ -129,6 +129,13 @@ handleRightBracketError mFirstError tc =
         textLines =
             String.lines tc.text |> Debug.log "HANDLE RightBracketError WITH"
 
+        problem : Problem
+        problem =
+            mFirstError |> Maybe.map .problem |> Maybe.withDefault (UnHandledError 0) |> Debug.log "!! PROBLEM"
+
+        newElement =
+            Problem problem tc.text
+
         errorColumn =
             mFirstError |> Maybe.map .col |> Maybe.withDefault 0
 
@@ -159,26 +166,18 @@ handleRightBracketError mFirstError tc =
 
             else
                 ""
-
-        --
-        --newTextLines =
-        --    -- ("[highlightRGB |255, 130, 130| missing right bracket in] [highlightRGB |186, 205, 255| " ++ correctedText ++ " ]") :: List.drop errorRow textLines
-        --    List.Extra.setIf (\t -> t == badText) replacementText errorLines
-        --        |> List.reverse
-        --newText =
-        --    String.join "\n" (List.reverse newTextLines)
     in
-    { text = replacementText
+    { text = "" -- replacementText
     , block = "" --
     , blockIndex = tc.blockIndex --
     , parsand = Nothing
-    , parsed = List.drop 1 tc.parsed -- throw away the erroneous parsand
+    , parsed = newElement :: List.drop 1 tc.parsed -- throw away the erroneous parsand
     , stack = "[" :: tc.stack -- not used
     , offset = tc.offset + 1 -- TODO: trouble!
     , count = tc.count
     , generation = tc.generation
     , data = tc.data
-    , error = { status = TextCursor.RightBracketError, correctedText = [ replacementText ] }
+    , error = { status = NoError, correctedText = [ replacementText ] }
     }
 
 

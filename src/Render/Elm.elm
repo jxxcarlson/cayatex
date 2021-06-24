@@ -77,7 +77,7 @@ renderElement renderArgs element =
             paragraph format (List.map (renderElement renderArgs) list_)
 
         Problem p e ->
-            E.el [ Font.color (E.rgb255 200 0 0) ] (E.text e)
+            E.el [ Font.color (E.rgb255 200 0 0) ] (E.text (Debug.log "RENDER PROBLEM" e))
 
 
 paragraphs : String -> List String

@@ -277,7 +277,10 @@ flush state =
                     --_ =
                     --    Debug.log "Parser.Lines.FLUSH, RightBracketError"
                     correctedText =
-                        Maybe.map .correctedText errorStatus |> Maybe.withDefault [ "Could not correct the error" ] |> List.reverse
+                        Maybe.map .correctedText errorStatus
+                            |> Maybe.withDefault [ "Could not correct the error" ]
+                            |> List.reverse
+                            |> Debug.log "Parser.Lines, flush, correctedText"
 
                     correctedState =
                         { state | input = correctedText, blockContents = [], blockLevels = { blanksSeen = 0, bracketLevel = 0, textLevel = 0 } }
