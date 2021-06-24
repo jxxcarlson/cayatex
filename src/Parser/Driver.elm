@@ -29,13 +29,9 @@ parseLoop generation initialLineNumber data str =
     Loop.parseLoop packet generation initialLineNumber data str
 
 
-pl : String -> List Element
+pl : String -> List Element.SimpleElement
 pl str =
-    parseLoop 0 0 (Data.init Data.defaultConfig) str |> .parsed
-
-
-pl2 str =
-    pl str |> List.map Getters.strip
+    parseLoop 0 0 (Data.init Data.defaultConfig) str |> .parsed |> List.map Element.simplify
 
 
 {-| increment the offset field of the SourceMap component of an Expression
