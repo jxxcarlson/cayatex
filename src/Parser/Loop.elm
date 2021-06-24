@@ -1,14 +1,13 @@
-module Parser.Loop exposing (parseLoop, Packet)
+module Parser.Loop exposing (Packet, parseLoop)
 
 import Parser.Advanced as Parser exposing ((|.), (|=))
 import Parser.Data as Data exposing (Data)
-import Parser.Element exposing (Element)
+import Parser.Element as Element exposing (Element)
 import Parser.Error exposing (Context, Problem)
-import Parser.Getters
 import Parser.Metadata exposing (Metadata)
 import Parser.TextCursor as TextCursor exposing (TextCursor)
-import Parser.Tool as ParserTool
-import Parser.Element as Element
+import Parser.Tool
+
 
 type alias Parser a =
     Parser.Parser Context Problem a
@@ -29,7 +28,7 @@ is a data structure which includes the parsed source text.
 -}
 parseLoop : Packet Element -> Int -> Int -> Data -> String -> TextCursor Element
 parseLoop packet generation initialLineNumber data str =
-    ParserTool.loop (TextCursor.init generation initialLineNumber data str) (nextCursor packet)
+    Parser.Tool.loop (TextCursor.init generation initialLineNumber data str) (nextCursor packet)
 
 
 {-| nextCursor operates by running the expression parser on
@@ -55,7 +54,7 @@ operated by parseLoop is updated:
     - `expr` is prepended to `tc.parsed`
 
 -}
-nextCursor : Packet Element -> TextCursor Element -> ParserTool.Step (TextCursor Element) (TextCursor Element)
+nextCursor : Packet Element -> TextCursor Element -> Parser.Tool.Step (TextCursor Element) (TextCursor Element)
 nextCursor packet tc =
     let
         _ =
@@ -63,7 +62,7 @@ nextCursor packet tc =
     in
     if tc.text == "" || tc.count > 100 then
         -- TODO: that usage of count needs to be removed after bug is fixed
-        ParserTool.Done { tc | parsed = List.reverse tc.parsed }
+        Parser.Tool.Done { tc | parsed = List.reverse tc.parsed }
 
     else
         case Parser.run (packet.parser tc.generation tc.blockIndex) tc.text of
@@ -78,7 +77,7 @@ nextCursor packet tc =
                     data =
                         Data.update parsand tc.data
                 in
-                ParserTool.Loop
+                Parser.Tool.Loop
                     { tc
                         | count = tc.count + 1
                         , text = String.dropLeft sourceMapLength tc.text
@@ -92,15 +91,19 @@ nextCursor packet tc =
             Err e ->
                 case packet.handleError of
                     Nothing ->
-                        ParserTool.Loop { tc | count = tc.count + 1 }
+                        Parser.Tool.Loop { tc | count = tc.count + 1 }
 
                     Just he ->
                         -- Continue loop with the text cursor that the error handler returns
-                        --let
-                        --    _ =
-                        --        Debug.log "x, he tc e in LOOP" (he tc e)
-                        --in
-                        ParserTool.Loop (he tc e)
+                        let
+                            out : TextCursor Element
+                            out =
+                                he tc e
+
+                            _ =
+                                Debug.log "x, he tc e in LOOP" (TextCursor.summary out)
+                        in
+                        Parser.Tool.Loop (he tc e)
 
 
 newExpr : Packet a -> TextCursor a -> a -> a

@@ -1,6 +1,6 @@
 module Parser.TextCursor exposing
     ( TextCursor, init, incrementBlockIndex, incrementBlockOffset
-    , ErrorStatus(..), ParseError, empty, parseResult
+    , ErrorStatus(..), ParseError, empty, parseResult, summary
     )
 
 {-| TextCursor is the data structure used by Parser.parseLoop.
@@ -12,6 +12,7 @@ module Parser.TextCursor exposing
 -- import Parser.Element exposing (Expression)
 
 import Parser.Data exposing (Data)
+import Parser.Element as Element exposing (Element)
 
 
 {-| SourceText structure used by Parser.Loop.run as it progressively "eats" bites of
@@ -34,6 +35,15 @@ type alias TextCursor e =
     , data : Parser.Data.Data
     , error : ParseError
     }
+
+
+
+-- summary : TextCursor Element -> { text : b, block : c, parsed : List (List Element.SimpleElement), stack : d }
+
+
+summary : TextCursor Element -> { text_ : String, block_ : String, parsed_ : List Element.SimpleElement, stack_ : List String }
+summary tc =
+    { text_ = tc.text, block_ = tc.block, parsed_ = tc.parsed |> List.map Element.simplify, stack_ = tc.stack }
 
 
 type alias ParseError =

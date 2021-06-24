@@ -1,6 +1,7 @@
 module Parser.Element exposing
     ( CYTMsg(..)
     , Element(..)
+    , SimpleElement(..)
     , listParser
     , parse
     , parseList
@@ -12,7 +13,6 @@ module Parser.Element exposing
     , r3
     , rawString
     , simplify
-    , SimpleElement(..)
     )
 
 {-
@@ -34,6 +34,7 @@ type Element
     | Element String (List String) Element (Maybe Metadata)
     | LX (List Element) (Maybe Metadata)
 
+
 type SimpleElement
     = SText String
     | SElement String (List String) SimpleElement
@@ -42,10 +43,16 @@ type SimpleElement
 
 simplify : Element -> SimpleElement
 simplify element =
-  case element of
-     Text str _ -> SText str
-     Element str strList el _ -> SElement str strList (simplify el)
-     LX elementList _ -> SLX (List.map simplify elementList)
+    case element of
+        Text str _ ->
+            SText str
+
+        Element str strList el _ ->
+            SElement str strList (simplify el)
+
+        LX elementList _ ->
+            SLX (List.map simplify elementList)
+
 
 type alias Parser a =
     Parser.Parser Context Problem a
