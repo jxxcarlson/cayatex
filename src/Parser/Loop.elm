@@ -18,7 +18,7 @@ type alias Packet a =
     , getSource : a -> Maybe Metadata
     , incrementOffset : Int -> a -> a
     , highlighter : Maybe (a -> Maybe Metadata -> a)
-    , handleError : Maybe (TextCursor a -> List (Parser.DeadEnd Context Problem) -> TextCursor a)
+    , handleError : Maybe (List (Parser.DeadEnd Context Problem) -> TextCursor a -> TextCursor a)
     }
 
 
@@ -56,10 +56,10 @@ operated by parseLoop is updated:
 -}
 nextCursor : Packet Element -> TextCursor Element -> Parser.Tool.Step (TextCursor Element) (TextCursor Element)
 nextCursor packet tc =
-    let
-        _ =
-            Debug.log "(N, p, stack)" ( tc.count, tc.parsand |> Maybe.map Element.simplify, tc.stack )
-    in
+    --let
+    --    _ =
+    --        Debug.log "(N, p, stack)" ( tc.count, tc.parsand |> Maybe.map Element.simplify, tc.stack )
+    --in
     if tc.text == "" || tc.count > 100 then
         -- TODO: that usage of count needs to be removed after bug is fixed
         Parser.Tool.Done { tc | parsed = List.reverse tc.parsed }
@@ -94,16 +94,12 @@ nextCursor packet tc =
                         Parser.Tool.Loop { tc | count = tc.count + 1 }
 
                     Just he ->
-                        -- Continue loop with the text cursor that the error handler returns
+                        -- Continue loop with the amended text cursor that the error handler returns
                         let
-                            out : TextCursor Element
-                            out =
-                                he tc e
-
                             _ =
-                                Debug.log "x, he tc e in LOOP" (TextCursor.summary out)
+                                Debug.log "PARSE LOOP, he tc e" (TextCursor.summary (he e tc))
                         in
-                        Parser.Tool.Loop (he tc e)
+                        Parser.Tool.Loop (he e tc)
 
 
 newExpr : Packet a -> TextCursor a -> a -> a
