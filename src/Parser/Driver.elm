@@ -89,34 +89,7 @@ handleError errors tc =
         _ =
             Debug.log "!!" "Dispatching ..."
     in
-    case problem of
-        ExpectingRightBracket ->
-            handleError_ mFirstError tc
-
-        ExpectingLeftBracket ->
-            handleError_ mFirstError tc
-
-        ExpectingPipe ->
-            handleError_ mFirstError tc
-
-        _ ->
-            unhandledError tc
-
-
-unhandledError tc =
-    -- TODO: big trouble?
-    { text = "FOO"
-    , block = "?? TO DO"
-    , blockIndex = tc.blockIndex
-    , parsand = Nothing
-    , parsed = []
-    , stack = []
-    , offset = tc.offset + 1 -- TODO: trouble!
-    , count = tc.count
-    , generation = tc.generation
-    , data = tc.data
-    , error = { status = TextCursor.UnhandledError, correctedText = [] }
-    }
+    handleError_ mFirstError tc
 
 
 
