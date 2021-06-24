@@ -88,21 +88,9 @@ handleError errors tc =
 
         _ =
             Debug.log "!!" "Dispatching ..."
-    in
-    handleError_ mFirstError tc
 
-
-
-
-handleError_ : Maybe ParseError -> TextCursor Element -> TextCursor Element
-handleError_ mFirstError tc =
-    let
         textLines =
-            String.lines tc.text |> Debug.log "HANDLE RightBracketError WITH"
-
-        problem : Problem
-        problem =
-            mFirstError |> Maybe.map .problem |> Maybe.withDefault (UnHandledError 0) |> Debug.log "!! PROBLEM"
+                    String.lines tc.text |> Debug.log "HANDLE RightBracketError WITH"
 
         newElement =
             Problem problem ( List.head textLines |> Maybe.withDefault "error text")
@@ -112,25 +100,19 @@ handleError_ mFirstError tc =
 
         errorRow =
             Maybe.map .row mFirstError |> Maybe.withDefault 0
-
-        -- KEEP FOR NOW
-        --errorLines : List String
-        --errorLines =
-        --    List.take errorRow textLines
     in
     { text = List.drop 1 textLines |> String.join "\n" |> (\s -> " \n " ++ s) |> Debug.log "TC.text"
-    , block = ""
-    , blockIndex = tc.blockIndex --
-    , parsand = Nothing
-    , parsed = newElement :: List.drop 1 tc.parsed -- throw away the erroneous parsand
-    , stack = []
-    , offset = tc.offset + 1 -- TODO: trouble!
-    , count = tc.count
-    , generation = tc.generation
-    , data = tc.data
-    , error = { status = NoError, correctedText = [] }
-    }
-
+        , block = ""
+        , blockIndex = tc.blockIndex --
+        , parsand = Nothing
+        , parsed = newElement :: List.drop 1 tc.parsed -- throw away the erroneous parsand
+        , stack = []
+        , offset = tc.offset + 1 -- TODO: trouble!
+        , count = tc.count
+        , generation = tc.generation
+        , data = tc.data
+        , error = { status = NoError, correctedText = [] }
+        }
 
 
 -- HELPERS
