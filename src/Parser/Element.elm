@@ -11,6 +11,8 @@ module Parser.Element exposing
     , r2
     , r3
     , rawString
+    , simplify
+    , SimpleElement(..)
     )
 
 {-

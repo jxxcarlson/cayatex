@@ -4,9 +4,8 @@ module Parser.Data exposing (..)
 
 import Dict exposing (Dict)
 import Html exposing (Attribute)
-import Html.Attributes as HA
 import Maybe.Extra
-import Parser.Element as Element exposing (Element(..))
+import Parser.Element exposing (Element(..))
 import Parser.Function
 import Render.Utility
 import Vector exposing (Vector)

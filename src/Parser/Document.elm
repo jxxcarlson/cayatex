@@ -98,10 +98,12 @@ renderState generation ast =
     { rendered = List.map (Render.Elm.renderList renderArgs) (Lines.toParsed ast), renderArgs = renderArgs }
 
 
+getRenderArgs : a -> { b | data : c } -> { generation : a, blockOffset : number, selectedId : String, width : number, parserData : c }
 getRenderArgs k state =
     initRenderArgs k state.data
 
 
+initRenderArgs : a -> b -> { generation : a, blockOffset : number, selectedId : String, width : number, parserData : b }
 initRenderArgs k data =
     { generation = k
     , blockOffset = 0
