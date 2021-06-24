@@ -8,7 +8,7 @@ import Parser.Getters
 import Parser.Metadata exposing (Metadata)
 import Parser.TextCursor as TextCursor exposing (TextCursor)
 import Parser.Tool as ParserTool
-
+import Parser.Element as Element
 
 type alias Parser a =
     Parser.Parser Context Problem a
@@ -57,10 +57,10 @@ operated by parseLoop is updated:
 -}
 nextCursor : Packet Element -> TextCursor Element -> ParserTool.Step (TextCursor Element) (TextCursor Element)
 nextCursor packet tc =
-    --let
-    --    _ =
-    --        Debug.log "(N, p, c)" ( tc.count, tc.parsand |> Maybe.map Parser.Getters.strip, tc.data.counters )
-    --in
+    let
+        _ =
+            Debug.log "(N, p, stack)" ( tc.count, tc.parsand |> Maybe.map Element.simplify, tc.stack )
+    in
     if tc.text == "" || tc.count > 100 then
         -- TODO: that usage of count needs to be removed after bug is fixed
         ParserTool.Done { tc | parsed = List.reverse tc.parsed }
