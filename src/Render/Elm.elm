@@ -70,8 +70,8 @@ renderElement renderArgs element =
 
         Problem p e _ ->
             E.paragraph format
-                [ E.el [ Font.color (E.rgb255 200 0 0) ] (E.text (Error.heading p))
-                , E.el [ E.paddingXY 8 0, Font.color (E.rgb255 0 0 200), Font.underline ] (E.text e)
+                [ E.el [ Font.color (E.rgb255 0 0 230) ] (E.text (Error.heading p))
+                , E.el [ E.paddingXY 8 0, Font.color (E.rgb255 180 0 0), Font.underline ] (E.text e)
                 ]
 
 
