@@ -36,7 +36,7 @@ textWidth =
 
 
 format =
-    []
+    [ Font.size 14 ]
 
 
 
@@ -71,7 +71,7 @@ renderElement renderArgs element =
         Problem p e _ ->
             E.paragraph format
                 [ E.el [ Font.color (E.rgb255 200 0 0) ] (E.text (Error.heading p))
-                , E.el [ E.paddingXY 8 0, Font.color (E.rgb255 0 0 200), Font.bold ] (E.text e)
+                , E.el [ E.paddingXY 8 0, Font.color (E.rgb255 0 0 200), Font.underline ] (E.text e)
                 ]
 
 
@@ -563,7 +563,7 @@ codeblock renderArgs _ _ body meta =
             [ Font.typeface "Inconsolata"
             , Font.monospace
             ]
-        , Font.size 12
+        , Font.size 14
         , Font.color codeColor
         , Render.Utility.htmlAttribute "white-space" "pre"
 
@@ -692,11 +692,11 @@ paddingAbove k =
 
 
 titleFontSize =
-    36
+    30
 
 
 sectionFontSize =
-    30
+    24
 
 
 link : FRender CYTMsg
