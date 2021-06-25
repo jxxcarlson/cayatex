@@ -73,10 +73,6 @@ renderString generation str =
         { processedPrelude, processedSections } =
             processString generation str
 
-        simplePreludeAST =
-            List.map (List.map Parser.Element.simplify) (Lines.toParsed processedPrelude)
-                |> Debug.log "PRELUDE"
-
         renderedPrelude : RenderedState
         renderedPrelude =
             renderState generation processedPrelude

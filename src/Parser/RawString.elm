@@ -74,15 +74,12 @@ updateState maxHashes c state =
         if String.right 1 state.content == "#" then
             if state.hashCount + 1 > state.hashCount + 1 then
                 Parser.Done { hashCount = state.hashCount + 1, content = state.content ++ c }
-                -- |> Debug.log "A"
 
             else
                 Parser.Loop { hashCount = state.hashCount + 1, content = state.content ++ c }
-            -- |> Debug.log "B"
 
         else
             Parser.Loop { hashCount = 1, content = state.content ++ c }
-        -- |> Debug.log "C"
 
     else
         Parser.Loop { hashCount = 0, content = state.content ++ c }

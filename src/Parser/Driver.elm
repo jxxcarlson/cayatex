@@ -75,9 +75,6 @@ type alias ParseError =
 handleError : List ParseError -> TextCursor Element -> TextCursor Element
 handleError errors tc =
     let
-        _ =
-            Debug.log "ERRORS" errors
-
         mFirstError =
             List.head errors
 
@@ -85,11 +82,9 @@ handleError errors tc =
         problem =
             mFirstError |> Maybe.map .problem |> Maybe.withDefault (UnHandledError 0)
 
-        -- |> Debug.log "!! PROBLEM"
         textLines =
             String.lines tc.text
 
-        -- |> Debug.log "HANDLE RightBracketError WITH"
         smLength =
             Maybe.map String.length (List.head textLines) |> Maybe.withDefault 0
 
@@ -111,7 +106,7 @@ handleError errors tc =
         errorRow =
             Maybe.map .row mFirstError |> Maybe.withDefault 0
     in
-    { text = List.drop 1 textLines |> String.join "\n" |> (\s -> "\n" ++ s) |> Debug.log "TC.text"
+    { text = List.drop 1 textLines |> String.join "\n" |> (\s -> "\n" ++ s)
     , block = ""
     , blockIndex = tc.blockIndex --
     , parsand = Just parsand

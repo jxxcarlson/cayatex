@@ -56,12 +56,12 @@ operated by parseLoop is updated:
 -}
 nextCursor : Packet Element -> TextCursor Element -> Parser.Tool.Step (TextCursor Element) (TextCursor Element)
 nextCursor packet tc =
-    let
-        _ =
-            Debug.log "(N, p, text)" ( tc.count, tc.parsand |> Maybe.map Element.simplify, tc.text )
-
-        -- tc.stack )
-    in
+    --let
+    --    --_ =
+    --    --    Debug.log "(N, p, text)" ( tc.count, tc.parsand |> Maybe.map Element.simplify, tc.text )
+    --
+    --    -- tc.stack )
+    --in
     if tc.text == "" || tc.count > 100 then
         -- TODO: that usage of count needs to be removed after bug is fixed
         Parser.Tool.Done { tc | parsed = List.reverse tc.parsed }
@@ -96,11 +96,6 @@ nextCursor packet tc =
                         Parser.Tool.Loop { tc | count = tc.count + 1 }
 
                     Just he ->
-                        -- Continue loop with the amended text cursor that the error handler returns
-                        --let
-                        --    --_ =
-                        --    --    Debug.log "PARSE LOOP, he tc e" (TextCursor.summary (he e tc))
-                        --in
                         Parser.Tool.Loop (he e tc)
 
 
