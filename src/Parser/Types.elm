@@ -47,7 +47,12 @@ type alias State =
 
 
 type alias BlockLevels =
-    { blanksSeen : Int, bracketLevel : Int, textLevel : Int }
+    { blanksSeen : Int, bracketLevel : Int, textLevel : Int, expectingRaw : ExpectingRaw }
+
+
+type ExpectingRaw
+    = NotExpecting
+    | ExpectingRaw String
 
 
 {-| -}

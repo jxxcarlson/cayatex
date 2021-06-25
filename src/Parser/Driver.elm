@@ -1,4 +1,4 @@
-module Parser.Driver exposing (parseLoop, pl)
+module Parser.Driver exposing (bad, parseLoop, pl)
 
 import List.Extra
 import Parser.Advanced as PA
@@ -185,6 +185,17 @@ parse__ str =
         Err _ ->
             -- TODO: vvv very bad code.  Fix this! vvv
             []
+
+
+bad =
+    """
+[cb raw### badString = "foo [b bar"### ]
+
+ABC
+
+# Intro
+
+"""
 
 
 
