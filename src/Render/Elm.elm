@@ -15,6 +15,7 @@ import Maybe.Extra
 import Parser.Data as Data
 import Parser.Driver
 import Parser.Element exposing (CYTMsg(..), Element(..))
+import Parser.Error as Error
 import Parser.Metadata exposing (Metadata)
 import Parser.TextCursor
 import Render.Types exposing (DisplayMode(..), FRender, RenderArgs, RenderElementDict)
@@ -23,7 +24,7 @@ import Spreadsheet
 import String.Extra
 import SvgParser
 import Widget.Data
-import Parser.Error as Error
+
 
 
 -- import Widget.Simulations
@@ -40,6 +41,19 @@ format =
 
 
 -- TOP-LEVEL RENDERERS
+
+
+renderString1 : RenderArgs -> String -> E.Element CYTMsg
+renderString1 renderArgs str =
+    let
+        ast =
+            Parser.Driver.parseLoop renderArgs.generation renderArgs.blockOffset (Data.init Data.defaultConfig) str
+                |> Parser.TextCursor.parseResult
+
+        _ =
+            ast |> List.map Parser.Element.simplify |> Debug.log "AST"
+    in
+    ast |> renderList renderArgs
 
 
 renderString : RenderArgs -> String -> E.Element CYTMsg
@@ -67,13 +81,11 @@ renderElement renderArgs element =
         LX list_ _ ->
             paragraph format (List.map (renderElement renderArgs) list_)
 
-        Problem p e ->
-              E.paragraph format [
-               E.el [ Font.color(E.rgb255 200 0 0)] (E.text (Error.heading p))
-              ,E.el [ E.paddingXY 8 0, Font.color (E.rgb255 0 0 200), Font.bold ](E.text (Debug.log "RENDER PROBLEM" e))
-              ]
-
-
+        Problem p e _ ->
+            E.paragraph format
+                [ E.el [ Font.color (E.rgb255 200 0 0) ] (E.text (Error.heading p))
+                , E.el [ E.paddingXY 8 0, Font.color (E.rgb255 0 0 200), Font.bold ] (E.text (Debug.log "RENDER PROBLEM" e))
+                ]
 
 
 paragraphs : String -> List String

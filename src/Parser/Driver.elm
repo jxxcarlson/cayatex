@@ -47,9 +47,9 @@ incrementOffset delta expr =
         LX e sm ->
             LX e (incrementSourceMapOffset delta sm)
 
-        Problem p e ->
+        Problem p e sm ->
             -- TODO: trouble?
-            Problem p e
+            Problem p e (incrementSourceMapOffset delta sm)
 
 
 incrementSourceMapOffset : Int -> Maybe Metadata -> Maybe Metadata
@@ -83,13 +83,27 @@ handleError errors tc =
 
         problem : Problem
         problem =
-            mFirstError |> Maybe.map .problem |> Maybe.withDefault (UnHandledError 0) -- |> Debug.log "!! PROBLEM"
+            mFirstError |> Maybe.map .problem |> Maybe.withDefault (UnHandledError 0)
 
+        -- |> Debug.log "!! PROBLEM"
         textLines =
-                    String.lines tc.text -- |> Debug.log "HANDLE RightBracketError WITH"
+            String.lines tc.text
 
-        newElement =
-            Problem problem ( List.head textLines |> Maybe.withDefault "error text")
+        -- |> Debug.log "HANDLE RightBracketError WITH"
+        smLength =
+            Maybe.map String.length (List.head textLines) |> Maybe.withDefault 0
+
+        meta =
+            { blockOffset = 0
+            , offset = 0
+            , length = smLength
+            , generation = tc.generation
+            , label = "problem"
+            }
+
+        parsand =
+            -- TODO: Nothing not right
+            Problem problem (List.head textLines |> Maybe.withDefault "error text") (Just meta)
 
         errorColumn =
             mFirstError |> Maybe.map .col |> Maybe.withDefault 0
@@ -97,40 +111,42 @@ handleError errors tc =
         errorRow =
             Maybe.map .row mFirstError |> Maybe.withDefault 0
     in
-    { text = List.drop 1 textLines |> String.join "\n" |> (\s -> "\n\n " ++ s) --|> Debug.log "TC.text"
-        , block = ""
-        , blockIndex = tc.blockIndex --
-        , parsand = Nothing
-        , parsed = newElement :: tc.parsed -- newElement :: List.drop 1 tc.parsed -- throw away the erroneous parsand
-        , stack = []
-        , offset = tc.offset + 1 -- TODO: trouble!?
-        , count = tc.count
-        , generation = tc.generation
-        , data = tc.data
-        , error = { status = NoError, correctedText = [] }
-        }
+    { text = List.drop 1 textLines |> String.join "\n" |> (\s -> "\n" ++ s) |> Debug.log "TC.text"
+    , block = ""
+    , blockIndex = tc.blockIndex --
+    , parsand = Just parsand
+    , parsed = parsand :: tc.parsed -- newElement :: List.drop 1 tc.parsed -- throw away the erroneous parsand
+    , stack = []
+    , offset = tc.offset + smLength -- TODO: trouble!?
+    , count = tc.count
+    , generation = tc.generation
+    , data = Data.update parsand tc.data
+    , error = { status = NoError, correctedText = [] }
+    }
 
- --Ok expr ->
- --               let
- --                   sourceMapLength =
- --                       packet.getSource expr |> Maybe.map .length |> Maybe.withDefault 0
- --
- --                   parsand =
- --                       newExpr packet tc expr
- --
- --                   data =
- --                       Data.update parsand tc.data
- --               in
- --               Parser.Tool.Loop
- --                   { tc
- --                       | count = tc.count + 1
- --                       , text = String.dropLeft sourceMapLength tc.text
- --                       , block = tc.block ++ String.left sourceMapLength tc.text
- --                       , parsand = Just parsand
- --                       , parsed = Data.labelElement data parsand :: tc.parsed
- --                       , offset = tc.offset + sourceMapLength
- --                       , data = data
- --                   }
+
+
+--Ok expr ->
+--               let
+--                   sourceMapLength =
+--                       packet.getSource expr |> Maybe.map .length |> Maybe.withDefault 0
+--
+--                   parsand =
+--                       newExpr packet tc expr
+--
+--                   data =
+--                       Data.update parsand tc.data
+--               in
+--               Parser.Tool.Loop
+--                   { tc
+--                       | count = tc.count + 1
+--                       , text = String.dropLeft sourceMapLength tc.text
+--                       , block = tc.block ++ String.left sourceMapLength tc.text
+--                       , parsand = Just parsand
+--                       , parsed = Data.labelElement data parsand :: tc.parsed
+--                       , offset = tc.offset + sourceMapLength
+--                       , data = data
+--                   }
 -- HELPERS
 
 

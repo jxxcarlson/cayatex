@@ -347,7 +347,7 @@ renderElement renderArgs element =
         LX elements _ ->
             List.map (renderElement renderArgs) elements |> String.join " "
 
-        Problem p e ->
+        Problem p e _ ->
             "Error: " ++ e
 
 

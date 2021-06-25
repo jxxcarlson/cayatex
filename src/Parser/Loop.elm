@@ -58,7 +58,9 @@ nextCursor : Packet Element -> TextCursor Element -> Parser.Tool.Step (TextCurso
 nextCursor packet tc =
     let
         _ =
-            Debug.log "(N, p, length)" ( tc.count, tc.parsand |> Maybe.map Element.simplify, String.length tc.text)-- tc.stack )
+            Debug.log "(N, p, text)" ( tc.count, tc.parsand |> Maybe.map Element.simplify, tc.text )
+
+        -- tc.stack )
     in
     if tc.text == "" || tc.count > 100 then
         -- TODO: that usage of count needs to be removed after bug is fixed

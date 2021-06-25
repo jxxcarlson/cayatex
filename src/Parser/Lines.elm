@@ -402,7 +402,23 @@ getParseResult stepState =
 -}
 toParsed : State -> List (List Element)
 toParsed state =
-    state.output |> List.map .parsed |> List.reverse
+    state.output |> List.map .parsed |> expandErrors |> List.reverse
+
+
+expandErrorF : List Element -> List (List Element)
+expandErrorF list =
+    if Parser.Element.hasProblem list then
+        List.map (\x -> [ x ]) list |> List.reverse
+
+    else
+        [ list ]
+
+
+expandErrors : List (List Element) -> List (List Element)
+expandErrors elements =
+    elements
+        |> List.map expandErrorF
+        |> List.concat
 
 
 {-| Return the AST from the State.

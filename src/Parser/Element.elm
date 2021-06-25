@@ -2,6 +2,7 @@ module Parser.Element exposing
     ( CYTMsg(..)
     , Element(..)
     , SimpleElement(..)
+    , hasProblem
     , listParser
     , parse
     , parseList
@@ -33,7 +34,7 @@ type Element
     = Text String (Maybe Metadata)
     | Element String (List String) Element (Maybe Metadata)
     | LX (List Element) (Maybe Metadata)
-    | Problem Problem ErrorMessage
+    | Problem Problem ErrorMessage (Maybe Metadata)
 
 
 type alias ErrorMessage =
@@ -59,7 +60,7 @@ simplify element =
         LX elementList _ ->
             SLX (List.map simplify elementList)
 
-        Problem pc e ->
+        Problem pc e _ ->
             SProblem pc e
 
 
@@ -179,6 +180,25 @@ argsAndBody_ generation lineNumber =
 bodyOnly generation lineNumber =
     Parser.succeed (\body_ -> ( [], body_ ))
         |= elementBody generation lineNumber
+
+
+
+-- TOOLS
+
+
+isProblem : Element -> Bool
+isProblem element =
+    case element of
+        Problem _ _ _ ->
+            True
+
+        _ ->
+            False
+
+
+hasProblem : List Element -> Bool
+hasProblem elements =
+    List.foldl (\e acc -> isProblem e || acc) False elements
 
 
 
