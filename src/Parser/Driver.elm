@@ -70,7 +70,7 @@ type alias ParseError =
     PA.DeadEnd Context Problem
 
 
-{-| TODO: Document how this works and how it is extended.
+{-| Transform the text cursor so that it does not have errors.
 -}
 handleError : List ParseError -> TextCursor Element -> TextCursor Element
 handleError errors tc =
@@ -83,13 +83,10 @@ handleError errors tc =
 
         problem : Problem
         problem =
-            mFirstError |> Maybe.map .problem |> Maybe.withDefault (UnHandledError 0) |> Debug.log "!! PROBLEM"
-
-        _ =
-            Debug.log "!!" "Dispatching ..."
+            mFirstError |> Maybe.map .problem |> Maybe.withDefault (UnHandledError 0) -- |> Debug.log "!! PROBLEM"
 
         textLines =
-                    String.lines tc.text |> Debug.log "HANDLE RightBracketError WITH"
+                    String.lines tc.text -- |> Debug.log "HANDLE RightBracketError WITH"
 
         newElement =
             Problem problem ( List.head textLines |> Maybe.withDefault "error text")
@@ -100,20 +97,40 @@ handleError errors tc =
         errorRow =
             Maybe.map .row mFirstError |> Maybe.withDefault 0
     in
-    { text = List.drop 1 textLines |> String.join "\n" |> (\s -> "\n\n " ++ s) |> Debug.log "TC.text"
+    { text = List.drop 1 textLines |> String.join "\n" |> (\s -> "\n\n " ++ s) --|> Debug.log "TC.text"
         , block = ""
         , blockIndex = tc.blockIndex --
         , parsand = Nothing
-        , parsed = newElement :: List.drop 1 tc.parsed -- throw away the erroneous parsand
+        , parsed = newElement :: tc.parsed -- newElement :: List.drop 1 tc.parsed -- throw away the erroneous parsand
         , stack = []
-        , offset = tc.offset + 1 -- TODO: trouble!
+        , offset = tc.offset + 1 -- TODO: trouble!?
         , count = tc.count
         , generation = tc.generation
         , data = tc.data
         , error = { status = NoError, correctedText = [] }
         }
 
-
+ --Ok expr ->
+ --               let
+ --                   sourceMapLength =
+ --                       packet.getSource expr |> Maybe.map .length |> Maybe.withDefault 0
+ --
+ --                   parsand =
+ --                       newExpr packet tc expr
+ --
+ --                   data =
+ --                       Data.update parsand tc.data
+ --               in
+ --               Parser.Tool.Loop
+ --                   { tc
+ --                       | count = tc.count + 1
+ --                       , text = String.dropLeft sourceMapLength tc.text
+ --                       , block = tc.block ++ String.left sourceMapLength tc.text
+ --                       , parsand = Just parsand
+ --                       , parsed = Data.labelElement data parsand :: tc.parsed
+ --                       , offset = tc.offset + sourceMapLength
+ --                       , data = data
+ --                   }
 -- HELPERS
 
 

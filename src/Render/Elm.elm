@@ -61,15 +61,6 @@ renderElement renderArgs element =
             -- TODO
             el [] (text str)
 
-        --case paragraphs str of
-        --    [] ->
-        --        E.none
-        --
-        --    [ str_ ] ->
-        --        el [] (text str_)
-        --
-        --    list_ ->
-        --        column [ spacing 12 ] (List.map text list_)
         Element name args body meta ->
             renderWithDictionary renderArgs name args body meta
 
@@ -77,7 +68,7 @@ renderElement renderArgs element =
             paragraph format (List.map (renderElement renderArgs) list_)
 
         Problem p e ->
-              E.paragraph [ ] [
+              E.paragraph format [
                E.el [ Font.color(E.rgb255 200 0 0)] (E.text (Error.heading p))
               ,E.el [ E.paddingXY 8 0, Font.color (E.rgb255 0 0 200), Font.bold ](E.text (Debug.log "RENDER PROBLEM" e))
               ]
