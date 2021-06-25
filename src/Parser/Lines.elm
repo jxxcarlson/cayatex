@@ -416,7 +416,11 @@ getParseResult stepState =
 -}
 toParsed : State -> List (List Element)
 toParsed state =
-    state.output |> List.map .parsed |> expandErrors |> List.reverse |> Debug.log "AST"
+    state.output |> List.map .parsed |> expandErrors |> List.reverse
+
+
+
+-- |> Debug.log "AST"
 
 
 expandErrorF : List Element -> List (List Element)
