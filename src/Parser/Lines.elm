@@ -94,7 +94,7 @@ initWithData generation data strList =
     , blockStatus = Start
     , blockContents = []
     , blockLevel = 0
-    , blockLevels = { blanksSeen = 0, bracketLevel = 0, textLevel = 0 }
+    , blockLevels = { blanksSeen = 0, bracketLevel = 0, textLevel = 0, expectingRaw = NotExpecting }
     , lastTextCursor = Nothing
     , output = []
     , data = data
@@ -151,7 +151,7 @@ updateBlockLevels line { blanksSeen, bracketLevel, textLevel } =
             else
                 textLevel
     in
-    { blanksSeen = blanksSeen_, bracketLevel = bracketLevel_, textLevel = textLevel_ }
+    { blanksSeen = blanksSeen_, bracketLevel = bracketLevel_, textLevel = textLevel_, expectingRaw = NotExpecting }
 
 
 innerNextState : String -> State -> State
@@ -163,8 +163,25 @@ innerNextState currentLine state_ =
         oldBlockLevels =
             state_.blockLevels
 
+        hashesFound =
+            String.contains "raw###" currentLine
+
+        expectingRaw =
+            if state_.blockLevels.expectingRaw == NotExpecting && hashesFound then
+                ExpectingRaw "###"
+
+            else if state_.blockLevels.expectingRaw == ExpectingRaw "###" && hashesFound then
+                NotExpecting
+
+            else
+                NotExpecting
+
         newBlockLevels =
-            updateBlockLevels currentLine oldBlockLevels
+            if state_.blockLevels.expectingRaw == NotExpecting then
+                updateBlockLevels currentLine oldBlockLevels
+
+            else
+                oldBlockLevels
     in
     case ( blockFinished oldBlockLevels, blockFinished newBlockLevels ) of
         ( True, True ) ->
@@ -280,7 +297,11 @@ flush state =
                             |> List.reverse
 
                     correctedState =
-                        { state | input = correctedText, blockContents = [], blockLevels = { blanksSeen = 0, bracketLevel = 0, textLevel = 0 } }
+                        { state
+                            | input = correctedText
+                            , blockContents = []
+                            , blockLevels = { blanksSeen = 0, bracketLevel = 0, textLevel = 0, expectingRaw = NotExpecting }
+                        }
                 in
                 Loop correctedState
 
@@ -335,7 +356,7 @@ handleError state =
                         in
                         Loop
                             { state
-                                | blockLevels = { blanksSeen = 0, bracketLevel = 0, textLevel = 0 }
+                                | blockLevels = { blanksSeen = 0, bracketLevel = 0, textLevel = 0, expectingRaw = NotExpecting }
                                 , lastTextCursor = Maybe.map resetError state.lastTextCursor
                             }
 
@@ -349,7 +370,7 @@ handleError state =
                         in
                         Loop
                             { state
-                                | blockLevels = { blanksSeen = 0, bracketLevel = 0, textLevel = 0 }
+                                | blockLevels = { blanksSeen = 0, bracketLevel = 0, textLevel = 0, expectingRaw = NotExpecting }
                                 , lastTextCursor = Maybe.map resetError state.lastTextCursor
                             }
 
@@ -395,7 +416,7 @@ getParseResult stepState =
 -}
 toParsed : State -> List (List Element)
 toParsed state =
-    state.output |> List.map .parsed |> expandErrors |> List.reverse
+    state.output |> List.map .parsed |> expandErrors |> List.reverse |> Debug.log "AST"
 
 
 expandErrorF : List Element -> List (List Element)
