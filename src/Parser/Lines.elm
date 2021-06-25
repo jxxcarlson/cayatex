@@ -163,25 +163,25 @@ innerNextState currentLine state_ =
         oldBlockLevels =
             state_.blockLevels
 
-        hashesFound =
-            String.contains "raw###" currentLine
-
         expectingRaw =
-            if state_.blockLevels.expectingRaw == NotExpecting && hashesFound then
+            if state_.blockLevels.expectingRaw == NotExpecting && String.contains "raw###" currentLine then
                 ExpectingRaw "###"
 
-            else if state_.blockLevels.expectingRaw == ExpectingRaw "###" && hashesFound then
+            else if state_.blockLevels.expectingRaw == ExpectingRaw "###" && String.contains "###" currentLine then
                 NotExpecting
 
             else
                 NotExpecting
 
-        newBlockLevels =
+        newBlockLevels_ =
             if state_.blockLevels.expectingRaw == NotExpecting then
                 updateBlockLevels currentLine oldBlockLevels
 
             else
                 oldBlockLevels
+
+        newBlockLevels =
+            { newBlockLevels_ | expectingRaw = expectingRaw }
     in
     case ( blockFinished oldBlockLevels, blockFinished newBlockLevels ) of
         ( True, True ) ->
