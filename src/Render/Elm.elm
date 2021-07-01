@@ -326,13 +326,15 @@ getRows_ body =
 spreadsheet : FRender CYTMsg
 spreadsheet renderArgs name args_ body meta =
     let
+        -- spreadsheet1 : List (List String)
         spreadsheet1 =
-            getRows_ body |> List.Extra.transpose
+            Render.Utility.getCSV ";" body
+                |> Spreadsheet.readFromList
+                |> Spreadsheet.eval
 
         spreadsheet2 : List (List String)
         spreadsheet2 =
-            Spreadsheet.evalText spreadsheet1
-                |> List.Extra.transpose
+            Spreadsheet.printAsList spreadsheet1
 
         renderItem : String -> E.Element CYTMsg
         renderItem str =
@@ -423,7 +425,7 @@ dataTable renderArgs name args_ body meta =
     let
         rawData : List (List String)
         rawData =
-            Render.Utility.getCSV body
+            Render.Utility.getCSV "," body
                 |> List.filter (\row -> row /= [ "" ])
 
         widths : List Float

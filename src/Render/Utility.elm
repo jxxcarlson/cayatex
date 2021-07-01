@@ -87,7 +87,7 @@ getPoints dict body =
 
         rawData : List (List String)
         rawData =
-            getCSV body
+            getCSV "," body
 
         getDataColumns : Int -> Int -> List (List String) -> List (List (Maybe String))
         getDataColumns i j data =
@@ -110,7 +110,7 @@ getPoints dict body =
                     points_
     in
     body
-        |> getCSV
+        |> getCSV ","
         |> getDataColumns col1 col2
         |> List.map Maybe.Extra.values
         |> List.map (List.map String.toFloat)
@@ -121,15 +121,16 @@ getPoints dict body =
         |> yfilter
 
 
-getCSV : Element -> List (List String)
-getCSV element =
+getCSV : String -> Element -> List (List String)
+getCSV separator element =
     case element of
         LX list_ _ ->
             case List.map extractText list_ of
                 [ Just data ] ->
                     data
                         |> String.split "\n"
-                        |> List.map (String.split ",")
+                        |> List.filter (\line -> line /= "")
+                        |> List.map (String.split separator)
                         |> List.map (List.map String.trim)
 
                 _ ->
@@ -178,7 +179,7 @@ getColumn dict body =
 
         rawData : List (List String)
         rawData =
-            getCSV body
+            getCSV "," body
 
         getDataColumn : Int -> List (List String) -> List (Maybe String)
         getDataColumn i data =
@@ -193,7 +194,7 @@ getColumn dict body =
                     data_
     in
     body
-        |> getCSV
+        |> getCSV ","
         |> getDataColumn col
         |> Maybe.Extra.values
         |> List.map String.toFloat

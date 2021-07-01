@@ -176,7 +176,7 @@ linegraph renderArgs name args body sm =
 
         numbers_ : List (List String)
         numbers_ =
-            Render.Utility.getCSV body
+            Render.Utility.getCSV "," body
 
         points : List ( Float, Float )
         points =

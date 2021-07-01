@@ -11,6 +11,7 @@ import Parser.Lines
 import Parser.RunLoopFunctions
 import Render.Elm
 import Render.Types as Types
+import Render.Utility
 import Spreadsheet
 import Widget.Data
 
@@ -65,12 +66,13 @@ spreadsheet : Element -> String
 spreadsheet body =
     let
         spreadsheet1 =
-            Render.Elm.getRows_ body |> List.Extra.transpose
+            Render.Utility.getCSV ";" body
+                |> Spreadsheet.readFromList
+                |> Spreadsheet.eval
 
         spreadsheet2 : List (List String)
         spreadsheet2 =
-            Spreadsheet.evalText spreadsheet1
-                |> List.Extra.transpose
+            Spreadsheet.printAsList spreadsheet1
     in
     tableOfListList spreadsheet2
 
